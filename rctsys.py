@@ -230,10 +230,13 @@ class ReactionSystem(object):
         s = s[:-2]
         return s
 
-    def show_reactions(self):
+    def show_reactions(self, soft=False):
         print("[*] Reactions:")
-        for reaction in self.reactions:
-            print("\t - ( R={" + self.entities_ids_set_to_str(reaction[0]) + "}, \tI={" + self.entities_ids_set_to_str(reaction[1]) + "}, \tP={" + self.entities_ids_set_to_str(reaction[2]) + "} )")
+        if soft and len(self.reactions) > 50:
+            print("\t -> there are more than 50 reactions (" + str(len(self.reactions)) + ")")
+        else:
+            for reaction in self.reactions:
+                print("\t - ( R={" + self.entities_ids_set_to_str(reaction[0]) + "}, \tI={" + self.entities_ids_set_to_str(reaction[1]) + "}, \tP={" + self.entities_ids_set_to_str(reaction[2]) + "} )")
 
     def show_background_set(self):
         print("[*] Background set: {" + self.entities_names_set_to_str(self.background_set) + "}")
@@ -248,11 +251,11 @@ class ReactionSystem(object):
         if len(self.context_entities) > 0:
             print("[*] Context entities: " + self.entities_ids_set_to_str(self.context_entities))
 
-    def show(self):
+    def show(self, soft=False):
 
         self.show_background_set()
         self.show_initial_contexts()
-        self.show_reactions()
+        self.show_reactions(soft)
         self.show_context_entities()
         
     def get_reactions_by_product(self):
@@ -304,8 +307,8 @@ class ReactionSystemWithAutomaton(object):
         self.rs = reaction_system
         self.ca = context_automaton
 
-    def show(self):
-        self.rs.show()
+    def show(self, soft=False):
+        self.rs.show(soft)
         self.ca.show()
         
     def sanity_check(self):

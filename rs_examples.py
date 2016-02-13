@@ -138,6 +138,68 @@ def ca_toy_ex1_property1():
     return ["e"]
 
 
+def ca_bitctr(bits):
+
+    rs = ReactionSystem()
+
+    n = bits
+
+    for i in range(0,bits):
+        rs.add_bg_set_entities(["p" + str(i)])
+
+    rs.add_bg_set_entities(["dec"])
+    rs.add_bg_set_entities(["inc"])
+
+    # (1) no dec, no inc
+    for j in range(0,bits):
+        rs.add_reaction(["p"+str(j)], ["dec","inc"], ["p"+str(j)])
+
+    # (2) increment
+    rs.add_reaction(["inc"],["dec","p0"],["p0"])
+    for j in range(1,bits):
+        R = ["inc"]
+        for k in range(0,j):
+            R.append("p"+str(k))
+        I = ["dec","p"+str(j)]
+        P = ["p"+str(j)]
+        rs.add_reaction(R, I, P)
+
+    for j in range(0,bits):
+        for k in range(j+1,bits):
+            rs.add_reaction(["inc","p"+str(k)], ["dec","p"+str(j)], ["p"+str(k)])
+
+    # (3) decrement
+    for j in range(0,bits):
+        R=["dec"]
+        I=["inc"]
+        for k in range(0,j+1):
+            I.append("p"+str(k))
+        P=["p"+str(j)]
+        rs.add_reaction(R, I, P)
+
+    for j in range(0,bits):
+        for k in range(j+1,bits):
+            rs.add_reaction(["dec","p"+str(j),"p"+str(k)], ["inc"], ["p"+str(k)])
+
+    ca = ContextAutomaton(rs)
+    ca.add_init_state("1")
+    ca.add_transition("1", ["inc"], "1")
+    ca.add_transition("1", ["inc","dec"], "1")
+    ca.add_transition("1", ["dec"], "1")
+    
+    rsca = ReactionSystemWithAutomaton(rs,ca)
+    
+    return rsca
+    
+def ca_bitctr_property(bits):
+    
+    state = []
+    
+    for i in range(0,bits):
+        state.append("p"+str(i))
+        
+    return state
+
 def drs_toy_ex1():
     
     drs = DistributedReactionSystem()
