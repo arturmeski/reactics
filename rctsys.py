@@ -18,56 +18,56 @@ from sys import exit
 class ContextAutomaton(object):
     
     def __init__(self, reaction_system):
-        self.__states = []
-        self.__transitions = []
-        self.__init_state = None
-        self.__reaction_system = reaction_system
+        self._states = []
+        self._transitions = []
+        self._init_state = None
+        self._reaction_system = reaction_system
     
     @property
     def states(self):
-        return self.__states
+        return self._states
     
     @property
     def transitions(self):
-        return self.__transitions
+        return self._transitions
     
     def add_state(self, name):
-        if name not in self.__states:
-            self.__states.append(name)
+        if name not in self._states:
+            self._states.append(name)
         else:
             print("\'%s\' already added. skipping..." % (name,))
             
     def add_init_state(self, name):
         self.add_state(name)
-        self.__init_state = self.__states.index(name)
+        self._init_state = self._states.index(name)
 
     def get_init_state_name(self):
-        if self.__init_state == None:
+        if self._init_state == None:
             return None
-        return self.__states[self.__init_state]
+        return self._states[self._init_state]
 
     def is_state(self, name):
-        if name in self.__states:
+        if name in self._states:
             return True
         else:
             return False
 
     def get_state_id(self, name):
         try:
-            return self.__states.index(name)
+            return self._states.index(name)
         except ValueError:
             print("Undefined context automaton state: " + repr(name))
             exit(1)
 
     def get_init_state_id(self):
-        return self.__init_state
+        return self._init_state
     
     def print_states(self):
-         for state in self.__states:
+         for state in self._states:
             print(state)
             
     def is_valid_context(self, context):
-        if set(context).issubset(self.__reaction_system.background_set):
+        if set(context).issubset(self._reaction_system.background_set):
             return True
         else:
             return False
@@ -84,12 +84,12 @@ class ContextAutomaton(object):
 
         if not self.is_state(dst):
             raise RuntimeError("\"" + dst + "\" is an unknown (undefined) state")
-            
+
         new_context_set = set()
         for e in set(context_set):
-            new_context_set.add(self.__reaction_system.get_entity_id(e))
-
-        self.__transitions.append((self.get_state_id(src),new_context_set,self.get_state_id(dst)))
+            new_context_set.add(self._reaction_system.get_entity_id(e))
+        
+        self._transitions.append((self.get_state_id(src),new_context_set,self.get_state_id(dst)))
 
     def context2str(self, ctx):
         """Converts the set of entities ids into the string with their names"""
@@ -97,13 +97,13 @@ class ContextAutomaton(object):
             return "0"
         s = "{"
         for c in ctx:
-            s += " " + self.__reaction_system.get_entity_name(c) 
+            s += " " + self._reaction_system.get_entity_name(c) 
         s += " }"
         return s
         
     def show_transitions(self):
         print("[*] Context automaton transitions:")
-        for transition in self.__transitions:
+        for transition in self._transitions:
             str_transition = str(transition[0]) + " --( "
             str_transition += self.context2str(transition[1])
             str_transition += " )--> " + str(transition[2])
@@ -112,7 +112,7 @@ class ContextAutomaton(object):
     def show_states(self):
         init_state_name = self.get_init_state_name()
         print("[*] Context automaton states:")
-        for state in self.__states:
+        for state in self._states:
             print("\t- " + state, end="")
             if state == init_state_name:
                 print(" [init]")
@@ -123,6 +123,48 @@ class ContextAutomaton(object):
         self.show_states()
         self.show_transitions()
 
+
+class ContextAutomatonWithConcentrations(ContextAutomaton):
+
+    def __init__(self, reaction_system):
+        self._states = []
+        self._transitions = []
+        self._init_state = None
+        self._reaction_system = reaction_system
+    
+    def is_valid_context(self, context):
+        if set([e for e,lvl in context]).issubset(self._reaction_system.background_set):
+            return True
+        else:
+            return False
+            
+    def context2str(self, ctx):
+        if len(ctx) == 0:
+            return "0"
+        s = "{"
+        for ent,lvl in ctx:
+            s += " " + str((self._reaction_system.get_entity_name(ent),lvl)) 
+        s += " }"
+        return s
+        
+    def add_transition(self, src, context_set, dst):
+        if not type(context_set) is set and not type(context_set) is list:
+            print("Contexts set must be of type set or list")
+            
+        if not self.is_valid_context(context_set):
+            raise RuntimeError("one of the entities in the context set is unknown (undefined)!")
+            
+        if not self.is_state(src):
+            raise RuntimeError("\"" + src + "\" is an unknown (undefined) state")
+
+        if not self.is_state(dst):
+            raise RuntimeError("\"" + dst + "\" is an unknown (undefined) state")
+
+        new_context_set = set()
+        for ent,lvl in set(context_set):
+            new_context_set.add((self._reaction_system.get_entity_id(ent),lvl))
+        
+        self._transitions.append((self.get_state_id(src),new_context_set,self.get_state_id(dst)))
 
 class ReactionSystem(object):
 
@@ -309,19 +351,6 @@ class ReactionSystemWithConcentrations(ReactionSystem):
 
         self.reactions_by_prod = None
 
-    def get_entity_id(self, name):
-        try:
-            return self.background_set.index(name)
-        except ValueError:
-            print("Undefined background set entity: " + repr(name))
-            exit(1)
-
-    def get_state_ids(self, state):
-        ids = []
-        for entity in state:
-            ids.append(self.get_entity_id(entity))
-        return ids
-
     def is_valid_entity_with_concentration(self, e):
         """Sanity check for entities with concentration"""
         
@@ -383,10 +412,10 @@ class ReactionSystemWithConcentrations(ReactionSystem):
         s = s[:-2]
         return s
 
-    def states_to_str(self, state):
+    def state_to_str(self, state):
         s = ""
-        for entity,level in state:
-            s += str((self.get_entity_name(entity),level)) + ", "
+        for ent,level in state:
+            s += str((self.get_entity_name(ent),level)) + ", "
         s = s[:-2]
         return s        
 
@@ -431,4 +460,16 @@ class ReactionSystemWithAutomaton(object):
     def show(self, soft=False):
         self.rs.show(soft)
         self.ca.show()
+
+#
+# class ReactionSystemWithConcentrationWithAutomaton(ReactionSystemWithAutomaton):
+#
+#     def __init__(self, reaction_system, context_automaton):
+#         self.rs = reaction_system
+#         self.ca = context_automaton
+#
+#     def show(self, soft=False):
+#         self.rs.show(soft)
+#         self.ca.show()
+
 

@@ -6,7 +6,7 @@
 
 """
 
-from rctsys import ReactionSystem,ReactionSystemWithConcentrations
+from rctsys import ReactionSystem,ReactionSystemWithConcentrations,ContextAutomatonWithConcentrations
 from smtchecker import SmtChecker
 from smtcheckerpgrs import SmtCheckerPGRS
 from smtcheckerdistribrs import SmtCheckerDistribRS
@@ -69,6 +69,13 @@ def main():
 
     r.add_reaction([("a",1)],[("b",2)],[("c",1)])
     r.show()
+    
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("1")
+    c.add_transition("1", [("c",1)], "1")
+    c.add_transition("1", [("d",2)], "1")
+    c.show()
+
 
 if __name__ == "__main__":
     try:

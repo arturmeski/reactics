@@ -261,4 +261,3 @@ def drs_mutex_property1(k):
     state.extend([[] for i in range(k)])
     
     return state
-    
