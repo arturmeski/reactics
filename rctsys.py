@@ -229,6 +229,9 @@ class ReactionSystem(object):
             s += self.get_entity_name(entity) + ", "
         s = s[:-2]
         return s
+        
+    def state_to_str(self, state):
+        return self.entities_ids_set_to_str(state)
 
     def show_reactions(self, soft=False):
         print("[*] Reactions:")
@@ -236,7 +239,7 @@ class ReactionSystem(object):
             print("\t -> there are more than 50 reactions (" + str(len(self.reactions)) + ")")
         else:
             for reaction in self.reactions:
-                print("\t - ( R={" + self.entities_ids_set_to_str(reaction[0]) + "}, \tI={" + self.entities_ids_set_to_str(reaction[1]) + "}, \tP={" + self.entities_ids_set_to_str(reaction[2]) + "} )")
+                print("\t - ( R={" + self.state_to_str(reaction[0]) + "}, \tI={" + self.state_to_str(reaction[1]) + "}, \tP={" + self.state_to_str(reaction[2]) + "} )")
 
     def show_background_set(self):
         print("[*] Background set: {" + self.entities_names_set_to_str(self.background_set) + "}")
@@ -293,12 +296,130 @@ class ReactionSystem(object):
             print("Empty background set")
             exit(1)
 
-        if self.init_contexts == []:
-            print("No initial context defined")
+
+class ReactionSystemWithConcentrations(ReactionSystem):
+
+    def __init__(self):
+
+        self.reactions = []
+        self.background_set = []
+        self.context_entities = []
+
+        self.reactions_by_agents = [] # each element is 'reactions_by_prod'
+
+        self.reactions_by_prod = None
+
+    def get_entity_id(self, name):
+        try:
+            return self.background_set.index(name)
+        except ValueError:
+            print("Undefined background set entity: " + repr(name))
             exit(1)
 
-        if self.context_entities == []:
-            print("WARNING: no context entities!")
+    def get_state_ids(self, state):
+        ids = []
+        for entity in state:
+            ids.append(self.get_entity_id(entity))
+        return ids
+
+    def is_valid_entity_with_concentration(self, e):
+        """Sanity check for entities with concentration"""
+        
+        if type(e) is tuple:
+            if len(e) == 2 and type(e[1]) is int:
+                return True
+                
+        if type(e) is list:
+            if len(e) == 2 and type(e[1]) is int:
+                return True
+
+        print("FATAL. Invalid entity+concentration:")
+        print(e)
+        exit(1)
+        
+        return False
+
+    def add_reaction(self, R, I, P):
+        """Adds a reaction"""
+        
+        if R == [] or P == []:
+            print("No reactants of products defined")
+            raise
+
+        reactants = []
+        for r in R:
+            self.is_valid_entity_with_concentration(r)
+            entity,level = r
+            reactants.append((self.get_entity_id(entity),level))
+            
+        inhibitors = []
+        for i in I:
+            self.is_valid_entity_with_concentration(i)
+            entity,level = i
+            inhibitors.append((self.get_entity_id(entity),level))
+
+        products = []
+        for p in P:
+            self.is_valid_entity_with_concentration(p)
+            entity,level = p
+            products.append((self.get_entity_id(entity),level))
+
+        self.reactions.append((reactants, inhibitors, products))
+
+    def set_context_entities(self, entities):
+        raise NotImplementedError
+
+    def entities_names_set_to_str(self, entities):
+        s = ""
+        for entity in entities:
+            s += entity + ", "
+        s = s[:-2]
+        return s
+
+    def entities_ids_set_to_str(self, entities):
+        s = ""
+        for entity in entities:
+            s += self.get_entity_name(entity) + ", "
+        s = s[:-2]
+        return s
+
+    def states_to_str(self, state):
+        s = ""
+        for entity,level in state:
+            s += str((self.get_entity_name(entity),level)) + ", "
+        s = s[:-2]
+        return s        
+
+    def show_background_set(self):
+        print("[*] Background set: {" + self.entities_names_set_to_str(self.background_set) + "}")
+
+    def show(self, soft=False):
+        self.show_background_set()
+        self.show_reactions(soft)
+        
+    def get_reactions_by_product(self):
+        """Sorts reactions by their products and returns a dictionary of products"""
+
+        if self.reactions_by_prod != None:
+            return self.reactions_by_prod
+
+        producible_entities = set()
+
+        for reaction in self.reactions:
+            producible_entities = producible_entities.union(set(reaction[2]))
+
+        reactions_by_prod = {} 
+
+        for prod_entity in producible_entities:
+            reactions_by_prod[prod_entity] = []
+            for reaction in self.reactions:
+                if prod_entity in reaction[2]:
+                    reactions_by_prod[prod_entity].append([reaction[0],reaction[1]])
+
+        # save in cache
+        self.reactions_by_prod = reactions_by_prod
+
+        return reactions_by_prod
 
 
 class ReactionSystemWithAutomaton(object):
@@ -310,13 +431,4 @@ class ReactionSystemWithAutomaton(object):
     def show(self, soft=False):
         self.rs.show(soft)
         self.ca.show()
-        
-    def sanity_check(self):
-        if self.rs.context_entities != []:
-            raise RuntimeError("Context entities should not be defined within RS!")
 
-        if self.rs.init_contexts != []:
-            raise RuntimeError("Initial context should not be defined!")
-
-        
-        # rs should have no initial context, no context entities, etc.

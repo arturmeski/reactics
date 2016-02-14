@@ -6,7 +6,7 @@
 
 """
 
-from rctsys import ReactionSystem
+from rctsys import ReactionSystem,ReactionSystemWithConcentrations
 from smtchecker import SmtChecker
 from smtcheckerpgrs import SmtCheckerPGRS
 from smtcheckerdistribrs import SmtCheckerDistribRS
@@ -42,10 +42,10 @@ def main():
     # smt = SmtCheckerPGRS(rsca)
     # smt.check_reachability(rs_examples.ca_toy_ex1_property1(), print_time=True)
 
-    rsca = rs_examples.ca_bitctr(N)
-    rsca.show(True)
-    smt = SmtCheckerPGRS(rsca)
-    smt.check_reachability(rs_examples.ca_bitctr_property(N), print_time=True)
+    # rsca = rs_examples.ca_bitctr(N)
+    # rsca.show(True)
+    # smt = SmtCheckerPGRS(rsca)
+    # smt.check_reachability(rs_examples.ca_bitctr_property(N), print_time=True)
     
     # Distributed RS:
     #drs = rs_examples.drs_mutex(N)
@@ -63,6 +63,12 @@ def main():
     #
     # smt = SmtCheckerDistribRS(drs,debug_level=3)
     # smt.check_reachability(rs_examples.drs_toy_ex1_property1(),max_level=10,print_time=True)
+
+    r = ReactionSystemWithConcentrations()
+    r.add_bg_set_entities(["a","b","c","d"])
+
+    r.add_reaction([("a",1)],[("b",2)],[("c",1)])
+    r.show()
 
 if __name__ == "__main__":
     try:
