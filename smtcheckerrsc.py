@@ -11,9 +11,12 @@ class SmtCheckerRSC(object):
     def __init__(self, rsca):
 
         rsca.sanity_check()
+
+        if not rsca.is_with_concentrations():
+            raise RuntimeError("RS and CA with concentrations expected")
         
         self.rs = rsca.rs
-        self.ca = rsca.ca        
+        self.ca = rsca.ca
 
         self.v = []
         self.v_ctx = []
@@ -36,7 +39,7 @@ class SmtCheckerRSC(object):
 
         variables = []
         for entity in self.rs.background_set:
-            variables.append(Bool("C"+str(level)+"_"+entity))
+            variables.append(Int("C"+str(level)+"_"+entity))
 
         self.v_ctx.append(variables)
 
@@ -47,7 +50,7 @@ class SmtCheckerRSC(object):
 
         variables = []
         for entity in self.rs.background_set:
-            variables.append(Bool("L"+str(level)+"_"+entity))
+            variables.append(Int("L"+str(level)+"_"+entity))
         self.v.append(variables)
         
         self.ca_state.append(Int("CA"+str(level)+"_state"))
@@ -58,7 +61,7 @@ class SmtCheckerRSC(object):
         rs_init_state_enc = True
 
         for v in self.v[level]:
-            rs_init_state_enc = simplify(And(rs_init_state_enc, Not(v))) # the initial state is empty
+            rs_init_state_enc = simplify(And(rs_init_state_enc, v == 0)) # the initial concentration levels are zeroed
 
         ca_init_state_enc = self.ca_state[level] == self.ca.get_init_state_id()
         
@@ -74,6 +77,15 @@ class SmtCheckerRSC(object):
         if rcts_for_prod_entity == []:
             return False
 
+        #
+        # TODO:
+        #
+        # czy potrzebujemy get_reactions_by_product?
+        # czy może wystarczy jak zakodujemy reakcje jako trójki?
+        #
+        # ... na pewno musi być informacja o produkowanym stężeniu
+        #
+
         enc_rct_prod = False
         for reactants,inhibitors in rcts_for_prod_entity:
             enc_reactants = True
@@ -83,7 +95,7 @@ class SmtCheckerRSC(object):
                                             Or(self.v[level][reactant], self.v_ctx[level][reactant])))
             for inhibitor in inhibitors:
                 enc_inhibitors = simplify(And(enc_inhibitors, 
-                                             Not(Or(self.v[level][inhibitor], self.v_ctx[level][inhibitor]))))
+                                             And(self.v[level][inhibitor], self.v_ctx[level][inhibitor])))
 
             enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors)))
 
@@ -140,40 +152,42 @@ class SmtCheckerRSC(object):
                     ctx_enc = simplify(And(ctx_enc, Not(self.v_ctx[level][c])))
                 
                 cur_trans = simplify(And(src_enc, ctx_enc, dst_enc))
-                
                 enc_trans = simplify(Or(enc_trans, cur_trans))
         
         return enc_trans
 
-    def enc_state(self, level, state):
-        """Encodes the state at the given level"""
+    def enc_exact_state(self, level, state):
+        """Encodes the state at the given level with the exact concentration values"""
 
         enc = True
-
-        state_ids = self.rs.get_state_ids(state)
-
-        for entity in state_ids:
-            enc = And(enc, self.v[level][entity])
+        used_entities_ids = self.rs.get_state_ids(state)
+        
+        for ent,conc in state:
+            e_id = self.rs.get_entity_id(ent)
+            enc = And(enc, self.v[level][e_id] == conc)
 
         not_in_state = set(range(len(self.rs.background_set)))
-        not_in_state = not_in_state.difference(set(state_ids))
+        not_in_state = not_in_state.difference(set(used_entities_ids))
 
         for entity in not_in_state:
-            enc = And(enc, Not(self.v[level][entity]))
+            enc = And(enc, self.v[level][entity] == 0)
 
-        return enc
+        return simplify(enc)
 
-    def enc_non_exclusive_state(self, level, state):
-        """Encodes the state at the given level"""
+    def enc_min_state(self, level, state):
+        """Encodes the state at the given level with the minimal required concentration levels"""
 
         enc = True
+        for ent,conc in state:
+            e_id = self.rs.get_entity_id(ent)
+            enc = And(enc, self.v[level][e_id] >= conc)
 
-        state_ids = self.rs.get_state_ids(state)
+        # state_ids = self.rs.get_state_ids(state)
+        #
+        # for entity in state_ids:
+        #     enc = And(enc, self.v[level][entity])
 
-        for entity in state_ids:
-            enc = And(enc, self.v[level][entity])
-
-        return enc
+        return simplify(enc)
 
     def decode_witness(self, max_level, print_model=False):
 
@@ -209,32 +223,34 @@ class SmtCheckerRSC(object):
         self.prepare_all_variables()
         self.solver.add(self.enc_init_state(0))
         current_level = 0
+        
+        print(self.enc_exact_state(current_level,state))
 
-        while True:
-            print("\r[i] Level: " + str(current_level), end="")
-            stdout.flush()
-
-            self.prepare_all_variables()
-
-            # reachability test:
-            self.solver.push()
-            self.solver.add(self.enc_state(current_level,state))
-
-            result = self.solver.check()
-            if result == sat:
-                print("\n[+] SAT at level=" + str(current_level))
-                if print_witness:
-                    self.decode_witness(current_level)
-                break
-            else:
-                self.solver.pop()
-           
-            self.solver.add(self.enc_transition_relation(current_level))
-
-            current_level += 1
-
-        if print_time:
-            stop = time()
-            print()
-            print("[i] Time: " + repr(stop-start))
+        # while True:
+        #     print("\r[i] Level: " + str(current_level), end="")
+        #     stdout.flush()
+        #
+        #     self.prepare_all_variables()
+        #
+        #     # reachability test:
+        #     self.solver.push()
+        #     self.solver.add(self.enc_state(current_level,state))
+        #
+        #     result = self.solver.check()
+        #     if result == sat:
+        #         print("\n[+] SAT at level=" + str(current_level))
+        #         if print_witness:
+        #             self.decode_witness(current_level)
+        #         break
+        #     else:
+        #         self.solver.pop()
+        #
+        #     self.solver.add(self.enc_transition_relation(current_level))
+        #
+        #     current_level += 1
+        #
+        # if print_time:
+        #     stop = time()
+        #     print()
+        #     print("[i] Time: " + repr(stop-start))
             
