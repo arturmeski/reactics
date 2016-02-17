@@ -6,10 +6,11 @@
 
 """
 
-from rctsys import ReactionSystem,ReactionSystemWithConcentrations,ContextAutomatonWithConcentrations
+from rctsys import ReactionSystem,ReactionSystemWithConcentrations,ContextAutomatonWithConcentrations,ReactionSystemWithAutomaton
 from smtchecker import SmtChecker
 from smtcheckerpgrs import SmtCheckerPGRS
 from smtcheckerdistribrs import SmtCheckerDistribRS
+from smtcheckerrsc import SmtCheckerRSC
 import sys
 import rs_examples
 
@@ -67,8 +68,10 @@ def main():
     r = ReactionSystemWithConcentrations()
     r.add_bg_set_entities(["a","b","c","d"])
 
-    r.add_reaction([("a",1)],[("b",2)],[("c",1)])
+    r.add_reaction([("c",1)],[("b",2)],[("c",1),("b",1)])
     r.show()
+    
+    # print(r.get_reactions_by_product())
     
     c = ContextAutomatonWithConcentrations(r)
     c.add_init_state("1")
@@ -76,6 +79,11 @@ def main():
     c.add_transition("1", [("d",2)], "1")
     c.show()
 
+    rc = ReactionSystemWithAutomaton(r,c)
+
+    smt = SmtCheckerRSC(rc)
+
+    smt.check_reachability([('c',1)],print_time=True,max_level=20)
 
 if __name__ == "__main__":
     try:

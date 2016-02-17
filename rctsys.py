@@ -368,6 +368,14 @@ class ReactionSystemWithConcentrations(ReactionSystem):
         
         return False
 
+    def get_state_ids(self, state):
+        """Returns entities of the given state without levels"""
+        return [e for e,c in state]
+
+    def has_non_zero_concentration(self, elem):
+        if elem[1] < 1:
+            raise RuntimeError("Unexpected concentration level in state: " + str(elem))
+
     def add_reaction(self, R, I, P):
         """Adds a reaction"""
         
@@ -378,18 +386,21 @@ class ReactionSystemWithConcentrations(ReactionSystem):
         reactants = []
         for r in R:
             self.is_valid_entity_with_concentration(r)
+            self.has_non_zero_concentration(r)
             entity,level = r
             reactants.append((self.get_entity_id(entity),level))
             
         inhibitors = []
         for i in I:
             self.is_valid_entity_with_concentration(i)
+            self.has_non_zero_concentration(i)
             entity,level = i
             inhibitors.append((self.get_entity_id(entity),level))
 
         products = []
         for p in P:
             self.is_valid_entity_with_concentration(p)
+            self.has_non_zero_concentration(p)
             entity,level = p
             products.append((self.get_entity_id(entity),level))
 
@@ -435,15 +446,20 @@ class ReactionSystemWithConcentrations(ReactionSystem):
         producible_entities = set()
 
         for reaction in self.reactions:
-            producible_entities = producible_entities.union(set(reaction[2]))
+            product_entities = [e for e,c in reaction[2]]
+            producible_entities = producible_entities.union(set(product_entities))
 
-        reactions_by_prod = {} 
+        reactions_by_prod = {}
 
-        for prod_entity in producible_entities:
-            reactions_by_prod[prod_entity] = []
-            for reaction in self.reactions:
-                if prod_entity in reaction[2]:
-                    reactions_by_prod[prod_entity].append([reaction[0],reaction[1]])
+        for p_e in producible_entities:
+            reactions_by_prod[p_e] = []
+            for r in self.reactions:
+                product_entities = [e for e,c in r[2]]
+                if p_e in product_entities:
+                    reactants = r[0]
+                    inhibitors = r[1]
+                    products = [(e,c) for e,c in r[2] if e == p_e]
+                    reactions_by_prod[p_e].append((reactants, inhibitors, products))
 
         # save in cache
         self.reactions_by_prod = reactions_by_prod
@@ -460,8 +476,17 @@ class ReactionSystemWithAutomaton(object):
     def show(self, soft=False):
         self.rs.show(soft)
         self.ca.show()
+        
+    def is_with_concentrations(self):
+        if not isinstance(self.rs, ReactionSystemWithConcentrations):
+            return False
+        if not isinstance(self.ca, ContextAutomatonWithConcentrations):
+            return False
+        return True
 
-#
+    def sanity_check(self):
+        pass
+
 # class ReactionSystemWithConcentrationWithAutomaton(ReactionSystemWithAutomaton):
 #
 #     def __init__(self, reaction_system, context_automaton):
@@ -471,5 +496,3 @@ class ReactionSystemWithAutomaton(object):
 #     def show(self, soft=False):
 #         self.rs.show(soft)
 #         self.ca.show()
-
-
