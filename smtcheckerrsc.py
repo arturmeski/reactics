@@ -230,14 +230,9 @@ class SmtCheckerRSC(object):
         self.prepare_all_variables()
         self.solver.add(self.enc_init_state(0))
         current_level = 0
-        
-        # print(self.enc_exact_state(current_level,state))
-        #
-        # print(self.enc_produced_concentration(current_level, 1))
 
         self.prepare_all_variables()
         print(And(self.enc_transition_relation(current_level), self.enc_init_state(0)))
-
         
         while True:
             self.prepare_all_variables()

@@ -69,7 +69,13 @@ def main():
     r.add_bg_set_entities(["a","b","c","d"])
 
     r.add_reaction([("c",1)],[("b",2)],[("c",1),("b",1)])
+    r.add_reaction([("b",2)],[("c",1)],[("c",5),("b",1)])
     r.show()
+    
+    print("================================================")
+    
+    ordinary_rs = r.get_reaction_system()
+    ordinary_rs.show()
     
     # print(r.get_reactions_by_product())
     
@@ -77,13 +83,13 @@ def main():
     c.add_init_state("1")
     c.add_transition("1", [("c",1)], "1")
     c.add_transition("1", [("d",2)], "1")
-    c.show()
+    # c.show()
 
-    rc = ReactionSystemWithAutomaton(r,c)
-
-    smt = SmtCheckerRSC(rc)
-
-    smt.check_reachability([('c',1)],print_time=True,max_level=20)
+    # rc = ReactionSystemWithAutomaton(r,c)
+    #
+    # smt = SmtCheckerRSC(rc)
+    #
+    # smt.check_reachability([('c',1)],print_time=True,max_level=20)
 
 if __name__ == "__main__":
     try:

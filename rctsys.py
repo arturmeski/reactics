@@ -172,19 +172,23 @@ class ReactionSystem(object):
 
         self.reactions = []
         self.background_set = []
+
+        #self.reactions_by_agents = [] # each element is 'reactions_by_prod'
+        self.reactions_by_prod = None
+
+        ## legacy:
         self.init_contexts = []
         self.context_entities = []
-
-        self.reactions_by_agents = [] # each element is 'reactions_by_prod'
-
-        self.reactions_by_prod = None
 
     def add_bg_set_entity(self, name):
         if not self.is_in_background_set(name):
             self.background_set.append(name)
         else:
-            print("The entity", name, "is already on the list")
-            raise
+            raise RuntimeError("The entity " + name + " is already on the list")
+    
+    def ensure_bg_set_entity(self, name):
+        if not self.is_in_background_set(name):
+            self.background_set.append(name)
 
     def add_bg_set_entities(self, names):
         for name in names:
@@ -345,11 +349,11 @@ class ReactionSystemWithConcentrations(ReactionSystem):
 
         self.reactions = []
         self.background_set = []
+
         self.context_entities = []
-
-        self.reactions_by_agents = [] # each element is 'reactions_by_prod'
-
         self.reactions_by_prod = None
+
+        self.max_concentration = 0
 
     def is_valid_entity_with_concentration(self, e):
         """Sanity check for entities with concentration"""
@@ -389,6 +393,8 @@ class ReactionSystemWithConcentrations(ReactionSystem):
             self.has_non_zero_concentration(r)
             entity,level = r
             reactants.append((self.get_entity_id(entity),level))
+            if self.max_concentration < level:
+                self.max_concentration = level
             
         inhibitors = []
         for i in I:
@@ -396,6 +402,8 @@ class ReactionSystemWithConcentrations(ReactionSystem):
             self.has_non_zero_concentration(i)
             entity,level = i
             inhibitors.append((self.get_entity_id(entity),level))
+            if self.max_concentration < level:
+                self.max_concentration = level
 
         products = []
         for p in P:
@@ -466,6 +474,36 @@ class ReactionSystemWithConcentrations(ReactionSystem):
 
         return reactions_by_prod
 
+    def get_reaction_system(self):
+        
+        rs = ReactionSystem()
+                
+        for reactants,inhibitors,products in self.reactions:
+
+            new_reactants = []
+            new_inhibitors = []
+            new_products = []
+
+            for ent,conc in reactants:
+                n = self.get_entity_name(ent) + "_" + str(conc)
+                rs.ensure_bg_set_entity(n)
+                new_reactants.append(n)
+                
+            for ent,conc in inhibitors:
+                n = self.get_entity_name(ent) + "_" + str(conc)
+                rs.ensure_bg_set_entity(n)
+                new_inhibitors.append(n)
+
+            for ent,conc in products:
+                for i in range(1,conc+1):
+                    n = self.get_entity_name(ent) + "_" + str(i)
+                    rs.ensure_bg_set_entity(n)
+                    new_products.append(n)
+                            
+            rs.add_reaction(new_reactants,new_inhibitors,new_products)
+        
+        return rs
+    
 
 class ReactionSystemWithAutomaton(object):
     
