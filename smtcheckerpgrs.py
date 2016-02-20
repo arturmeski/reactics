@@ -21,6 +21,8 @@ class SmtCheckerPGRS(object):
         self.next_level_to_encode = 0
 
         self.solver = Solver()
+        
+        self.verification_time = None
 
     def prepare_all_variables(self):
         """Encodes all the variables"""
@@ -200,7 +202,7 @@ class SmtCheckerPGRS(object):
                         print(" " + self.rs.get_entity_name(var_id), end="")
                 print(" }")
 
-    def check_reachability(self, state, print_witness=True, print_time=False):
+    def check_reachability(self, state, exact_state=False, print_witness=True, print_time=False):
         """Main testing function"""
 
         if print_time:
@@ -211,14 +213,18 @@ class SmtCheckerPGRS(object):
         current_level = 0
 
         while True:
-            print("\r[i] Level: " + str(current_level), end="")
+            print("-----[ Working at level=" + str(current_level) + " ]-----")
             stdout.flush()
 
             self.prepare_all_variables()
 
             # reachability test:
+            print("[i] Adding the reachability test...")    
             self.solver.push()
-            self.solver.add(self.enc_state(current_level,state))
+            if exact_state:
+                self.solver.add(self.enc_state(current_level,state))
+            else:
+                self.solver.add(self.enc_non_exclusive_state(current_level,state))
 
             result = self.solver.check()
             if result == sat:
@@ -229,12 +235,17 @@ class SmtCheckerPGRS(object):
             else:
                 self.solver.pop()
            
+            print("[i] Unrolling the transition relation")
             self.solver.add(self.enc_transition_relation(current_level))
 
+            print("-----[ level=" + str(current_level) + " done ]")
             current_level += 1
 
         if print_time:
             stop = time()
+            self.verification_time = stop-start
             print()
-            print("[i] Time: " + repr(stop-start))
+            print("[i] Time: " + repr(self.verification_time))
             
+    def get_verification_time(self):
+        return self.verification_time

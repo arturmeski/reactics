@@ -5,6 +5,7 @@ SMT-based Model Checking Module for RS with Concentrations and Context Automaton
 from z3 import *
 from time import time
 from sys import stdout
+from itertools import chain
 
 class SmtCheckerRSC(object):
 
@@ -24,6 +25,8 @@ class SmtCheckerRSC(object):
         self.next_level_to_encode = 0
 
         self.solver = Solver()
+        
+        self.verification_time = None
 
     def prepare_all_variables(self):
         """Encodes all the variables"""
@@ -72,15 +75,25 @@ class SmtCheckerRSC(object):
     def enc_produced_concentration(self, level, prod_entity):
         """Encodes the produced concentrations for the given level and entity"""
 
-        rcts_for_prod_entity = self.rs.get_reactions_by_product()[prod_entity]
+        rcts_for_prod_entity = []
+        if prod_entity in self.rs.get_reactions_by_product():
+            rcts_for_prod_entity = self.rs.get_reactions_by_product()[prod_entity]
 
-        if rcts_for_prod_entity == []:
-            return simplify(self.v[level+1][prod_entity] == 0)
+        meta_reactions = []
+        if prod_entity in self.rs.meta_reactions:
+            meta_reactions = self.rs.meta_reactions[prod_entity]
+
+        if rcts_for_prod_entity == [] and meta_reactions == []:
+            return simplify(self.v[level+1][prod_entity] == 0) # this should never happen
+            
+        enc_enabledness = False
+
+        # ----------- ordinary reactions --------------------------------------------
 
         enc_rct_prod = False
         for reactants,inhibitors,products in rcts_for_prod_entity:
-            enc_reactants = True
-            enc_inhibitors = True
+            enc_reactants   = True
+            enc_inhibitors  = True
             # enc_products -- below
             
             for reactant,concentration in reactants:
@@ -91,9 +104,34 @@ class SmtCheckerRSC(object):
                                              And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
 
             enc_products = self.v[level+1][products[0][0]] == products[0][1]
+            
+            enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
+            enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
+            
+        # -------- meta reactions ---------------------------------------------------
+        
+        for r_type,reactants,inhibitors in meta_reactions:
+            enc_reactants   = True
+            enc_inhibitors  = True
+            
+            for reactant,concentration in reactants:
+                enc_reactants = simplify(And(enc_reactants, 
+                                            Or(self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
+            for inhibitor,concentration in inhibitors:
+                enc_inhibitors = simplify(And(enc_inhibitors, 
+                                             And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
+
+            enc_products = self.v[level+1][prod_entity] == self.v[level][prod_entity]+1
+
+            enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
 
             enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
+            
+        # -----------------------------------------------------------------------------
+            
+        enc_when_to_produce_zero_conc = simplify(And(Not(enc_enabledness), self.v[level+1][prod_entity] == 0))
 
+        enc_rct_prod = Or(enc_rct_prod, enc_when_to_produce_zero_conc)
         return enc_rct_prod
 
     # def enc_entity_production(self, level, prod_entity):
@@ -105,6 +143,7 @@ class SmtCheckerRSC(object):
     #             And(Not(enc_enab_cond), Not(self.v[level+1][prod_entity])))
     #
     #     return simplify(enc_ent_prod)
+    
         
     def enc_transition_relation(self, level):
         return simplify(And(self.enc_rs_trans(level), self.enc_automaton_trans(level)))
@@ -117,8 +156,9 @@ class SmtCheckerRSC(object):
         enc_trans = True
 
         reactions = self.rs.get_reactions_by_product()
+        meta_reactions = self.rs.meta_reactions
 
-        for prod_entity in reactions:
+        for prod_entity in chain(reactions, meta_reactions):
             unused_entities.remove(prod_entity)
     
             enc_trans = simplify(And(enc_trans, self.enc_produced_concentration(level, prod_entity)))
@@ -232,7 +272,6 @@ class SmtCheckerRSC(object):
         current_level = 0
 
         self.prepare_all_variables()
-        print(And(self.enc_transition_relation(current_level), self.enc_init_state(0)))
         
         while True:
             self.prepare_all_variables()
@@ -270,6 +309,10 @@ class SmtCheckerRSC(object):
 
         if print_time:
             stop = time()
+            self.verification_time = stop-start
             print()
-            print("[i] Time: " + repr(stop-start))
+            print("[i] Time: " + repr(self.verification_time))
             
+    def get_verification_time(self):
+        return self.verification_time
+    

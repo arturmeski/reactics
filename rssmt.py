@@ -65,31 +65,37 @@ def main():
     # smt = SmtCheckerDistribRS(drs,debug_level=3)
     # smt.check_reachability(rs_examples.drs_toy_ex1_property1(),max_level=10,print_time=True)
 
+    
     r = ReactionSystemWithConcentrations()
-    r.add_bg_set_entities(["a","b","c","d"])
 
-    r.add_reaction([("c",1)],[("b",2)],[("c",1),("b",1)])
-    r.add_reaction([("b",2)],[("c",1)],[("c",5),("b",1)])
-    r.show()
-    
-    print("================================================")
-    
-    ordinary_rs = r.get_reaction_system()
-    ordinary_rs.show()
-    
-    # print(r.get_reactions_by_product())
+    r.add_bg_set_entity("e")
+    r.add_bg_set_entity("inc")    
+    r.add_reaction_inc("e",[("e",1),("inc",1)],[("e",N)])
+    # for i in range(1,N):
+        # r.add_reaction([("e",i),("inc",1)],[("e",N)],[("e",i+1)])
+    # r.show()
     
     c = ContextAutomatonWithConcentrations(r)
-    c.add_init_state("1")
-    c.add_transition("1", [("c",1)], "1")
-    c.add_transition("1", [("d",2)], "1")
-    # c.show()
+    c.add_init_state("init")
+    c.add_state("working")
+    c.add_transition("init", [("e",1),("inc",1)], "working")
+    c.add_transition("working", [("inc",1)], "working")
+     # c.show()
 
-    # rc = ReactionSystemWithAutomaton(r,c)
-    #
-    # smt = SmtCheckerRSC(rc)
-    #
-    # smt.check_reachability([('c',1)],print_time=True,max_level=20)
+    rc = ReactionSystemWithAutomaton(r,c)
+    
+    rc.show()
+    
+    smt_rsc = SmtCheckerRSC(rc)    
+    smt_rsc.check_reachability([('e',N)],print_time=True,max_level=N)
+
+    # orc = rc.get_ordinary_reaction_system_with_automaton()
+    # orc.show()
+    # smt_tr_rs = SmtCheckerPGRS(orc)
+    # smt_tr_rs.check_reachability(['e_' + str(N)],print_time=True)
+
+    print("Reaction System with Concentrations:", smt_rsc.get_verification_time())
+    # print("Reaction System from translating RSC:", smt_tr_rs.get_verification_time())
 
 if __name__ == "__main__":
     try:

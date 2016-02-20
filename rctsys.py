@@ -36,7 +36,11 @@ class ContextAutomaton(object):
             self._states.append(name)
         else:
             print("\'%s\' already added. skipping..." % (name,))
-            
+    
+    def add_states(self, states_set):
+        for st in states_set:
+            self.add_state(st)
+    
     def add_init_state(self, name):
         self.add_state(name)
         self._init_state = self._states.index(name)
@@ -58,6 +62,9 @@ class ContextAutomaton(object):
         except ValueError:
             print("Undefined context automaton state: " + repr(name))
             exit(1)
+
+    def get_state_name(self, state_id):
+        return self._states[state_id]
 
     def get_init_state_id(self):
         return self._init_state
@@ -166,6 +173,26 @@ class ContextAutomatonWithConcentrations(ContextAutomaton):
         
         self._transitions.append((self.get_state_id(src),new_context_set,self.get_state_id(dst)))
 
+    def get_automaton_with_flat_contexts(self, ordinary_reaction_system):
+        
+        ca = ContextAutomaton(ordinary_reaction_system)
+        ca._states = self._states
+        ca._init_state = self._init_state
+        
+        for src,ctx,dst in self._transitions:
+            
+            new_ctx = set()
+            
+            for ent,conc in ctx:
+                for i in range(1,conc+1):
+                    n = self._reaction_system.get_entity_name(ent) + "_" + str(i)
+                    ca._reaction_system.ensure_bg_set_entity(n)
+                    new_ctx.add(n)
+            
+            ca.add_transition(ca.get_state_name(src),new_ctx,ca.get_state_name(dst))
+            
+        return ca 
+
 class ReactionSystem(object):
 
     def __init__(self):
@@ -219,13 +246,11 @@ class ReactionSystem(object):
         """Returns the string corresponding to the entity"""
         return self.background_set[entity_id]
 
-
     def add_reaction(self, R, I, P):
         """Adds a reaction"""
         
         if R == [] or P == []:
-            print("No reactants of products defined")
-            raise
+            raise RuntimeError("No reactants of products defined")
 
         reactants = []
         for entity in R:
@@ -348,6 +373,7 @@ class ReactionSystemWithConcentrations(ReactionSystem):
     def __init__(self):
 
         self.reactions = []
+        self.meta_reactions = dict()
         self.background_set = []
 
         self.context_entities = []
@@ -380,13 +406,12 @@ class ReactionSystemWithConcentrations(ReactionSystem):
         if elem[1] < 1:
             raise RuntimeError("Unexpected concentration level in state: " + str(elem))
 
-    def add_reaction(self, R, I, P):
-        """Adds a reaction"""
-        
-        if R == [] or P == []:
-            print("No reactants of products defined")
-            raise
+    def process_rip(self, R, I, P):
+        """Chcecks concentration levels and converts entities names into their ids"""
 
+        if R == []:
+            raise RuntimeError("No reactants defined")
+        
         reactants = []
         for r in R:
             self.is_valid_entity_with_concentration(r)
@@ -395,7 +420,6 @@ class ReactionSystemWithConcentrations(ReactionSystem):
             reactants.append((self.get_entity_id(entity),level))
             if self.max_concentration < level:
                 self.max_concentration = level
-            
         inhibitors = []
         for i in I:
             self.is_valid_entity_with_concentration(i)
@@ -404,16 +428,31 @@ class ReactionSystemWithConcentrations(ReactionSystem):
             inhibitors.append((self.get_entity_id(entity),level))
             if self.max_concentration < level:
                 self.max_concentration = level
-
         products = []
         for p in P:
             self.is_valid_entity_with_concentration(p)
             self.has_non_zero_concentration(p)
             entity,level = p
             products.append((self.get_entity_id(entity),level))
+        
+        return reactants,inhibitors,products
 
-        self.reactions.append((reactants, inhibitors, products))
+    def add_reaction(self, R, I, P):
+        """Adds a reaction"""
+        
+        if P == []:
+            raise RuntimeError("No products defined")
+        reaction = self.process_rip(R,I,P)
+        self.reactions.append(reaction)
 
+    def add_reaction_inc(self, incr_entity, R, I):
+        """Adds a macro/meta reaction for increasing the value of incr_entity"""
+
+        reactants,inhibitors,products = self.process_rip(R,I,[])
+        incr_entity_id = self.get_entity_id(incr_entity)
+        self.meta_reactions.setdefault(incr_entity_id,[])
+        self.meta_reactions[incr_entity_id].append(("inc", reactants, inhibitors))
+            
     def set_context_entities(self, entities):
         raise NotImplementedError
 
@@ -441,9 +480,16 @@ class ReactionSystemWithConcentrations(ReactionSystem):
     def show_background_set(self):
         print("[*] Background set: {" + self.entities_names_set_to_str(self.background_set) + "}")
 
+    def show_meta_reactions(self):
+        print("[*] Meta reactions:")
+        for incr_ent,reactions in self.meta_reactions.items():
+            for r_type,reactants,inhibitors in reactions:
+                print("\t - [ Type=" + repr(r_type) + " Parameter=( " + self.get_entity_name(incr_ent) + " ) ] -- ( R={" + self.state_to_str(reactants) + "}, \tI={" + self.state_to_str(inhibitors) + "} )")
+
     def show(self, soft=False):
         self.show_background_set()
         self.show_reactions(soft)
+        self.show_meta_reactions()
         
     def get_reactions_by_product(self):
         """Sorts reactions by their products and returns a dictionary of products"""
@@ -524,6 +570,17 @@ class ReactionSystemWithAutomaton(object):
 
     def sanity_check(self):
         pass
+        
+    def get_ordinary_reaction_system_with_automaton(self):
+        
+        if not self.is_with_concentrations():
+            raise RuntimeError("Not RS/CA with concentrations")
+        
+        ors = self.rs.get_reaction_system()
+        oca = self.ca.get_automaton_with_flat_contexts(ors)
+        
+        return ReactionSystemWithAutomaton(ors, oca)
+        
 
 # class ReactionSystemWithConcentrationWithAutomaton(ReactionSystemWithAutomaton):
 #
