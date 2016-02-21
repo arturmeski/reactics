@@ -111,22 +111,26 @@ class SmtCheckerRSC(object):
         # -------- meta reactions ---------------------------------------------------
         
         for r_type,reactants,inhibitors in meta_reactions:
-            enc_reactants   = True
-            enc_inhibitors  = True
             
-            for reactant,concentration in reactants:
-                enc_reactants = simplify(And(enc_reactants, 
-                                            Or(self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
-            for inhibitor,concentration in inhibitors:
-                enc_inhibitors = simplify(And(enc_inhibitors, 
-                                             And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
-
-            enc_products = self.v[level+1][prod_entity] == self.v[level][prod_entity]+1
-
-            enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
-
-            enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
+            if r_type == "inc":
+                enc_reactants   = True
+                enc_inhibitors  = True
             
+                for reactant,concentration in reactants:
+                    enc_reactants = simplify(And(enc_reactants, 
+                                                Or(self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
+                for inhibitor,concentration in inhibitors:
+                    enc_inhibitors = simplify(And(enc_inhibitors, 
+                                                 And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
+
+                enc_products = self.v[level+1][prod_entity] == self.v[level][prod_entity]+1
+                enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
+                enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
+                
+            else:
+                raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
+            
+        
         # -----------------------------------------------------------------------------
             
         enc_when_to_produce_zero_conc = simplify(And(Not(enc_enabledness), self.v[level+1][prod_entity] == 0))
@@ -160,7 +164,6 @@ class SmtCheckerRSC(object):
 
         for prod_entity in chain(reactions, meta_reactions):
             unused_entities.remove(prod_entity)
-    
             enc_trans = simplify(And(enc_trans, self.enc_produced_concentration(level, prod_entity)))
 
         for prod_entity in unused_entities:
@@ -198,20 +201,22 @@ class SmtCheckerRSC(object):
     def enc_exact_state(self, level, state):
         """Encodes the state at the given level with the exact concentration values"""
 
-        enc = True
-        used_entities_ids = self.rs.get_state_ids(state)
-        
-        for ent,conc in state:
-            e_id = self.rs.get_entity_id(ent)
-            enc = And(enc, self.v[level][e_id] == conc)
+        raise RuntimeError("Should not be used with RSC")
 
-        not_in_state = set(range(len(self.rs.background_set)))
-        not_in_state = not_in_state.difference(set(used_entities_ids))
-
-        for entity in not_in_state:
-            enc = And(enc, self.v[level][entity] == 0)
-
-        return simplify(enc)
+        # enc = True
+        # used_entities_ids = self.rs.get_state_ids(state)
+        #
+        # for ent,conc in state:
+        #     e_id = self.rs.get_entity_id(ent)
+        #     enc = And(enc, self.v[level][e_id] == conc)
+        #
+        # not_in_state = set(range(len(self.rs.background_set)))
+        # not_in_state = not_in_state.difference(set(used_entities_ids))
+        #
+        # for entity in not_in_state:
+        #     enc = And(enc, self.v[level][entity] == 0)
+        #
+        # return simplify(enc)
 
     def enc_min_state(self, level, state):
         """Encodes the state at the given level with the minimal required concentration levels"""
@@ -260,7 +265,7 @@ class SmtCheckerRSC(object):
                         print(" " + self.rs.get_entity_name(var_id) + "=" + var_rep, end="")
                 print(" }")
 
-    def check_reachability(self, state, exact_state=False, print_witness=True, 
+    def check_reachability(self, state, print_witness=True, 
             print_time=False, print_mem=False, max_level=100):
         """Main testing function"""
 
@@ -283,10 +288,7 @@ class SmtCheckerRSC(object):
             print("[i] Adding the reachability test...")       
             self.solver.push()
 
-            if exact_state:
-                self.solver.add(self.enc_exact_state(current_level,state))
-            else:
-                self.solver.add(self.enc_min_state(current_level,state))
+            self.solver.add(self.enc_min_state(current_level,state))
                 
             result = self.solver.check()
             if result == sat:

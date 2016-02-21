@@ -484,7 +484,11 @@ class ReactionSystemWithConcentrations(ReactionSystem):
         print("[*] Meta reactions:")
         for incr_ent,reactions in self.meta_reactions.items():
             for r_type,reactants,inhibitors in reactions:
-                print("\t - [ Type=" + repr(r_type) + " Parameter=( " + self.get_entity_name(incr_ent) + " ) ] -- ( R={" + self.state_to_str(reactants) + "}, \tI={" + self.state_to_str(inhibitors) + "} )")
+                if r_type == "inc":
+                    print("\t - [ Type=" + repr(r_type) + " Parameter=( " + self.get_entity_name(incr_ent) + \
+                        " ) ] -- ( R={" + self.state_to_str(reactants) + "}, \tI={" + self.state_to_str(inhibitors) + "} )")
+                else:
+                    raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
 
     def show(self, soft=False):
         self.show_background_set()
@@ -547,6 +551,42 @@ class ReactionSystemWithConcentrations(ReactionSystem):
                     new_products.append(n)
                             
             rs.add_reaction(new_reactants,new_inhibitors,new_products)
+        
+        for incr_ent,reactions in self.meta_reactions.items():
+            for r_type,reactants,inhibitors in reactions:
+                if r_type == "inc":
+                                        
+                    incr_ent_name = self.get_entity_name(incr_ent)
+                                        
+                    new_reactants = []
+                    new_inhibitors = []
+                        
+                    for ent,conc in reactants:
+                        n = self.get_entity_name(ent) + "_" + str(conc)
+                        rs.ensure_bg_set_entity(n)
+                        new_reactants.append(n)
+                        
+                    for ent,conc in inhibitors:
+                        n = self.get_entity_name(ent) + "_" + str(conc)
+                        rs.ensure_bg_set_entity(n)
+                        new_inhibitors.append(n)
+                            
+                    pre_conc = incr_ent_name + "_" + str(1)
+                    rs.ensure_bg_set_entity(pre_conc)
+                    for i in range(1,self.max_concentration):
+                        succ_conc = incr_ent_name + "_" + str(i+1)
+                        rs.ensure_bg_set_entity(succ_conc)
+                        new_products = []
+                        for j in range(1,i+1):
+                            new_p = incr_ent_name + "_" + str(j)
+                            rs.ensure_bg_set_entity(new_p)
+                            new_products.append(new_p)
+                        new_products.append(succ_conc)
+                        rs.add_reaction(new_reactants + [pre_conc], new_inhibitors, new_products)
+                        pre_conc = succ_conc
+                        
+                else:
+                    raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
         
         return rs
     

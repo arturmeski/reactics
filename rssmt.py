@@ -18,7 +18,7 @@ import resource
 
 profiling = False
 
-version = "0.002"
+version = "2016/02/21/00"
 rsmc_banner = """
  *** Reaction Systems SMT-Based Model Checking
 
@@ -89,13 +89,13 @@ def main():
     smt_rsc = SmtCheckerRSC(rc)    
     smt_rsc.check_reachability([('e',N)],print_time=True,max_level=N)
 
-    # orc = rc.get_ordinary_reaction_system_with_automaton()
-    # orc.show()
-    # smt_tr_rs = SmtCheckerPGRS(orc)
-    # smt_tr_rs.check_reachability(['e_' + str(N)],print_time=True)
+    orc = rc.get_ordinary_reaction_system_with_automaton()
+    orc.show()
+    smt_tr_rs = SmtCheckerPGRS(orc)
+    smt_tr_rs.check_reachability(['e_' + str(N)],print_time=True)
 
     print("Reaction System with Concentrations:", smt_rsc.get_verification_time())
-    # print("Reaction System from translating RSC:", smt_tr_rs.get_verification_time())
+    print("Reaction System from translating RSC:", smt_tr_rs.get_verification_time())
 
 if __name__ == "__main__":
     try:
