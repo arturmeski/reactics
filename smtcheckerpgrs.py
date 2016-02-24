@@ -5,6 +5,7 @@ SMT-based Model Checking Module for RS with Context Automaton
 from z3 import *
 from time import time
 from sys import stdout
+import resource
 
 class SmtCheckerPGRS(object):
 
@@ -202,11 +203,12 @@ class SmtCheckerPGRS(object):
                         print(" " + self.rs.get_entity_name(var_id), end="")
                 print(" }")
 
-    def check_reachability(self, state, exact_state=False, print_witness=True, print_time=False):
+    def check_reachability(self, state, exact_state=False, print_witness=True, print_time=True, print_mem=True):
         """Main testing function"""
 
         if print_time:
-            start = time()
+            # start = time()
+            start = resource.getrusage(resource.RUSAGE_SELF).ru_utime
 
         self.prepare_all_variables()
         self.solver.add(self.enc_init_state(0))
@@ -242,10 +244,14 @@ class SmtCheckerPGRS(object):
             current_level += 1
 
         if print_time:
-            stop = time()
+            # stop = time()
+            stop = resource.getrusage(resource.RUSAGE_SELF).ru_utime
             self.verification_time = stop-start
             print()
             print("[i] Time: " + repr(self.verification_time))
+            
+        if print_mem:
+            print("[i] Memory: " + repr(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)) + " MB")
             
     def get_verification_time(self):
         return self.verification_time

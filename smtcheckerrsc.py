@@ -6,6 +6,10 @@ from z3 import *
 from time import time
 from sys import stdout
 from itertools import chain
+import resource
+
+# def simplify(x):
+#     return x
 
 class SmtCheckerRSC(object):
 
@@ -111,26 +115,31 @@ class SmtCheckerRSC(object):
         # -------- meta reactions ---------------------------------------------------
         
         for r_type,reactants,inhibitors in meta_reactions:
+
+            enc_reactants   = True
+            enc_inhibitors  = True
+        
+            for reactant,concentration in reactants:
+                enc_reactants = simplify(And(enc_reactants, 
+                                            Or(self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
+            for inhibitor,concentration in inhibitors:
+                enc_inhibitors = simplify(And(enc_inhibitors, 
+                                             And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
             
             if r_type == "inc":
-                enc_reactants   = True
-                enc_inhibitors  = True
-            
-                for reactant,concentration in reactants:
-                    enc_reactants = simplify(And(enc_reactants, 
-                                                Or(self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
-                for inhibitor,concentration in inhibitors:
-                    enc_inhibitors = simplify(And(enc_inhibitors, 
-                                                 And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
 
                 enc_products = self.v[level+1][prod_entity] == self.v[level][prod_entity]+1
-                enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
-                enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
+            
+            elif r_type == "dec":
+
+                enc_products = self.v[level+1][prod_entity] == self.v[level][prod_entity]-1
                 
             else:
                 raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
-            
-        
+
+            enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
+            enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
+
         # -----------------------------------------------------------------------------
             
         enc_when_to_produce_zero_conc = simplify(And(Not(enc_enabledness), self.v[level+1][prod_entity] == 0))
@@ -155,7 +164,7 @@ class SmtCheckerRSC(object):
     def enc_rs_trans(self, level):
         """Encodes the transition relation"""
 
-        unused_entities = list(range(len(self.rs.background_set)))
+        unused_entities = set(range(len(self.rs.background_set)))
 
         enc_trans = True
 
@@ -163,7 +172,7 @@ class SmtCheckerRSC(object):
         meta_reactions = self.rs.meta_reactions
 
         for prod_entity in chain(reactions, meta_reactions):
-            unused_entities.remove(prod_entity)
+            unused_entities.discard(prod_entity)
             enc_trans = simplify(And(enc_trans, self.enc_produced_concentration(level, prod_entity)))
 
         for prod_entity in unused_entities:
@@ -266,11 +275,12 @@ class SmtCheckerRSC(object):
                 print(" }")
 
     def check_reachability(self, state, print_witness=True, 
-            print_time=False, print_mem=False, max_level=100):
+            print_time=True, print_mem=True, max_level=100):
         """Main testing function"""
 
         if print_time:
-            start = time()
+            # start = time()
+            start = resource.getrusage(resource.RUSAGE_SELF).ru_utime
 
         self.prepare_all_variables()
         self.solver.add(self.enc_init_state(0))
@@ -310,11 +320,67 @@ class SmtCheckerRSC(object):
                 break
 
         if print_time:
-            stop = time()
+            # stop = time()
+            stop = resource.getrusage(resource.RUSAGE_SELF).ru_utime
             self.verification_time = stop-start
             print()
             print("[i] Time: " + repr(self.verification_time))
             
+        if print_mem:
+            print("[i] Memory: " + repr(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)) + " MB")
+            
     def get_verification_time(self):
         return self.verification_time
     
+    def show_encoding(self, state, print_witness=True, 
+            print_time=False, print_mem=False, max_level=100):
+        """Encoding debug function"""
+
+        self.prepare_all_variables()
+        init_s = self.enc_init_state(0)
+        print(init_s)
+        self.solver.add(init_s)
+        current_level = 0
+
+        self.prepare_all_variables()
+        
+        while True:
+            self.prepare_all_variables()
+
+            print("-----[ Working at level=" + str(current_level) + " ]-----")
+            stdout.flush()
+
+            # reachability test:
+            print("[i] Adding the reachability test...")       
+            self.solver.push()
+
+            s = self.enc_min_state(current_level,state)
+            print(s)
+            self.solver.add(s)
+                
+            result = self.solver.check()
+            if result == sat:
+                print("\n[+] SAT at level=" + str(current_level))
+                if print_witness:
+                    self.decode_witness(current_level)
+                break
+            else:
+                self.solver.pop()
+
+            print("[i] Unrolling the transition relation")
+            t = self.enc_transition_relation(current_level)
+            print(t)
+            self.solver.add(t)
+
+            print("-----[ level=" + str(current_level) + " done ]")
+            current_level += 1
+
+            x=input("Next level? ")
+            x=x.lower()
+            if not (x == "y" or x == "yes"):
+                break
+
+            if current_level > max_level:
+                print("Stopping at level=" + str(max_level))
+                break
+

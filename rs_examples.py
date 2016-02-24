@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 
-from rctsys import ReactionSystem
-from rctsys import ReactionSystemWithAutomaton,ContextAutomaton
+from rctsys import ReactionSystem,ReactionSystemWithConcentrations,ContextAutomatonWithConcentrations,ReactionSystemWithAutomaton
 from distrib_rctsys import DistributedReactionSystem
+from smtchecker import SmtChecker
+from smtcheckerpgrs import SmtCheckerPGRS
+from smtcheckerdistribrs import SmtCheckerDistribRS
+from smtcheckerrsc import SmtCheckerRSC
+import sys
+import resource
 
 def toy_ex1():
 
@@ -261,3 +266,124 @@ def drs_mutex_property1(k):
     state.extend([[] for i in range(k)])
     
     return state
+
+def run_counter_exp():
+
+    if len(sys.argv) < 1+1:
+        print("provide N")
+        exit(1)
+    
+    N=int(sys.argv[1])
+
+    r = ReactionSystemWithConcentrations()
+
+    r.add_bg_set_entity("e")
+    r.add_bg_set_entity("inc")    
+    r.add_reaction_inc("e",[("e",1),("inc",1)],[("e",N)])
+    # for i in range(1,N):
+        # r.add_reaction([("e",i),("inc",1)],[("e",N)],[("e",i+1)])
+    # r.show()
+    
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("init")
+    c.add_state("working")
+    c.add_transition("init", [("e",1),("inc",1)], "working")
+    c.add_transition("working", [("inc",1)], "working")
+     # c.show()
+
+    rc = ReactionSystemWithAutomaton(r,c)
+    
+    rc.show()
+    
+    smt_rsc = SmtCheckerRSC(rc)    
+    smt_rsc.check_reachability([('e',N)],print_time=True,max_level=N)
+
+    orc = rc.get_ordinary_reaction_system_with_automaton()
+    orc.show()
+    smt_tr_rs = SmtCheckerPGRS(orc)
+    smt_tr_rs.check_reachability(['e_' + str(N)],print_time=True)
+
+    print("Reaction System with Concentrations:", smt_rsc.get_verification_time())
+    print("Reaction System from translating RSC:", smt_tr_rs.get_verification_time())
+
+def chain_reaction(print_system=False):
+    
+    if len(sys.argv) < 1+3:
+        print("provide N M B")
+        print(" B=1 - RSC")
+        print(" B=0 - Translated RSC into RS")
+        exit(1)
+
+    chainLen=int(sys.argv[1]) # chain length
+    maxConc=int(sys.argv[2]) # depth (max concentration)
+    verify_rsc=bool(int(sys.argv[3]))
+        
+    if chainLen < 1 or maxConc < 1:
+        print("be reasonable")
+        exit(1)
+    
+    r = ReactionSystemWithConcentrations()    
+    r.add_bg_set_entity("inc")
+    r.add_bg_set_entity("dec")
+    
+    for i in range(1,chainLen+1):
+        r.add_bg_set_entity("e_" + str(i))
+    
+    for i in range(1,chainLen+1):
+        ent = "e_" + str(i)
+        r.add_reaction_inc(ent, [(ent, 1),("inc",1)],[(ent,maxConc)])
+        if i < chainLen:
+            r.add_reaction([(ent,maxConc)],[],[("e_"+str(i+1),1)])
+
+    r.add_reaction([("e_" + str(chainLen),maxConc)],[("dec",1)],[("e_" + str(chainLen),maxConc)])
+        
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("init")
+    c.add_state("working")
+    c.add_transition("init", [("e_1",1),("inc",1)], "working")
+    c.add_transition("working", [("inc",1)], "working")
+
+    rc = ReactionSystemWithAutomaton(r,c)
+    
+    if print_system:
+        rc.show()
+    
+    if verify_rsc:
+        smt_rsc = SmtCheckerRSC(rc)
+        smt_rsc.check_reachability([('e_'+str(chainLen),maxConc)],max_level=maxConc*chainLen+10)
+        # smt_rsc.show_encoding([('e_'+str(1),1)],print_time=True,max_level=maxConc*chainLen+10)
+
+    if not verify_rsc:
+        orc = rc.get_ordinary_reaction_system_with_automaton()
+        if print_system:
+            orc.show()
+        smt_tr_rs = SmtCheckerPGRS(orc)
+        smt_tr_rs.check_reachability(['e_'+str(chainLen)+"_"+str(maxConc)])
+    
+    # print("Reaction System with Concentrations:", smt_rsc.get_verification_time())
+    # print("Reaction System from translating RSC:", smt_tr_rs.get_verification_time())
+    
+    filename=""
+    time=0
+    mem_usage=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)
+    if verify_rsc:
+        filename_t="bench_rsc_time.log"
+        filename_m="bench_rsc_mem.log"
+        time=smt_rsc.get_verification_time()
+    else:
+        filename_t="bench_tr_rs_time.log"
+        filename_m="bench_tr_rs_mem.log"
+        time=smt_tr_rs.get_verification_time()
+
+    f=open(filename_t, 'a')    
+    log_str="(" + str(chainLen) + "," + str(maxConc) + "," + str(time) + ")\n"
+    f.write(log_str)
+    f.close()
+    
+    f=open(filename_m, 'a')
+    log_str="(" + str(chainLen) + "," + str(maxConc) + "," + str(mem_usage) + ")\n"
+    f.write(log_str)
+    f.close()
+
+    
+
