@@ -8,8 +8,8 @@ from sys import stdout
 from itertools import chain
 import resource
 
-# def simplify(x):
-#     return x
+def simplify(x):
+    return x
 
 class SmtCheckerRSC(object):
 
@@ -114,26 +114,59 @@ class SmtCheckerRSC(object):
             
         # -------- meta reactions ---------------------------------------------------
         
-        for r_type,reactants,inhibitors in meta_reactions:
+        for r_type,command_entity,reactants,inhibitors in meta_reactions:
+
+            # command entity is e.g. 'inc' for incrementation operation
+            # (inc,W) gives us the value W by which the given entity's value should be incremented
 
             enc_reactants   = True
             enc_inhibitors  = True
         
             for reactant,concentration in reactants:
-                enc_reactants = simplify(And(enc_reactants, 
+                enc_reactants = simplify(And(enc_reactants,
                                             Or(self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
+
+            # command entity needs to be present (with concentration level > 0) in order to perform the operation
+            enc_reactants = simplify(And(enc_reactants,
+                                        Or(self.v[level][command_entity] > 0, self.v_ctx[level][command_entity] > 0)))
+
             for inhibitor,concentration in inhibitors:
                 enc_inhibitors = simplify(And(enc_inhibitors, 
                                              And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
             
-            if r_type == "inc":
-
-                enc_products = self.v[level+1][prod_entity] == self.v[level][prod_entity]+1
+            # if r_type == "inc":
+            #     # depending on if the value of the command entity is greater in the context or in the current RS state
+            #     # we choose to increment by the greater value from v or v_ctx (this is because we take the max value).
+            #     enc_products = Or(
+            #             And(self.v_ctx[level][command_entity] >= self.v[level][command_entity],
+            #                 self.v[level+1][prod_entity] == If(self.v[level][command_entity]>self.v_ctx[level][command_entity],self.v[level][command_entity],self.v_ctx[level][command_entity])+self.v_ctx[level][command_entity]),
+            #             And(self.v[level][command_entity] > self.v_ctx[level][command_entity],
+            #                 self.v[level+1][prod_entity] == If(self.v[level][prod_entity]>self.v_ctx[level][command_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity])+self.v[level][command_entity]))
+            #
+            # elif r_type == "dec":
+            #     # same happens here, but we decrement with the maximum value encoded at v or v_ctx.
+            #     enc_products = Or(
+            #             And(self.v_ctx[level][command_entity] >= self.v[level][command_entity],
+            #                 self.v[level+1][prod_entity] == If(self.v[level][prod_entity]>self.v_ctx[level][command_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity])-self.v_ctx[level][command_entity]),
+            #             And(self.v[level][command_entity] > self.v_ctx[level][command_entity],
+            #                 self.v[level+1][prod_entity] == If(self.v[level][prod_entity]>self.v_ctx[level][command_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity])-self.v[level][command_entity]))
+            #
+            # if r_type == "inc":
+            #     enc_products = self.v[level+1][prod_entity] == self.v[level][prod_entity]+1
+            #
+            # elif r_type == "dec":
+            #     enc_products = self.v[level+1][prod_entity] == self.v[level][prod_entity]-1
             
-            elif r_type == "dec":
+            if r_type == "inc":
+                enc_products = self.v[level+1][prod_entity] == \
+                    If(self.v[level][prod_entity]>self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]) + \
+                    If(self.v[level][command_entity]>self.v_ctx[level][command_entity],self.v[level][command_entity],self.v_ctx[level][command_entity])
 
-                enc_products = self.v[level+1][prod_entity] == self.v[level][prod_entity]-1
-                
+            elif r_type == "dec":
+                enc_products = self.v[level+1][prod_entity] == \
+                    If(self.v[level][prod_entity]>self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]) - \
+                    If(self.v[level][command_entity]>self.v_ctx[level][command_entity],self.v[level][command_entity],self.v_ctx[level][command_entity])
+
             else:
                 raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
 
@@ -355,7 +388,8 @@ class SmtCheckerRSC(object):
             self.solver.push()
 
             s = self.enc_min_state(current_level,state)
-            print(s)
+            print("Test: ", s)
+            
             self.solver.add(s)
                 
             result = self.solver.check()

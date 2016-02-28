@@ -323,15 +323,16 @@ def chain_reaction(print_system=False):
         exit(1)
     
     r = ReactionSystemWithConcentrations()    
-    r.add_bg_set_entity("inc")
-    r.add_bg_set_entity("dec")
+    r.add_bg_set_entity(("inc",1))
+    r.add_bg_set_entity(("dec",1))
     
     for i in range(1,chainLen+1):
         r.add_bg_set_entity("e_" + str(i))
     
     for i in range(1,chainLen+1):
         ent = "e_" + str(i)
-        r.add_reaction_inc(ent, [(ent, 1),("inc",1)],[(ent,maxConc)])
+        r.add_reaction_inc(ent, "inc", [(ent, 1)],[(ent,maxConc)])
+        r.add_reaction_dec(ent, "dec", [(ent, 1)],[])
         if i < chainLen:
             r.add_reaction([(ent,maxConc)],[],[("e_"+str(i+1),1)])
 
@@ -350,15 +351,17 @@ def chain_reaction(print_system=False):
     
     if verify_rsc:
         smt_rsc = SmtCheckerRSC(rc)
-        smt_rsc.check_reachability([('e_'+str(chainLen),maxConc)],max_level=maxConc*chainLen+10)
-        # smt_rsc.show_encoding([('e_'+str(1),1)],print_time=True,max_level=maxConc*chainLen+10)
+        prop = [('e_'+str(chainLen),maxConc)]
+        smt_rsc.check_reachability(prop,max_level=maxConc*chainLen+10)
+        # smt_rsc.show_encoding(prop,print_time=True,max_level=maxConc*chainLen+10)
 
-    if not verify_rsc:
+    else:
         orc = rc.get_ordinary_reaction_system_with_automaton()
         if print_system:
+            print("\nTranslated:")
             orc.show()
         smt_tr_rs = SmtCheckerPGRS(orc)
-        smt_tr_rs.check_reachability(['e_'+str(chainLen)+"_"+str(maxConc)])
+        smt_tr_rs.check_reachability(['e_'+str(chainLen)+"#"+str(maxConc)])
     
     # print("Reaction System with Concentrations:", smt_rsc.get_verification_time())
     # print("Reaction System from translating RSC:", smt_tr_rs.get_verification_time())

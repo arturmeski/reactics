@@ -185,7 +185,7 @@ class ContextAutomatonWithConcentrations(ContextAutomaton):
             
             for ent,conc in ctx:
                 for i in range(1,conc+1):
-                    n = self._reaction_system.get_entity_name(ent) + "_" + str(i)
+                    n = self._reaction_system.get_entity_name(ent) + "#" + str(i)
                     ca._reaction_system.ensure_bg_set_entity(n)
                     new_ctx.add(n)
             
@@ -207,19 +207,21 @@ class ReactionSystem(object):
         self.init_contexts = []
         self.context_entities = []
 
-    def add_bg_set_entity(self, name):
-        if not self.is_in_background_set(name):
-            self.background_set.append(name)
-        else:
+    def assume_not_in_bgset(self, name):
+        if self.is_in_background_set(name):
             raise RuntimeError("The entity " + name + " is already on the list")
+            
+    def add_bg_set_entity(self, name):
+        self.assume_not_in_bgset(name)
+        self.background_set.append(name)
     
     def ensure_bg_set_entity(self, name):
         if not self.is_in_background_set(name):
             self.background_set.append(name)
 
-    def add_bg_set_entities(self, names):
-        for name in names:
-            self.add_bg_set_entity(name)
+    def add_bg_set_entities(self, elements):
+        for e in elements:
+            self.add_bg_set_entity(e)
 
     def is_in_background_set(self, entity):
         """Checks if the given name is valid wrt the background set="""
@@ -250,7 +252,7 @@ class ReactionSystem(object):
         """Adds a reaction"""
         
         if R == [] or P == []:
-            raise RuntimeError("No reactants of products defined")
+            raise RuntimeError("No reactants or products defined")
 
         reactants = []
         for entity in R:
@@ -380,6 +382,28 @@ class ReactionSystemWithConcentrations(ReactionSystem):
         self.reactions_by_prod = None
 
         self.max_concentration = 0
+        self.max_conc_per_ent = dict()
+
+    def add_bg_set_entity(self, e):
+        name = ""
+        def_max_conc = -1
+        if type(e) is tuple and len(e) == 2:
+            name,def_max_conc = e
+        elif type(e) is str:
+            name = e
+        else:
+            raise RuntimeError("Bad entity type when adding background set element")
+
+        self.assume_not_in_bgset(name)
+        self.background_set.append(name)
+
+        if def_max_conc != -1:
+            ent_id = self.get_entity_id(name)
+            self.max_conc_per_ent.setdefault(ent_id, 0)
+            if self.max_conc_per_ent[ent_id] < def_max_conc:
+                self.max_conc_per_ent[ent_id] = def_max_conc
+            if self.max_concentration < def_max_conc:
+                self.max_concentration = def_max_conc
 
     def is_valid_entity_with_concentration(self, e):
         """Sanity check for entities with concentration"""
@@ -406,7 +430,7 @@ class ReactionSystemWithConcentrations(ReactionSystem):
         if elem[1] < 1:
             raise RuntimeError("Unexpected concentration level in state: " + str(elem))
 
-    def process_rip(self, R, I, P):
+    def check_rip(self, R, I, P):
         """Chcecks concentration levels and converts entities names into their ids"""
 
         if R == []:
@@ -442,24 +466,24 @@ class ReactionSystemWithConcentrations(ReactionSystem):
         
         if P == []:
             raise RuntimeError("No products defined")
-        reaction = self.process_rip(R,I,P)
+        reaction = self.check_rip(R,I,P)
         self.reactions.append(reaction)
 
-    def add_reaction_inc(self, incr_entity, R, I):
+    def add_reaction_inc(self, incr_entity, incrementer, R, I):
         """Adds a macro/meta reaction for increasing the value of incr_entity"""
 
-        reactants,inhibitors,products = self.process_rip(R,I,[])
+        reactants,inhibitors,products = self.check_rip(R,I,[])
         incr_entity_id = self.get_entity_id(incr_entity)
         self.meta_reactions.setdefault(incr_entity_id,[])
-        self.meta_reactions[incr_entity_id].append(("inc", reactants, inhibitors))
+        self.meta_reactions[incr_entity_id].append(("inc", self.get_entity_id(incrementer), reactants, inhibitors))
 
-    def add_reaction_dec(self, incr_entity, R, I):
+    def add_reaction_dec(self, decr_entity, decrementer, R, I):
         """Adds a macro/meta reaction for decreasing the value of incr_entity"""
 
-        reactants,inhibitors,products = self.process_rip(R,I,[])
+        reactants,inhibitors,products = self.check_rip(R,I,[])
         decr_entity_id = self.get_entity_id(decr_entity)
         self.meta_reactions.setdefault(decr_entity_id,[])
-        self.meta_reactions[decr_entity_id].append(("dec", reactants, inhibitors))
+        self.meta_reactions[decr_entity_id].append(("dec", self.get_entity_id(decrementer), reactants, inhibitors))
                     
     def set_context_entities(self, entities):
         raise NotImplementedError
@@ -491,10 +515,10 @@ class ReactionSystemWithConcentrations(ReactionSystem):
     def show_meta_reactions(self):
         print("[*] Meta reactions:")
         for param_ent,reactions in self.meta_reactions.items():
-            for r_type,reactants,inhibitors in reactions:
+            for r_type,command,reactants,inhibitors in reactions:
                 if r_type == "inc" or r_type == "dec":
-                    print("\t - [ Type=" + repr(r_type) + " Parameter=( " + self.get_entity_name(param_ent) + \
-                        " ) ] -- ( R={" + self.state_to_str(reactants) + "}, \tI={" + self.state_to_str(inhibitors) + "} )")
+                    print("\t - [ Type=" + repr(r_type) + " Operand=( " + self.get_entity_name(param_ent) + \
+                        " ) Command=( " + self.get_entity_name(command) + " ) ] -- ( R={" + self.state_to_str(reactants) + "}, \tI={" + self.state_to_str(inhibitors) + "} )")
                 else:
                     raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
 
@@ -543,72 +567,87 @@ class ReactionSystemWithConcentrations(ReactionSystem):
             new_products = []
 
             for ent,conc in reactants:
-                n = self.get_entity_name(ent) + "_" + str(conc)
+                n = self.get_entity_name(ent) + "#" + str(conc)
                 rs.ensure_bg_set_entity(n)
                 new_reactants.append(n)
                 
             for ent,conc in inhibitors:
-                n = self.get_entity_name(ent) + "_" + str(conc)
+                n = self.get_entity_name(ent) + "#" + str(conc)
                 rs.ensure_bg_set_entity(n)
                 new_inhibitors.append(n)
 
             for ent,conc in products:
                 for i in range(1,conc+1):
-                    n = self.get_entity_name(ent) + "_" + str(i)
+                    n = self.get_entity_name(ent) + "#" + str(i)
                     rs.ensure_bg_set_entity(n)
                     new_products.append(n)
                             
             rs.add_reaction(new_reactants,new_inhibitors,new_products)
         
         for param_ent,reactions in self.meta_reactions.items():
-            for r_type,reactants,inhibitors in reactions:
+            for r_type,command,reactants,inhibitors in reactions:
                 
                 param_ent_name = self.get_entity_name(param_ent)
                                     
                 new_reactants = []
                 new_inhibitors = []
-                    
+                                                    
                 for ent,conc in reactants:
-                    n = self.get_entity_name(ent) + "_" + str(conc)
+                    n = self.get_entity_name(ent) + "#" + str(conc)
                     rs.ensure_bg_set_entity(n)
                     new_reactants.append(n)
-                    
+                
                 for ent,conc in inhibitors:
-                    n = self.get_entity_name(ent) + "_" + str(conc)
+                    n = self.get_entity_name(ent) + "#" + str(conc)
                     rs.ensure_bg_set_entity(n)
                     new_inhibitors.append(n)
-                
-                if r_type == "inc":
-                    
-                    # pre_conc  -- predecessor concentration
-                    # succ_conc -- successor concentration concentration
-                                                    
-                    for i in range(1,self.max_concentration):
-                        pre_conc = param_ent_name + "_" + str(i)
-                        rs.ensure_bg_set_entity(pre_conc)
-                        new_products = []
-                        succ_value = i+1
-                        for j in range(1,succ_value+1):
-                            new_p = param_ent_name + "_" + str(j)
-                            rs.ensure_bg_set_entity(new_p)
-                            new_products.append(new_p)
-                        rs.add_reaction(new_reactants + [pre_conc], new_inhibitors, new_products)
 
-                elif r_type == "dec":
-
-                    for i in range(1,self.max_concentration):
-                        pre_conc = param_ent_name + "_" + str(i+1)
-                        rs.ensure_bg_set_entity(pre_conc)
-                        new_products = []
-                        succ_value = i
-                        for j in range(1,succ_value+1):
-                            new_p = param_ent_name + "_" + str(j)
-                            rs.ensure_bg_set_entity(new_p)
-                            new_products.append(new_p)
-                        rs.add_reaction(new_reactants + [pre_conc], new_inhibitors, new_products)
-                    
+                max_cmd_c = self.max_concentration
+                if command in self.max_conc_per_ent:
+                    max_cmd_c = self.max_conc_per_ent[command]
                 else:
-                    raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
+                    print("WARNING:\n\tThere is no maximal concentration level defined for " + self.get_entity_name(command))
+                    print("\tThis is a very bad idea -- expect degraded performance\n")
+                    
+                for l in range(1,max_cmd_c+1):
+
+                    cmd_ent = self.get_entity_name(command) + "#" + str(l)
+                    rs.ensure_bg_set_entity(cmd_ent)
+                
+                    if r_type == "inc":
+                    
+                        # pre_conc  -- predecessor concentration
+                        # succ_conc -- successor concentration concentration
+                                        
+                        for i in range(1,self.max_concentration):
+                            pre_conc = param_ent_name + "#" + str(i)
+                            rs.ensure_bg_set_entity(pre_conc)
+                            new_products = []
+                            succ_value = i+l
+                            for j in range(1,succ_value+1):
+                                if j > self.max_concentration: break
+                                new_p = param_ent_name + "#" + str(j)
+                                rs.ensure_bg_set_entity(new_p)
+                                new_products.append(new_p)
+                            if new_products != []:
+                                rs.add_reaction(set(new_reactants + [pre_conc,cmd_ent]), set(new_inhibitors), set(new_products))
+
+                    elif r_type == "dec":
+                        for i in range(1,self.max_concentration+1):
+                            pre_conc = param_ent_name + "#" + str(i)
+                            rs.ensure_bg_set_entity(pre_conc)
+                            new_products = []
+                            succ_value = i-l
+                            for j in range(1,succ_value+1):
+                                if j > self.max_concentration: break
+                                new_p = param_ent_name + "#" + str(j)
+                                rs.ensure_bg_set_entity(new_p)
+                                new_products.append(new_p)
+                            if new_products != []:
+                                rs.add_reaction(set(new_reactants + [pre_conc,cmd_ent]), set(new_inhibitors), set(new_products))
+                    
+                    else:
+                        raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
         
         return rs
     
