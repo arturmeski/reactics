@@ -388,5 +388,34 @@ def chain_reaction(print_system=False):
     f.write(log_str)
     f.close()
 
+def blood_glucose_regulation():
     
+    r = ReactionSystemWithConcentrations()    
+    r.add_bg_set_entity(("inc_insulin",1))
+    r.add_bg_set_entity(("dec_insulin",1))
+    r.add_bg_set_entity(("inc_glycemia",1))
+    r.add_bg_set_entities(("inc_"))
+    
+    r.add_bg_set_entities([(sugar,1),(aspartame,1),(glycemia,3),(glucagon,1),(insulin,2)])
+    
+    # r.add_reaction([],[],[])
+    r.add_reaction([(sugar,1)],[],[(inc_insulin,1),(inc_glycemia,1)])
+    r.add_reaction([],[],[])
+    r.add_reaction([],[],[])
+    
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("init")
+    c.add_state("working")
+    c.add_transition("init", [("e_1",1),("inc",1)], "working")
+    c.add_transition("working", [("inc",1)], "working")
 
+    rc = ReactionSystemWithAutomaton(r,c)
+    
+    if print_system:
+        rc.show()
+    
+    # if verify_rsc:
+    #     smt_rsc = SmtCheckerRSC(rc)
+    #     prop = [('e_'+str(chainLen),maxConc)]
+    #     smt_rsc.check_reachability(prop,max_level=maxConc*chainLen+10)
+    #     # smt_rsc.show_encoding(prop,print_time=True,max_level=maxConc*chainLen+10)
