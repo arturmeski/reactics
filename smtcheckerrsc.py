@@ -8,8 +8,8 @@ from sys import stdout
 from itertools import chain
 import resource
 
-def simplify(x):
-    return x
+# def simplify(x):
+#     return x
 
 class SmtCheckerRSC(object):
 
@@ -158,14 +158,14 @@ class SmtCheckerRSC(object):
             #     enc_products = self.v[level+1][prod_entity] == self.v[level][prod_entity]-1
             
             if r_type == "inc":
-                enc_products = self.v[level+1][prod_entity] == \
+                enc_products = simplify(self.v[level+1][prod_entity] == \
                     If(self.v[level][prod_entity]>self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]) + \
-                    If(self.v[level][command_entity]>self.v_ctx[level][command_entity],self.v[level][command_entity],self.v_ctx[level][command_entity])
+                    If(self.v[level][command_entity]>self.v_ctx[level][command_entity],self.v[level][command_entity],self.v_ctx[level][command_entity]))
 
             elif r_type == "dec":
-                enc_products = self.v[level+1][prod_entity] == \
+                enc_products = simplify(self.v[level+1][prod_entity] == \
                     If(self.v[level][prod_entity]>self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]) - \
-                    If(self.v[level][command_entity]>self.v_ctx[level][command_entity],self.v[level][command_entity],self.v_ctx[level][command_entity])
+                    If(self.v[level][command_entity]>self.v_ctx[level][command_entity],self.v[level][command_entity],self.v_ctx[level][command_entity]))
 
             else:
                 raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
