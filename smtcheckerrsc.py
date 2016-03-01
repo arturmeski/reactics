@@ -361,7 +361,7 @@ class SmtCheckerRSC(object):
             
         if print_mem:
             print("[i] Memory: " + repr(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)) + " MB")
-            
+    
     def get_verification_time(self):
         return self.verification_time
     

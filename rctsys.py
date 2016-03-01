@@ -430,10 +430,10 @@ class ReactionSystemWithConcentrations(ReactionSystem):
         if elem[1] < 1:
             raise RuntimeError("Unexpected concentration level in state: " + str(elem))
 
-    def check_rip(self, R, I, P):
+    def check_rip(self, R, I, P, ignore_empty_R=False):
         """Chcecks concentration levels and converts entities names into their ids"""
 
-        if R == []:
+        if R == [] and not ignore_empty_R:
             raise RuntimeError("No reactants defined")
         
         reactants = []
@@ -469,10 +469,18 @@ class ReactionSystemWithConcentrations(ReactionSystem):
         reaction = self.check_rip(R,I,P)
         self.reactions.append(reaction)
 
+    def add_reaction_without_reactants(self, R, I, P):
+        """Adds a reaction"""
+        
+        if P == []:
+            raise RuntimeError("No products defined")
+        reaction = self.check_rip(R,I,P,ignore_empty_R=True)
+        self.reactions.append(reaction)
+
     def add_reaction_inc(self, incr_entity, incrementer, R, I):
         """Adds a macro/meta reaction for increasing the value of incr_entity"""
 
-        reactants,inhibitors,products = self.check_rip(R,I,[])
+        reactants,inhibitors,products = self.check_rip(R,I,[],ignore_empty_R=True)
         incr_entity_id = self.get_entity_id(incr_entity)
         self.meta_reactions.setdefault(incr_entity_id,[])
         self.meta_reactions[incr_entity_id].append(("inc", self.get_entity_id(incrementer), reactants, inhibitors))
@@ -480,7 +488,7 @@ class ReactionSystemWithConcentrations(ReactionSystem):
     def add_reaction_dec(self, decr_entity, decrementer, R, I):
         """Adds a macro/meta reaction for decreasing the value of incr_entity"""
 
-        reactants,inhibitors,products = self.check_rip(R,I,[])
+        reactants,inhibitors,products = self.check_rip(R,I,[],ignore_empty_R=True)
         decr_entity_id = self.get_entity_id(decr_entity)
         self.meta_reactions.setdefault(decr_entity_id,[])
         self.meta_reactions[decr_entity_id].append(("dec", self.get_entity_id(decrementer), reactants, inhibitors))
@@ -522,10 +530,16 @@ class ReactionSystemWithConcentrations(ReactionSystem):
                 else:
                     raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
 
+    def show_max_concentrations(self):
+        print("[*] Maximal allowed concentration levels (for optimized translation to RS):")
+        for e,max_conc in self.max_conc_per_ent.items():
+            print("\t - {0:>20} = {1:<6}".format(self.get_entity_name(e),max_conc))
+
     def show(self, soft=False):
         self.show_background_set()
         self.show_reactions(soft)
         self.show_meta_reactions()
+        self.show_max_concentrations()
         
     def get_reactions_by_product(self):
         """Sorts reactions by their products and returns a dictionary of products"""

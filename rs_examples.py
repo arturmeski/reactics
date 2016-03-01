@@ -388,26 +388,44 @@ def chain_reaction(print_system=False):
     f.write(log_str)
     f.close()
 
-def blood_glucose_regulation():
+def blood_glucose_regulation(print_system=True):
     
     r = ReactionSystemWithConcentrations()    
     r.add_bg_set_entity(("inc_insulin",1))
     r.add_bg_set_entity(("dec_insulin",1))
     r.add_bg_set_entity(("inc_glycemia",1))
-    r.add_bg_set_entities(("inc_"))
-    
-    r.add_bg_set_entities([(sugar,1),(aspartame,1),(glycemia,3),(glucagon,1),(insulin,2)])
+    r.add_bg_set_entity(("dec_glycemia",1))
+    r.add_bg_set_entity(("inc_glucagon",1))
+    r.add_bg_set_entities([("sugar",1),("aspartame",1),("glycemia",3),("glucagon",1),("insulin",2)])
     
     # r.add_reaction([],[],[])
-    r.add_reaction([(sugar,1)],[],[(inc_insulin,1),(inc_glycemia,1)])
-    r.add_reaction([],[],[])
-    r.add_reaction([],[],[])
-    
+    r.add_reaction([("sugar",1)],[],[("inc_insulin",1),("inc_glycemia",1)])
+    r.add_reaction([("aspartame",1)],[],[("insulin",1)])
+    r.add_reaction_without_reactants([],[("glycemia",1)],[("insulin",1)])
+    r.add_reaction([("glycemia",3)],[],[("insulin",1)])
+    r.add_reaction([("insulin",2)],[],[("dec_glycemia",1)])
+    r.add_reaction([("insulin",1),("glycemia",3)],[],[("dec_glycemia",1)])
+    r.add_reaction([("insulin",1)],[("glycemia",2)],[("dec_glycemia",1)])
+    r.add_reaction([("glucagon",1)],[],[("glycemia",1)])
+
+    # inc/dec:
+    r.add_reaction_inc("glycemia", "inc_glycemia", [],[("glycemia",3),("dec_glycemia",1)])
+    r.add_reaction_inc("glycemia", "dec_glycemia", [],[("glycemia",1),("inc_glycemia",1)])
+
+    # potrzebne sa reakcje, ktore utrzymaja okresolna molekule na tym samym poziomie
+    # -> przed podtrzymaniem trzeba sie upewnic, ze jednak jakas reakcja nie chce zmienic tego poziomu
+
+    # moje:
+    r.add_reaction([("sugar",1)],[],[("sugar",1)])
+
+
+
     c = ContextAutomatonWithConcentrations(r)
-    c.add_init_state("init")
-    c.add_state("working")
-    c.add_transition("init", [("e_1",1),("inc",1)], "working")
-    c.add_transition("working", [("inc",1)], "working")
+    c.add_init_state("0")
+    c.add_state("1")
+    c.add_transition("0", [("sugar",1)], "1")
+    c.add_transition("1", [], "1")
+    # c.add_transition("1", [("sugar",1)], "1")
 
     rc = ReactionSystemWithAutomaton(r,c)
     

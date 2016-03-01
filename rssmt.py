@@ -29,7 +29,8 @@ rsmc_banner = """
 def process():
     
     # rs_examples.run_counter_exp()
-    rs_examples.chain_reaction(print_system=True)
+    # rs_examples.chain_reaction(print_system=True)
+    rs_examples.blood_glucose_regulation()
 
 ##################################################################    
 
