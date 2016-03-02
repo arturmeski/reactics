@@ -412,12 +412,16 @@ def blood_glucose_regulation(print_system=True):
 
     # inc/dec:
     r.add_reaction_inc("glycemia", "inc_glycemia", [],[("glycemia",3),("dec_glycemia",1)])
-    r.add_reaction_inc("glycemia", "dec_glycemia", [],[("glycemia",1),("inc_glycemia",1)])
+    r.add_reaction_dec("glycemia", "dec_glycemia", [],[("glycemia",1),("inc_glycemia",1)])
+    r.add_reaction_inc("insulin", "inc_insulin", [],[("insulin",2),("dec_insulin",1)])
+    r.add_reaction_dec("insulin", "dec_insulin", [],[("insulin",1),("inc_insulin",1)])
 
     # potrzebne sa reakcje, ktore utrzymaja okresolna molekule na tym samym poziomie
     # -> przed podtrzymaniem trzeba sie upewnic, ze jednak jakas reakcja nie chce zmienic tego poziomu
 
     r.add_permanency("sugar",[("expire_sugar",1)])
+    r.add_permanency("glycemia",[])
+
 
     # moje:
     r.add_reaction([("sugar",1)],[],[("sugar",1)])
@@ -427,6 +431,7 @@ def blood_glucose_regulation(print_system=True):
     c.add_state("1")
     c.add_transition("0", [("sugar",1)], "1")
     c.add_transition("1", [], "1")
+    c.add_transition("1", [("sugar",1)], "1")
     c.add_transition("1", [("expire_sugar",1)], "1")
     # c.add_transition("1", [("sugar",1)], "1")
 
@@ -436,7 +441,8 @@ def blood_glucose_regulation(print_system=True):
         rc.show()
     
     # if verify_rsc:
-    #     smt_rsc = SmtCheckerRSC(rc)
-    #     prop = [('e_'+str(chainLen),maxConc)]
-    #     smt_rsc.check_reachability(prop,max_level=maxConc*chainLen+10)
-    #     # smt_rsc.show_encoding(prop,print_time=True,max_level=maxConc*chainLen+10)
+    smt_rsc = SmtCheckerRSC(rc)
+    prop = [('glycemia',1)]
+    smt_rsc.check_reachability(prop,max_level=10)
+    # smt_rsc.show_encoding(prop,print_time=True,max_level=maxConc*chainLen+10)
+

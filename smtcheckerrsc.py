@@ -190,7 +190,7 @@ class SmtCheckerRSC(object):
             enc_products = simplify(self.v[level+1][prod_entity] == \
                 If(self.v[level][prod_entity] > self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]))
 
-            enc_enabledness = simplify(Or(enc_enabledness), And(enc_reactants, enc_inhibitors))
+            enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
             enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
 
         # -----------------------------------------------------------------------------
