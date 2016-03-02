@@ -398,6 +398,8 @@ def blood_glucose_regulation(print_system=True):
     r.add_bg_set_entity(("inc_glucagon",1))
     r.add_bg_set_entities([("sugar",1),("aspartame",1),("glycemia",3),("glucagon",1),("insulin",2)])
     
+    r.add_bg_set_entities([("expire_sugar",1)])
+    
     # r.add_reaction([],[],[])
     r.add_reaction([("sugar",1)],[],[("inc_insulin",1),("inc_glycemia",1)])
     r.add_reaction([("aspartame",1)],[],[("insulin",1)])
@@ -415,7 +417,7 @@ def blood_glucose_regulation(print_system=True):
     # potrzebne sa reakcje, ktore utrzymaja okresolna molekule na tym samym poziomie
     # -> przed podtrzymaniem trzeba sie upewnic, ze jednak jakas reakcja nie chce zmienic tego poziomu
 
-    r.add_permanency("sugar",[])
+    r.add_permanency("sugar",[("expire_sugar",1)])
 
     # moje:
     r.add_reaction([("sugar",1)],[],[("sugar",1)])
@@ -425,6 +427,7 @@ def blood_glucose_regulation(print_system=True):
     c.add_state("1")
     c.add_transition("0", [("sugar",1)], "1")
     c.add_transition("1", [], "1")
+    c.add_transition("1", [("expire_sugar",1)], "1")
     # c.add_transition("1", [("sugar",1)], "1")
 
     rc = ReactionSystemWithAutomaton(r,c)
