@@ -415,10 +415,10 @@ def blood_glucose_regulation(print_system=True):
     # potrzebne sa reakcje, ktore utrzymaja okresolna molekule na tym samym poziomie
     # -> przed podtrzymaniem trzeba sie upewnic, ze jednak jakas reakcja nie chce zmienic tego poziomu
 
+    r.add_permanency("sugar",[])
+
     # moje:
     r.add_reaction([("sugar",1)],[],[("sugar",1)])
-
-
 
     c = ContextAutomatonWithConcentrations(r)
     c.add_init_state("0")
