@@ -87,6 +87,10 @@ class SmtCheckerRSC(object):
         if prod_entity in self.rs.meta_reactions:
             meta_reactions = self.rs.meta_reactions[prod_entity]
 
+        permanency_inhibition = []
+        if prod_entity in self.rs.permanent_entities:
+            permanency_inhibition = self.rs.permanent_entities[prod_entity]
+
         if rcts_for_prod_entity == [] and meta_reactions == []:
             return simplify(self.v[level+1][prod_entity] == 0) # this should never happen
             
@@ -171,6 +175,22 @@ class SmtCheckerRSC(object):
                 raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
 
             enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
+            enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
+
+        # -----------------------------------------------------------------------------
+        
+        if not permanency_inhibition == []:
+            
+            enc_reactants = And(self.v[level][prod_entity] >= concentration, self.v_ctx[level][prod_entity] >= concentration)
+
+            enc_inhibitors = True
+            for inhibitor,concentration in permanency_inhibition:
+                enc_inhibitors = simplify(And(enc_inhibitors, 
+                                             And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
+            enc_products = simplify(self.v[level+1][prod_entity] == \
+                If(self.v[level][prod_entity] > self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]))
+
+            enc_enabledness = simplify(Or(enc_enabledness), And(enc_reactants, enc_inhibitors))
             enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
 
         # -----------------------------------------------------------------------------
