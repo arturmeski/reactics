@@ -499,7 +499,6 @@ def heat_shock_response(print_system=True):
         rc.show()
     
     smt_rsc = SmtCheckerRSC(rc)
-    prop = [("hsp",1)]
+    prop = ([("hsp",1)],[("temp",stress_temp)]) # no stress
     smt_rsc.check_reachability(prop,max_level=10)
-    
-    
+
