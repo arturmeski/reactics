@@ -295,6 +295,22 @@ class SmtCheckerRSC(object):
 
         return simplify(enc)
 
+    def enc_state_with_blocking(self, level, prop):
+        """Encodes the state at the given level with blocking certain concentrations"""
+
+        required,blocked = prop
+
+        enc = True
+        for ent,conc in required:
+                e_id = self.rs.get_entity_id(ent)
+                enc = And(enc, self.v[level][e_id] >= conc)
+
+        for ent,conc in blocked:
+                e_id = self.rs.get_entity_id(ent)
+        enc = And(enc, self.v[level][e_id] < conc)
+
+        return simplify(enc)
+
     def decode_witness(self, max_level, print_model=False):
 
         m = self.solver.model()
@@ -351,7 +367,7 @@ class SmtCheckerRSC(object):
             print("[i] Adding the reachability test...")       
             self.solver.push()
 
-            self.solver.add(self.enc_min_state(current_level,state))
+            self.solver.add(self.enc_state_with_blocking(current_level,state))
                 
             result = self.solver.check()
             if result == sat:
