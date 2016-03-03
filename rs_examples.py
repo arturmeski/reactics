@@ -446,3 +446,60 @@ def blood_glucose_regulation(print_system=True):
     smt_rsc.check_reachability(prop,max_level=10)
     # smt_rsc.show_encoding(prop,print_time=True,max_level=maxConc*chainLen+10)
 
+def heat_shock_response(print_system=True):
+    
+    r = ReactionSystemWithConcentrations()    
+    r.add_bg_set_entity(("hsp",1))
+    r.add_bg_set_entity(("hsf",1))
+    r.add_bg_set_entity(("hsf2",1))
+    r.add_bg_set_entity(("hsf3",1))
+    r.add_bg_set_entity(("hse",1))
+    r.add_bg_set_entity(("mfp",1))
+    r.add_bg_set_entity(("prot",1))
+    r.add_bg_set_entity(("hsf3:hse",1))
+    r.add_bg_set_entity(("hsp:mfp",1))
+    r.add_bg_set_entity(("hsp:hsf",1))
+    r.add_bg_set_entity(("temp",50))
+    
+    stress_temp = 42
+    
+    r.add_reaction([("hsf",1)],[("hsp",1)],[("hsf3",1)])
+    r.add_reaction([("hsf",1),("hsp",1),("mfp",1)],[],[("hsf3",1)])
+    r.add_reaction([("hsf3",1)],[("hsp",1),("hse",1)],[("hsf",1)])
+    r.add_reaction([("hsp",1),("hsf3",1),("mfp",1)],[("hse",1)],[("hsf",1)])
+    r.add_reaction([("hsf3",1),("hse",1)],[("hsp",1)],[("hsf3:hse",1)])
+    r.add_reaction([("hsp",1),("hsf3",1),("mfp",1),("hse",1)],[],[("hsf3:hse",1)])
+    r.add_reaction([("hse",1)],[("hsf3",1)],[("hse",1)])
+    r.add_reaction([("hsp",1),("hsf3",1),("hse",1)],[("mfp",1)],[("hse",1)])
+    r.add_reaction([("hsf3:hse",1)],[("hsp",1)],[("hsp",1),("hsf3:hse",1)])
+    r.add_reaction([("hsp",1),("mfp",1),("hsf3:hse",1)],[],[("hsp",1),("hsf3:hse",1)])
+    r.add_reaction([("hsf",1),("hsp",1)],[("mfp",1)],[("hsp:hsf",1)])
+    r.add_reaction([("hsp:hsf",1),("temp",stress_temp)],[],[("hsf",1),("hsp",1)])
+    r.add_reaction([("hsp:hsf",1)],[("temp",stress_temp)],[("hsp:hsf",1)])
+    r.add_reaction([("hsp",1),("hsf3:hse",1)],[("mfp",1)],[("hse",1),("hsp:hsf",1)])
+    r.add_reaction([("temp",stress_temp),("prot",1)],[],[("mfp",1),("prot",1)])
+    r.add_reaction([("prot",1)],[("temp",stress_temp)],[("mfp",1),("prot",1)])
+    r.add_reaction([("hsp",1),("mfp",1)],[],[("hsp:mfp",1)])
+    r.add_reaction([("mfp",1)],[("hsp",1)],[("mfp",1)])
+    r.add_reaction([("hsp:mfp",1)],[],[("hsp",1),("prot",1)])
+
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("0")
+    c.add_state("1")
+    c.add_transition("0", [("hsf",1),("prot",1),("hse",1),("temp",36)], "1")
+    c.add_transition("0", [("hse",1),("prot",1),("hsp:hsf",1),("temp",stress_temp)], "1")
+    c.add_transition("0", [("hsp",1),("prot",1),("hsf3:hse",1),("mfp",1),("hsp:mfp",1),("temp",36)], "1")
+    c.add_transition("1", [("temp",36)], "1")
+    c.add_transition("1", [("temp",43)], "1")
+    # c.add_transition("1", [("sugar",1)], "1")
+
+    rc = ReactionSystemWithAutomaton(r,c)
+    
+    if print_system:
+        rc.show()
+    
+    smt_rsc = SmtCheckerRSC(rc)
+    prop = [("hsp",1)]
+    smt_rsc.check_reachability(prop,max_level=10)
+    
+    

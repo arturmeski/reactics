@@ -30,7 +30,8 @@ def process():
     
     # rs_examples.run_counter_exp()
     # rs_examples.chain_reaction(print_system=True)
-    rs_examples.blood_glucose_regulation()
+    # rs_examples.blood_glucose_regulation()
+    rs_examples.heat_shock_response()
 
 ##################################################################    
 
