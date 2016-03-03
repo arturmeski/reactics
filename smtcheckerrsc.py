@@ -87,9 +87,11 @@ class SmtCheckerRSC(object):
         if prod_entity in self.rs.meta_reactions:
             meta_reactions = self.rs.meta_reactions[prod_entity]
 
-        permanency_inhibition = []
+        permanency_inhibition = None 
         if prod_entity in self.rs.permanent_entities:
             permanency_inhibition = self.rs.permanent_entities[prod_entity]
+
+            print(prod_entity,permanency_inhibition)
 
         if rcts_for_prod_entity == [] and meta_reactions == []:
             return simplify(self.v[level+1][prod_entity] == 0) # this should never happen
@@ -179,9 +181,9 @@ class SmtCheckerRSC(object):
 
         # -----------------------------------------------------------------------------
         
-        if not permanency_inhibition == []:
+        if not permanency_inhibition == None:
             
-            enc_reactants = And(self.v[level][prod_entity] >= concentration, self.v_ctx[level][prod_entity] >= concentration)
+            enc_reactants = Or(self.v[level][prod_entity] >= concentration, self.v_ctx[level][prod_entity] >= concentration)
 
             enc_inhibitors = True
             for inhibitor,concentration in permanency_inhibition:
@@ -191,7 +193,9 @@ class SmtCheckerRSC(object):
                 If(self.v[level][prod_entity] > self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]))
 
             enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
-            enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
+            enc_permanency = And(enc_reactants, enc_inhibitors, enc_products)
+            print(enc_permanency)
+            enc_rct_prod = simplify(Or(enc_rct_prod, enc_permanency))
 
         # -----------------------------------------------------------------------------
             
@@ -307,7 +311,7 @@ class SmtCheckerRSC(object):
 
         for ent,conc in blocked:
                 e_id = self.rs.get_entity_id(ent)
-        enc = And(enc, self.v[level][e_id] < conc)
+                enc = And(enc, self.v[level][e_id] < conc)
 
         return simplify(enc)
 
