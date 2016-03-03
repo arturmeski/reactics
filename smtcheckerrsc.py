@@ -429,12 +429,12 @@ class SmtCheckerRSC(object):
             print("-----[ level=" + str(current_level) + " done ]")
             current_level += 1
 
-            x=input("Next level? ")
-            x=x.lower()
-            if not (x == "y" or x == "yes"):
-                break
-
             if current_level > max_level:
                 print("Stopping at level=" + str(max_level))
                 break
+            else:
+                x=input("Next level? ")
+                x=x.lower()
+                if not (x == "y" or x == "yes"):
+                    break
 
