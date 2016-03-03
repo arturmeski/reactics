@@ -279,7 +279,7 @@ def run_counter_exp():
 
     r.add_bg_set_entity("e")
     r.add_bg_set_entity("inc")    
-    r.add_reaction_inc("e",[("e",1),("inc",1)],[("e",N)])
+    r.add_reaction_inc("e","inc",[("e",1),("inc",1)],[("e",N)])
     # for i in range(1,N):
         # r.add_reaction([("e",i),("inc",1)],[("e",N)],[("e",i+1)])
     # r.show()
@@ -289,19 +289,19 @@ def run_counter_exp():
     c.add_state("working")
     c.add_transition("init", [("e",1),("inc",1)], "working")
     c.add_transition("working", [("inc",1)], "working")
-     # c.show()
+    # c.show()
 
     rc = ReactionSystemWithAutomaton(r,c)
     
     rc.show()
     
     smt_rsc = SmtCheckerRSC(rc)    
-    smt_rsc.check_reachability([('e',N)],print_time=True,max_level=N)
+    smt_rsc.check_reachability(([('e',N)],[]),print_time=True,max_level=N)
 
     orc = rc.get_ordinary_reaction_system_with_automaton()
     orc.show()
     smt_tr_rs = SmtCheckerPGRS(orc)
-    smt_tr_rs.check_reachability(['e_' + str(N)],print_time=True)
+    smt_tr_rs.check_reachability(['e#' + str(N)],print_time=True)
 
     print("Reaction System with Concentrations:", smt_rsc.get_verification_time())
     print("Reaction System from translating RSC:", smt_tr_rs.get_verification_time())
@@ -352,7 +352,7 @@ def chain_reaction(print_system=False):
     if verify_rsc:
         smt_rsc = SmtCheckerRSC(rc)
         prop = [('e_'+str(chainLen),maxConc)]
-        smt_rsc.check_reachability(prop,max_level=maxConc*chainLen+10)
+        smt_rsc.check_reachability((prop,[]),max_level=maxConc*chainLen+10)
         # smt_rsc.show_encoding(prop,print_time=True,max_level=maxConc*chainLen+10)
 
     else:
@@ -422,7 +422,6 @@ def blood_glucose_regulation(print_system=True):
     r.add_permanency("sugar",[("expire_sugar",1)])
     r.add_permanency("glycemia",[])
 
-
     # moje:
     r.add_reaction([("sugar",1)],[],[("sugar",1)])
 
@@ -447,6 +446,9 @@ def blood_glucose_regulation(print_system=True):
     # smt_rsc.show_encoding(prop,print_time=True,max_level=maxConc*chainLen+10)
 
 def heat_shock_response(print_system=True):
+
+    stress_temp = 42
+    max_temp = 50
     
     r = ReactionSystemWithConcentrations()    
     r.add_bg_set_entity(("hsp",1))
@@ -459,9 +461,9 @@ def heat_shock_response(print_system=True):
     r.add_bg_set_entity(("hsf3:hse",1))
     r.add_bg_set_entity(("hsp:mfp",1))
     r.add_bg_set_entity(("hsp:hsf",1))
-    r.add_bg_set_entity(("temp",50))
-    
-    stress_temp = 42
+    r.add_bg_set_entity(("temp",max_temp))
+    r.add_bg_set_entity(("heat",1))
+    r.add_bg_set_entity(("cool",1))
     
     r.add_reaction([("hsf",1)],[("hsp",1)],[("hsf3",1)])
     r.add_reaction([("hsf",1),("hsp",1),("mfp",1)],[],[("hsf3",1)])
@@ -483,14 +485,22 @@ def heat_shock_response(print_system=True):
     r.add_reaction([("mfp",1)],[("hsp",1)],[("mfp",1)])
     r.add_reaction([("hsp:mfp",1)],[],[("hsp",1),("prot",1)])
 
+    r.add_reaction_inc("temp", "heat", [("temp",1)],[("temp",max_temp)])
+    r.add_reaction_dec("temp", "cool", [("temp",1)],[])
+
+    r.add_permanency("temp",[("heat",1),("cool",1)])
+    #r.add_permanency("temp",[])
+
     c = ContextAutomatonWithConcentrations(r)
     c.add_init_state("0")
     c.add_state("1")
-    c.add_transition("0", [("hsf",1),("prot",1),("hse",1),("temp",36)], "1")
-    c.add_transition("0", [("hse",1),("prot",1),("hsp:hsf",1),("temp",stress_temp)], "1")
-    c.add_transition("0", [("hsp",1),("prot",1),("hsf3:hse",1),("mfp",1),("hsp:mfp",1),("temp",36)], "1")
-    c.add_transition("1", [("temp",36)], "1")
-    c.add_transition("1", [("temp",43)], "1")
+    c.add_transition("0", [("temp",20)], "1")
+    c.add_transition("1", [("hsf",1),("prot",1),("hse",1),("temp",20)], "1")
+    #c.add_transition("1", [("hse",1),("prot",1),("hsp:hsf",1),("temp",stress_temp)], "1")
+    c.add_transition("1", [("hsp",1),("prot",1),("hsf3:hse",1),("mfp",1),("hsp:mfp",1),("temp",20)], "1")
+    c.add_transition("1", [("heat",1)], "1")
+    c.add_transition("1", [("cool",1)], "1")
+    c.add_transition("1", [], "1")
     # c.add_transition("1", [("sugar",1)], "1")
 
     rc = ReactionSystemWithAutomaton(r,c)
@@ -500,5 +510,6 @@ def heat_shock_response(print_system=True):
     
     smt_rsc = SmtCheckerRSC(rc)
     prop = ([("hsp",1)],[("temp",stress_temp)]) # no stress
-    smt_rsc.check_reachability(prop,max_level=10)
+    #prop = ([("temp",36)],[]) # no stress
+    smt_rsc.check_reachability(prop,max_level=40)
 

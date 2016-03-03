@@ -91,8 +91,6 @@ class SmtCheckerRSC(object):
         if prod_entity in self.rs.permanent_entities:
             permanency_inhibition = self.rs.permanent_entities[prod_entity]
 
-            print(prod_entity,permanency_inhibition)
-
         if rcts_for_prod_entity == [] and meta_reactions == []:
             return simplify(self.v[level+1][prod_entity] == 0) # this should never happen
             
@@ -194,7 +192,6 @@ class SmtCheckerRSC(object):
 
             enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
             enc_permanency = And(enc_reactants, enc_inhibitors, enc_products)
-            print(enc_permanency)
             enc_rct_prod = simplify(Or(enc_rct_prod, enc_permanency))
 
         # -----------------------------------------------------------------------------
@@ -324,7 +321,7 @@ class SmtCheckerRSC(object):
 
         for level in range(max_level+1):
 
-            print("\n[Level=" + repr(level) + "]")
+            print("\n{:-^70}".format("[ level=" + repr(level) + " ]"))
 
             print("  State: {", end=""),
             for var_id in range(len(self.v[level])):
@@ -397,7 +394,7 @@ class SmtCheckerRSC(object):
             stop = resource.getrusage(resource.RUSAGE_SELF).ru_utime
             self.verification_time = stop-start
             print()
-            print("[i] Time: " + repr(self.verification_time))
+            print("[i] Time: " + repr(self.verification_time) + " s")
             
         if print_mem:
             print("[i] Memory: " + repr(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)) + " MB")
