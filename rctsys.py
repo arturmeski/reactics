@@ -683,6 +683,36 @@ class ReactionSystemWithConcentrations(ReactionSystem):
                     else:
                         raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
         
+        for ent,inhibitors in self.permanent_entities.items():
+            
+            max_c = self.max_concentration
+            if ent in self.max_conc_per_ent:
+                max_c = self.max_conc_per_ent[ent]
+            else:
+                print("WARNING:\n\tThere is no maximal concentration level defined for " + self.get_entity_name(ent))
+                print("\tThis is a very bad idea -- expect degraded performance\n")
+            
+            def e_value(i):
+                return self.get_entity_name(ent) + "#" + str(i)
+            
+            for value in range(1,max_c+1):
+                
+                new_reactants = []
+                new_inhibitors = []
+                new_products = []
+                
+                new_reactants = [e_value(value)]
+                
+                for e_inh,conc in inhibitors:
+                    n = self.get_entity_name(e_inh) + "#" + str(conc)
+                    rs.ensure_bg_set_entity(n)
+                    new_inhibitors.append(n)        
+
+                for i in range(1,value+1):
+                    new_products.append(e_value(i))
+                
+                rs.add_reaction(new_reactants,new_inhibitors,new_products)
+            
         return rs
     
 
