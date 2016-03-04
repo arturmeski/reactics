@@ -314,7 +314,7 @@ class ReactionSystem(object):
             print(" "*4 + "{0: ^35}{1: ^25}{2: ^15}".format("reactants"," inhibitors"," products"))
             for reaction in self.reactions:
                 # print("\t( R={" + self.state_to_str(reaction[0]) + "}, I={" + self.state_to_str(reaction[1]) + "}, P={" + self.state_to_str(reaction[2]) + "} )")
-                print(" "*2 + "- {0: ^35}{1: ^25}{2: ^15}".format("{ " + self.state_to_str(reaction[0]) + " }",
+                print(" " + "- {0: ^35}{1: ^25}{2: ^15}".format("{ " + self.state_to_str(reaction[0]) + " }",
                                                             " { " + self.state_to_str(reaction[1]) + " }",
                                                             " { " + self.state_to_str(reaction[2]) + " }"))
 
