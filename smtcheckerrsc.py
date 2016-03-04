@@ -7,6 +7,7 @@ from time import time
 from sys import stdout
 from itertools import chain
 import resource
+from colour import *
 
 # def simplify(x):
 #     return x
@@ -137,29 +138,6 @@ class SmtCheckerRSC(object):
             for inhibitor,concentration in inhibitors:
                 enc_inhibitors = simplify(And(enc_inhibitors, 
                                              And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
-            
-            # if r_type == "inc":
-            #     # depending on if the value of the command entity is greater in the context or in the current RS state
-            #     # we choose to increment by the greater value from v or v_ctx (this is because we take the max value).
-            #     enc_products = Or(
-            #             And(self.v_ctx[level][command_entity] >= self.v[level][command_entity],
-            #                 self.v[level+1][prod_entity] == If(self.v[level][command_entity]>self.v_ctx[level][command_entity],self.v[level][command_entity],self.v_ctx[level][command_entity])+self.v_ctx[level][command_entity]),
-            #             And(self.v[level][command_entity] > self.v_ctx[level][command_entity],
-            #                 self.v[level+1][prod_entity] == If(self.v[level][prod_entity]>self.v_ctx[level][command_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity])+self.v[level][command_entity]))
-            #
-            # elif r_type == "dec":
-            #     # same happens here, but we decrement with the maximum value encoded at v or v_ctx.
-            #     enc_products = Or(
-            #             And(self.v_ctx[level][command_entity] >= self.v[level][command_entity],
-            #                 self.v[level+1][prod_entity] == If(self.v[level][prod_entity]>self.v_ctx[level][command_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity])-self.v_ctx[level][command_entity]),
-            #             And(self.v[level][command_entity] > self.v_ctx[level][command_entity],
-            #                 self.v[level+1][prod_entity] == If(self.v[level][prod_entity]>self.v_ctx[level][command_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity])-self.v[level][command_entity]))
-            #
-            # if r_type == "inc":
-            #     enc_products = self.v[level+1][prod_entity] == self.v[level][prod_entity]+1
-            #
-            # elif r_type == "dec":
-            #     enc_products = self.v[level+1][prod_entity] == self.v[level][prod_entity]-1
             
             if r_type == "inc":
                 enc_products = simplify(self.v[level+1][prod_entity] == \
@@ -321,7 +299,7 @@ class SmtCheckerRSC(object):
 
         for level in range(max_level+1):
 
-            print("\n{:-^70}".format("[ level=" + repr(level) + " ]"))
+            print("\n{: >70}".format("[ level=" + repr(level) + " ]"))
 
             print("  State: {", end=""),
             for var_id in range(len(self.v[level])):
@@ -365,24 +343,25 @@ class SmtCheckerRSC(object):
             stdout.flush()
 
             # reachability test:
-            print("[i] Adding the reachability test...")       
+            print("[" + colour_str(C_BOLD, "i") + "] Adding the reachability test...")       
             self.solver.push()
 
             self.solver.add(self.enc_state_with_blocking(current_level,state))
                 
             result = self.solver.check()
             if result == sat:
-                print("\n[+] SAT at level=" + str(current_level))
+                print("[" + colour_str(C_BOLD, "+") + "] " + colour_str(C_GREEN, "SAT at level=" + str(current_level)))
                 if print_witness:
+                    print("\n{:=^70}".format("[ WITNESS ]"))
                     self.decode_witness(current_level)
                 break
             else:
                 self.solver.pop()
 
-            print("[i] Unrolling the transition relation")
+            print("[" + colour_str(C_BOLD, "i") + "] Unrolling the transition relation")
             self.solver.add(self.enc_transition_relation(current_level))
 
-            print("\n{:-^70}".format("[ level=" + str(current_level) + " done ]"))
+            print("{:->70}".format("[ level=" + str(current_level) + " done ]"))
             current_level += 1
 
             if current_level > max_level:
@@ -394,10 +373,10 @@ class SmtCheckerRSC(object):
             stop = resource.getrusage(resource.RUSAGE_SELF).ru_utime
             self.verification_time = stop-start
             print()
-            print("\n[i] {:_>60}".format(" Time: " + repr(self.verification_time) + " s"))
+            print("\n[i] {: >60}".format(" Time: " + repr(self.verification_time) + " s"))
             
         if print_mem:
-            print("[i] {:_>60}".format(" Memory: " + repr(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)) + " MB"))
+            print("[i] {: >60}".format(" Memory: " + repr(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)) + " MB"))
     
     def get_verification_time(self):
         return self.verification_time
@@ -431,7 +410,7 @@ class SmtCheckerRSC(object):
                 
             result = self.solver.check()
             if result == sat:
-                print("\n[+] SAT at level=" + str(current_level))
+                print("\n[+] " + colour_str(C_RED, "SAT at level=" + str(current_level)))
                 if print_witness:
                     self.decode_witness(current_level)
                 break
