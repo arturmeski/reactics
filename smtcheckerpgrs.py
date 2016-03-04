@@ -177,6 +177,24 @@ class SmtCheckerPGRS(object):
             enc = And(enc, self.v[level][entity])
 
         return enc
+        
+    def enc_state_with_blocking(self, level, prop):
+        """Encodes the state at the given level with blocking certain concentrations"""
+
+        required,blocked = prop
+
+        enc = True
+        
+        required_ids = self.rs.get_state_ids(required)
+        blocked_ids = self.rs.get_state_ids(blocked)
+
+        for e in required_ids:
+            enc = And(enc, self.v[level][e])
+        for e in blocked_ids:
+            enc = And(enc, Not(self.v[level][e]))
+
+        return simplify(enc)
+
 
     def decode_witness(self, max_level, print_model=False):
 
@@ -203,8 +221,11 @@ class SmtCheckerPGRS(object):
                         print(" " + self.rs.get_entity_name(var_id), end="")
                 print(" }")
 
-    def check_reachability(self, state, exact_state=False, print_witness=True, print_time=True, print_mem=True):
+    def check_reachability(self, state, print_witness=True, print_time=True, print_mem=True):
         """Main testing function"""
+
+        if not type(state) is tuple:
+            state = (state,[])
 
         if print_time:
             # start = time()
@@ -223,10 +244,7 @@ class SmtCheckerPGRS(object):
             # reachability test:
             print("[i] Adding the reachability test...")    
             self.solver.push()
-            if exact_state:
-                self.solver.add(self.enc_state(current_level,state))
-            else:
-                self.solver.add(self.enc_non_exclusive_state(current_level,state))
+            self.solver.add(self.enc_state_with_blocking(current_level,state))
 
             result = self.solver.check()
             if result == sat:
