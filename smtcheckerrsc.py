@@ -361,7 +361,7 @@ class SmtCheckerRSC(object):
         while True:
             self.prepare_all_variables()
 
-            print("-----[ Working at level=" + str(current_level) + " ]-----")
+            print("\n{:-^70}".format("[ Working at level=" + str(current_level) + " ]"))
             stdout.flush()
 
             # reachability test:
@@ -382,7 +382,7 @@ class SmtCheckerRSC(object):
             print("[i] Unrolling the transition relation")
             self.solver.add(self.enc_transition_relation(current_level))
 
-            print("-----[ level=" + str(current_level) + " done ]")
+            print("\n{:-^70}".format("[ level=" + str(current_level) + " done ]"))
             current_level += 1
 
             if current_level > max_level:
@@ -394,10 +394,10 @@ class SmtCheckerRSC(object):
             stop = resource.getrusage(resource.RUSAGE_SELF).ru_utime
             self.verification_time = stop-start
             print()
-            print("[i] Time: " + repr(self.verification_time) + " s")
+            print("\n[i] {:_>60}".format(" Time: " + repr(self.verification_time) + " s"))
             
         if print_mem:
-            print("[i] Memory: " + repr(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)) + " MB")
+            print("[i] {:_>60}".format(" Memory: " + repr(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)) + " MB"))
     
     def get_verification_time(self):
         return self.verification_time
