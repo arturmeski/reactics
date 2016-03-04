@@ -445,7 +445,15 @@ def blood_glucose_regulation(print_system=True):
     smt_rsc.check_reachability(prop,max_level=10)
     # smt_rsc.show_encoding(prop,print_time=True,max_level=maxConc*chainLen+10)
 
-def heat_shock_response(print_system=True):
+def heat_shock_response(print_system=True,verify_rsc=True):
+
+    if len(sys.argv) < 1+1:
+        print("provide B")
+        print(" B=1 - RSC")
+        print(" B=0 - Translated RSC into RS")
+        exit(1)
+
+    verify_rsc=bool(int(sys.argv[1]))
 
     stress_temp = 42
     max_temp = 50
@@ -465,25 +473,25 @@ def heat_shock_response(print_system=True):
     r.add_bg_set_entity(("heat",1))
     r.add_bg_set_entity(("cool",1))
     
-    r.add_reaction([("hsf",1)],[("hsp",1)],[("hsf3",1)])
-    r.add_reaction([("hsf",1),("hsp",1),("mfp",1)],[],[("hsf3",1)])
-    r.add_reaction([("hsf3",1)],[("hsp",1),("hse",1)],[("hsf",1)])
-    r.add_reaction([("hsp",1),("hsf3",1),("mfp",1)],[("hse",1)],[("hsf",1)])
-    r.add_reaction([("hsf3",1),("hse",1)],[("hsp",1)],[("hsf3:hse",1)])
-    r.add_reaction([("hsp",1),("hsf3",1),("mfp",1),("hse",1)],[],[("hsf3:hse",1)])
-    r.add_reaction([("hse",1)],[("hsf3",1)],[("hse",1)])
-    r.add_reaction([("hsp",1),("hsf3",1),("hse",1)],[("mfp",1)],[("hse",1)])
-    r.add_reaction([("hsf3:hse",1)],[("hsp",1)],[("hsp",1),("hsf3:hse",1)])
-    r.add_reaction([("hsp",1),("mfp",1),("hsf3:hse",1)],[],[("hsp",1),("hsf3:hse",1)])
-    r.add_reaction([("hsf",1),("hsp",1)],[("mfp",1)],[("hsp:hsf",1)])
-    r.add_reaction([("hsp:hsf",1),("temp",stress_temp)],[],[("hsf",1),("hsp",1)])
-    r.add_reaction([("hsp:hsf",1)],[("temp",stress_temp)],[("hsp:hsf",1)])
-    r.add_reaction([("hsp",1),("hsf3:hse",1)],[("mfp",1)],[("hse",1),("hsp:hsf",1)])
-    r.add_reaction([("temp",stress_temp),("prot",1)],[],[("mfp",1),("prot",1)])
-    r.add_reaction([("prot",1)],[("temp",stress_temp)],[("mfp",1),("prot",1)])
-    r.add_reaction([("hsp",1),("mfp",1)],[],[("hsp:mfp",1)])
-    r.add_reaction([("mfp",1)],[("hsp",1)],[("mfp",1)])
-    r.add_reaction([("hsp:mfp",1)],[],[("hsp",1),("prot",1)])
+    r.add_reaction([("hsf",1)],                         [("hsp",1)],        [("hsf3",1)])
+    r.add_reaction([("hsf",1),("hsp",1),("mfp",1)],     [],                 [("hsf3",1)])
+    r.add_reaction([("hsf3",1)],                        [("hsp",1),("hse",1)],[("hsf",1)])
+    r.add_reaction([("hsp",1),("hsf3",1),("mfp",1)],    [("hse",1)],        [("hsf",1)])
+    r.add_reaction([("hsf3",1),("hse",1)],              [("hsp",1)],        [("hsf3:hse",1)])
+    r.add_reaction([("hsp",1),("hsf3",1),("mfp",1),("hse",1)],[],           [("hsf3:hse",1)])
+    r.add_reaction([("hse",1)],                         [("hsf3",1)],       [("hse",1)])
+    r.add_reaction([("hsp",1),("hsf3",1),("hse",1)],    [("mfp",1)],        [("hse",1)])
+    r.add_reaction([("hsf3:hse",1)],                    [("hsp",1)],        [("hsp",1),("hsf3:hse",1)])
+    r.add_reaction([("hsp",1),("mfp",1),("hsf3:hse",1)],[],                 [("hsp",1),("hsf3:hse",1)])
+    r.add_reaction([("hsf",1),("hsp",1)],               [("mfp",1)],        [("hsp:hsf",1)])
+    r.add_reaction([("hsp:hsf",1),("temp",stress_temp)],[],                 [("hsf",1),("hsp",1)])
+    r.add_reaction([("hsp:hsf",1)],                     [("temp",stress_temp)],[("hsp:hsf",1)])
+    r.add_reaction([("hsp",1),("hsf3:hse",1)],          [("mfp",1)],        [("hse",1),("hsp:hsf",1)])
+    r.add_reaction([("temp",stress_temp),("prot",1)],   [],                 [("mfp",1),("prot",1)])
+    r.add_reaction([("prot",1)],                        [("temp",stress_temp)],[("mfp",1),("prot",1)])
+    r.add_reaction([("hsp",1),("mfp",1)],               [],                 [("hsp:mfp",1)])
+    r.add_reaction([("mfp",1)],                         [("hsp",1)],        [("mfp",1)])
+    r.add_reaction([("hsp:mfp",1)],                     [],                 [("hsp",1),("prot",1)])
 
     r.add_reaction_inc("temp", "heat", [("temp",1)],[("temp",max_temp)])
     r.add_reaction_dec("temp", "cool", [("temp",1)],[])
@@ -494,12 +502,12 @@ def heat_shock_response(print_system=True):
     c = ContextAutomatonWithConcentrations(r)
     c.add_init_state("0")
     c.add_state("1")
-    c.add_transition("0", [("temp",20)], "1")
-    c.add_transition("1", [("hsf",1),("prot",1),("hse",1),("temp",20)], "1")
-    #c.add_transition("1", [("hse",1),("prot",1),("hsp:hsf",1),("temp",stress_temp)], "1")
-    c.add_transition("1", [("hsp",1),("prot",1),("hsf3:hse",1),("mfp",1),("hsp:mfp",1),("temp",20)], "1")
-    c.add_transition("1", [("heat",1)], "1")
+    # c.add_transition("0", [("prot",1), ("temp",35)], "1")
+    c.add_transition("0", [("hsf",1),("prot",1),("hse",1),("temp",35)], "1")
+    c.add_transition("0", [("hse",1),("prot",1),("hsp:hsf",1),("temp",stress_temp)], "1")
+    # c.add_transition("0", [("hsp",1),("prot",1),("hsf3:hse",1),("mfp",1),("hsp:mfp",1),("temp",30)], "1")
     c.add_transition("1", [("cool",1)], "1")
+    c.add_transition("1", [("heat",1)], "1")
     c.add_transition("1", [], "1")
     # c.add_transition("1", [("sugar",1)], "1")
 
@@ -508,8 +516,24 @@ def heat_shock_response(print_system=True):
     if print_system:
         rc.show()
     
-    smt_rsc = SmtCheckerRSC(rc)
-    prop = ([("hsp",1)],[("temp",stress_temp)]) # no stress
-    #prop = ([("temp",36)],[]) # no stress
-    smt_rsc.check_reachability(prop,max_level=40)
+    prop_req = [("hsp",1),("prot",1),("hsf3:hse",1),("mfp",1),("hsp:mfp",1),("temp",30)]
+    prop_block = [("temp",stress_temp)]
+    prop = (prop_req,prop_block)
+    rs_prop = (state_translate_rsc2rs(prop_req),state_translate_rsc2rs(prop_block))
+    
+    if verify_rsc:
+        smt_rsc = SmtCheckerRSC(rc)
+        # prop = ([("mfp",1)],[("temp",21)]) # no stress
+        #prop = ([("temp",36)],[]) # no stress
+        smt_rsc.check_reachability(prop,max_level=40)
+    else:
+        orc = rc.get_ordinary_reaction_system_with_automaton()
+        if print_system:
+            print("\nTranslated:")
+            orc.show()
+        smt_tr_rs = SmtCheckerPGRS(orc)
+        smt_tr_rs.check_reachability(rs_prop)
 
+def state_translate_rsc2rs(p):
+    return [e[0] + "#" + str(e[1]) for e in p]
+        
