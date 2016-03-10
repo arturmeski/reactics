@@ -394,6 +394,7 @@ class ReactionSystemWithConcentrations(ReactionSystem):
             name,def_max_conc = e
         elif type(e) is str:
             name = e
+            print("\n\nWARNING: no maximal concentration level specified for:", e, "\n\n")
         else:
             raise RuntimeError("Bad entity type when adding background set element")
 
@@ -407,6 +408,13 @@ class ReactionSystemWithConcentrations(ReactionSystem):
                 self.max_conc_per_ent[ent_id] = def_max_conc
             if self.max_concentration < def_max_conc:
                 self.max_concentration = def_max_conc
+
+    def get_max_concentration_level(self, e):
+        
+        if e in self.max_conc_per_ent:
+            return self.max_conc_per_ent[e]
+        else:
+            return self.max_concentration
 
     def is_valid_entity_with_concentration(self, e):
         """Sanity check for entities with concentration"""
