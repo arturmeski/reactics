@@ -63,7 +63,7 @@ class SmtCheckerRSC(object):
         
         self.ca_state.append(Int("CA"+str(level)+"_state"))
 
-    def enc_nonzero_assertion(self, level):
+    def enc_concentration_levels_assertion(self, level):
         """Encodes assertions that (some) variables need to be >0
         
         We do not need to actually control all the variables,
@@ -71,8 +71,13 @@ class SmtCheckerRSC(object):
         """
         
         enc_nz = True
-        for v in self.v[level]:
-            enc_nz = simplify(And(enc_nz, v >= 0))
+        
+        for e_i in range(len(self.rs.background_set)):
+            v = self.v[level][e_i]
+            v_ctx = self.v_ctx[level][e_i]
+            e_max = self.rs.get_max_concentration_level(e_i)
+            enc_nz = simplify(And(enc_nz, v >= 0, v_ctx >= 0, v <= e_max, v_ctx <= e_max))
+        
         return enc_nz
 
     def enc_init_state(self, level):
@@ -113,6 +118,8 @@ class SmtCheckerRSC(object):
 
         enc_rct_prod = False
         
+        enc_ordinary_reactions_enabledness = False
+        
         for reactants,inhibitors,products in rcts_for_prod_entity:
 
             enc_reactants   = True
@@ -129,6 +136,8 @@ class SmtCheckerRSC(object):
             enc_products = self.v[level+1][products[0][0]] == products[0][1]
             enc_rct_prod = simplify(If(enc_rct_enabled, enc_products, enc_rct_prod))
             enc_enabledness = simplify(Or(enc_enabledness, enc_rct_enabled))
+        
+            enc_ordinary_reactions_enabledness = simplify(Or(enc_ordinary_reactions_enabledness,enc_rct_enabled))
         
         # for reactants,inhibitors,products in rcts_for_prod_entity:
         #     enc_reactants   = True
@@ -182,8 +191,9 @@ class SmtCheckerRSC(object):
             else:
                 raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
 
-            enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
-            enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
+            enc_meta_reaction_enabledness = And(enc_reactants, enc_inhibitors, Not(enc_ordinary_reactions_enabledness))
+            enc_enabledness = simplify(Or(enc_enabledness, enc_meta_reaction_enabledness))
+            enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_meta_reaction_enabledness, enc_products)))
 
         # -----------------------------------------------------------------------------
         
@@ -198,8 +208,9 @@ class SmtCheckerRSC(object):
             enc_products = simplify(self.v[level+1][prod_entity] == \
                 If(self.v[level][prod_entity] > self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]))
 
-            enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
-            enc_permanency = And(enc_reactants, enc_inhibitors, enc_products)
+            enc_permanency_enabledness = And(enc_reactants, enc_inhibitors, Not(enc_ordinary_reactions_enabledness))
+            enc_enabledness = simplify(Or(enc_enabledness, enc_permanency_enabledness))
+            enc_permanency = And(enc_permanency_enabledness, enc_products)
             enc_rct_prod = simplify(Or(enc_rct_prod, enc_permanency))
 
         # -----------------------------------------------------------------------------
@@ -366,11 +377,11 @@ class SmtCheckerRSC(object):
 
         self.prepare_all_variables()
         
-        # self.solver.add(self.enc_nonzero_assertion(0))
+        self.solver.add(self.enc_concentration_levels_assertion(0))
         
         while True:
             self.prepare_all_variables()
-            # self.solver.add(self.enc_nonzero_assertion(current_level+1))
+            self.solver.add(self.enc_concentration_levels_assertion(current_level+1))
             
             print("\n{:-^70}".format("[ Working at level=" + str(current_level) + " ]"))
             stdout.flush()
