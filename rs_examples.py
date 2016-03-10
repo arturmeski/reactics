@@ -324,25 +324,33 @@ def chain_reaction(print_system=False):
     
     r = ReactionSystemWithConcentrations()    
     r.add_bg_set_entity(("inc",1))
-    r.add_bg_set_entity(("dec",1))
+    # r.add_bg_set_entity(("reset",1))
+    # r.add_bg_set_entity(("dec",1))
+    # r.add_bg_set_entity(("x",1))
     
     for i in range(1,chainLen+1):
         r.add_bg_set_entity("e_" + str(i))
     
     for i in range(1,chainLen+1):
         ent = "e_" + str(i)
+        # r.add_reaction_inc(ent, "inc", [(ent, 1)],[("reset",1),(ent,maxConc)])
         r.add_reaction_inc(ent, "inc", [(ent, 1)],[(ent,maxConc)])
-        r.add_reaction_dec(ent, "dec", [(ent, 1)],[])
+        # r.add_reaction_dec(ent, "dec", [(ent, 1)],[])
+        # r.add_reaction([(ent,1),("reset",1)],[],[(ent,1)])
         if i < chainLen:
             r.add_reaction([(ent,maxConc)],[],[("e_"+str(i+1),1)])
 
-    r.add_reaction([("e_" + str(chainLen),maxConc)],[("dec",1)],[("e_" + str(chainLen),maxConc)])
-        
+    # r.add_reaction([("e_" + str(chainLen),maxConc)],[("dec",1)],[("e_" + str(chainLen),maxConc)])
+    r.add_reaction([("e_" + str(chainLen),maxConc)],[],[("e_" + str(chainLen),maxConc)])
+    
+    
     c = ContextAutomatonWithConcentrations(r)
     c.add_init_state("init")
     c.add_state("working")
     c.add_transition("init", [("e_1",1),("inc",1)], "working")
     c.add_transition("working", [("inc",1)], "working")
+    # c.add_transition("working", [("reset",1)], "working")
+    # c.add_transition("working",[("x",1)],"working")
 
     rc = ReactionSystemWithAutomaton(r,c)
     
@@ -366,7 +374,6 @@ def chain_reaction(print_system=False):
     # print("Reaction System with Concentrations:", smt_rsc.get_verification_time())
     # print("Reaction System from translating RSC:", smt_tr_rs.get_verification_time())
     
-    filename=""
     time=0
     mem_usage=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)
     if verify_rsc:
@@ -516,10 +523,10 @@ def heat_shock_response(print_system=True,verify_rsc=True):
     if print_system:
         rc.show()
     
-    # prop_req = [("hsp:hsf",1),("hse",1),("prot",1)]
-    # prop_block = [("temp",stress_temp)]
-    prop_req   = [ ("mfp",1) ]
-    prop_block = [ ]
+    prop_req = [("hsp:hsf",1),("hse",1),("prot",1)]
+    prop_block = [("temp",stress_temp)]
+    # prop_req   = [ ("mfp",1) ]
+    # prop_block = [ ]
     prop       = (prop_req,prop_block)
     rs_prop    = (state_translate_rsc2rs(prop_req),state_translate_rsc2rs(prop_block))
     
