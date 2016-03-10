@@ -325,23 +325,23 @@ def chain_reaction(print_system=False):
     r = ReactionSystemWithConcentrations()    
     r.add_bg_set_entity(("inc",1))
     # r.add_bg_set_entity(("reset",1))
-    # r.add_bg_set_entity(("dec",1))
+    r.add_bg_set_entity(("dec",1))
     # r.add_bg_set_entity(("x",1))
     
     for i in range(1,chainLen+1):
-        r.add_bg_set_entity("e_" + str(i))
+        r.add_bg_set_entity(("e_" + str(i),maxConc))
     
     for i in range(1,chainLen+1):
         ent = "e_" + str(i)
         # r.add_reaction_inc(ent, "inc", [(ent, 1)],[("reset",1),(ent,maxConc)])
         r.add_reaction_inc(ent, "inc", [(ent, 1)],[(ent,maxConc)])
-        # r.add_reaction_dec(ent, "dec", [(ent, 1)],[])
+        r.add_reaction_dec(ent, "dec", [(ent, 1)],[])
         # r.add_reaction([(ent,1),("reset",1)],[],[(ent,1)])
         if i < chainLen:
             r.add_reaction([(ent,maxConc)],[],[("e_"+str(i+1),1)])
 
-    # r.add_reaction([("e_" + str(chainLen),maxConc)],[("dec",1)],[("e_" + str(chainLen),maxConc)])
-    r.add_reaction([("e_" + str(chainLen),maxConc)],[],[("e_" + str(chainLen),maxConc)])
+    r.add_reaction([("e_" + str(chainLen),maxConc)],[("dec",1)],[("e_" + str(chainLen),maxConc)])
+    # r.add_reaction([("e_" + str(chainLen),maxConc)],[],[("e_" + str(chainLen),maxConc)])
     
     
     c = ContextAutomatonWithConcentrations(r)
