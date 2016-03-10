@@ -63,6 +63,18 @@ class SmtCheckerRSC(object):
         
         self.ca_state.append(Int("CA"+str(level)+"_state"))
 
+    def enc_nonzero_assertion(self, level):
+        """Encodes assertions that (some) variables need to be >0
+        
+        We do not need to actually control all the variables,
+        only those that can possibly go below 0.
+        """
+        
+        enc_nz = True
+        for v in self.v[level]:
+            enc_nz = simplify(And(enc_nz, v >= 0))
+        return enc_nz
+
     def enc_init_state(self, level):
         """Encodes the initial state at the given level"""
 
@@ -100,22 +112,40 @@ class SmtCheckerRSC(object):
         # ----------- ordinary reactions --------------------------------------------
 
         enc_rct_prod = False
+        
         for reactants,inhibitors,products in rcts_for_prod_entity:
-            enc_reactants   = True
-            enc_inhibitors  = True
-            # enc_products -- below
-            
-            for reactant,concentration in reactants:
-                enc_reactants = simplify(And(enc_reactants, 
-                                            Or(self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
-            for inhibitor,concentration in inhibitors:
-                enc_inhibitors = simplify(And(enc_inhibitors, 
-                                             And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
 
+            enc_reactants   = True
+            for reactant,concentration in reactants:
+                enc_reactants = simplify(And(enc_reactants,
+                                            Or(self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
+
+            enc_inhibitors  = True
+            for inhibitor,concentration in inhibitors:
+                enc_inhibitors = simplify(And(enc_inhibitors,
+                                             And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
+        
+            enc_rct_enabled = And(enc_reactants, enc_inhibitors)
             enc_products = self.v[level+1][products[0][0]] == products[0][1]
-            
-            enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
-            enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
+            enc_rct_prod = simplify(If(enc_rct_enabled, enc_products, enc_rct_prod))
+            enc_enabledness = simplify(Or(enc_enabledness, enc_rct_enabled))
+        
+        # for reactants,inhibitors,products in rcts_for_prod_entity:
+        #     enc_reactants   = True
+        #     enc_inhibitors  = True
+        #     # enc_products -- below
+        #
+        #     for reactant,concentration in reactants:
+        #         enc_reactants = simplify(And(enc_reactants,
+        #                                     Or(self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
+        #     for inhibitor,concentration in inhibitors:
+        #         enc_inhibitors = simplify(And(enc_inhibitors,
+        #                                      And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
+        #
+        #     enc_products = self.v[level+1][products[0][0]] == products[0][1]
+        #
+        #     enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
+        #     enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
             
         # -------- meta reactions ---------------------------------------------------
         
@@ -140,14 +170,14 @@ class SmtCheckerRSC(object):
                                              And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
             
             if r_type == "inc":
-                enc_products = simplify(self.v[level+1][prod_entity] == \
-                    If(self.v[level][prod_entity]>self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]) + \
-                    If(self.v[level][command_entity]>self.v_ctx[level][command_entity],self.v[level][command_entity],self.v_ctx[level][command_entity]))
+                value_after_inc = If(self.v[level][prod_entity]>self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]) + \
+                    If(self.v[level][command_entity]>self.v_ctx[level][command_entity],self.v[level][command_entity],self.v_ctx[level][command_entity])
+                enc_products = self.v[level+1][prod_entity] == value_after_inc
 
             elif r_type == "dec":
-                enc_products = simplify(self.v[level+1][prod_entity] == \
-                    If(self.v[level][prod_entity]>self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]) - \
+                value_after_dec = simplify(If(self.v[level][prod_entity]>self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]) - \
                     If(self.v[level][command_entity]>self.v_ctx[level][command_entity],self.v[level][command_entity],self.v_ctx[level][command_entity]))
+                enc_products = self.v[level+1][prod_entity] == If(value_after_dec < 0, 0, value_after_dec)
 
             else:
                 raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
@@ -336,9 +366,12 @@ class SmtCheckerRSC(object):
 
         self.prepare_all_variables()
         
+        # self.solver.add(self.enc_nonzero_assertion(0))
+        
         while True:
             self.prepare_all_variables()
-
+            # self.solver.add(self.enc_nonzero_assertion(current_level+1))
+            
             print("\n{:-^70}".format("[ Working at level=" + str(current_level) + " ]"))
             stdout.flush()
 
