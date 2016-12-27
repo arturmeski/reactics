@@ -14,6 +14,7 @@
 #
 
 from sys import exit
+from colour import *
 
 class ContextAutomaton(object):
     
@@ -109,7 +110,7 @@ class ContextAutomaton(object):
         return s
         
     def show_transitions(self):
-        print("[*] Context automaton transitions:")
+        print(C_MARK_INFO + " Context automaton transitions:")
         for transition in self._transitions:
             str_transition = str(transition[0]) + " --( "
             str_transition += self.context2str(transition[1])
@@ -118,7 +119,7 @@ class ContextAutomaton(object):
     
     def show_states(self):
         init_state_name = self.get_init_state_name()
-        print("[*] Context automaton states:")
+        print(C_MARK_INFO + " Context automaton states:")
         for state in self._states:
             print(" - " + state, end="")
             if state == init_state_name:
@@ -130,7 +131,11 @@ class ContextAutomaton(object):
         self.show_states()
         self.show_transitions()
 
-
+class ExtendedContextAutomaton(ContextAutomaton):
+    """Extended Context Automaton"""
+    def __init__(self, reaction_system):
+        super(ExtendedContextAutomaton, self).__init__(reaction_system)
+        
 class ContextAutomatonWithConcentrations(ContextAutomaton):
 
     def __init__(self, reaction_system):
@@ -307,7 +312,7 @@ class ReactionSystem(object):
         return self.entities_ids_set_to_str(state)
 
     def show_reactions(self, soft=False):
-        print("[*] Reactions:")
+        print(C_MARK_INFO + " Reactions:")
         if soft and len(self.reactions) > 50:
             print(" -> there are more than 50 reactions (" + str(len(self.reactions)) + ")")
         else:
@@ -319,17 +324,17 @@ class ReactionSystem(object):
                                                             " { " + self.state_to_str(reaction[2]) + " }"))
 
     def show_background_set(self):
-        print("[*] Background set: {" + self.entities_names_set_to_str(self.background_set) + "}")
+        print(C_MARK_INFO + " Background set: {" + self.entities_names_set_to_str(self.background_set) + "}")
 
     def show_initial_contexts(self):
         if len(self.init_contexts) > 0:
-            print("[*] Initial context sets:")
+            print(C_MARK_INFO + " Initial context sets:")
             for ctx in self.init_contexts:
                   print(" - {" + self.entities_ids_set_to_str(ctx) + "}")
 
     def show_context_entities(self):
         if len(self.context_entities) > 0:
-            print("[*] Context entities: " + self.entities_ids_set_to_str(self.context_entities))
+            print(C_MARK_INFO + " Context entities: " + self.entities_ids_set_to_str(self.context_entities))
 
     def show(self, soft=False):
 
@@ -540,10 +545,10 @@ class ReactionSystemWithConcentrations(ReactionSystem):
         return s        
 
     def show_background_set(self):
-        print("[*] Background set: {" + self.entities_names_set_to_str(self.background_set) + "}")
+        print(C_MARK_INFO + " Background set: {" + self.entities_names_set_to_str(self.background_set) + "}")
 
     def show_meta_reactions(self):
-        print("[*] Meta reactions:")
+        print(C_MARK_INFO + " Meta reactions:")
         for param_ent,reactions in self.meta_reactions.items():
             for r_type,command,reactants,inhibitors in reactions:
                 if r_type == "inc" or r_type == "dec":
@@ -553,12 +558,12 @@ class ReactionSystemWithConcentrations(ReactionSystem):
                     raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
 
     def show_max_concentrations(self):
-        print("[*] Maximal allowed concentration levels (for optimized translation to RS):")
+        print(C_MARK_INFO + " Maximal allowed concentration levels (for optimized translation to RS):")
         for e,max_conc in self.max_conc_per_ent.items():
             print(" - {0:^20} = {1:<6}".format(self.get_entity_name(e),max_conc))
 
     def show_permanent_entities(self):
-        print("[*] Permanent entities:")
+        print(C_MARK_INFO + " Permanent entities:")
         for e,inhibitors in self.permanent_entities.items():
             print(" - {0:^20}{1:<6}".format(self.get_entity_name(e) + ": ","I={" + self.state_to_str(inhibitors) + "}"))
 

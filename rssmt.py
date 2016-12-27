@@ -14,17 +14,23 @@ from smtcheckerrsc          import SmtCheckerRSC
 import sys
 import rs_examples
 
+from colour import *
+
 import resource
 
 profiling = False
 
 version = "2016/02/21/00"
-rsmc_banner = """
- *** Reaction Systems SMT-Based Model Checking
+rsmc_banner = """Reaction Systems SMT-Based Model Checking
 
- *** Version: """ + version + """
- *** Author:  Artur Męski <meski@ipipan.waw.pl> / <artur.meski@ncl.ac.uk>
-"""
+Version: """ + version + """
+Author:  Artur Męski <meski@ipipan.waw.pl> / <artur.meski@ncl.ac.uk>"""
+
+def print_banner():
+    print()
+    for line in rsmc_banner.split("\n"):
+        print(colour_str(C_GREEN, " " + 3*"-" + " "), line)
+    print()
 
 def process():
     
@@ -36,10 +42,14 @@ def process():
 
 def main():
             
-    print(rsmc_banner)
+    print_banner()
 
-    process()
+    # process()
+    r = ReactionSystem()
+    c = ExtendedContextAutomaton(r)
+    rc = ReactionSystemWithAutomaton(r,c)
 
+    rc.show()
     
 if __name__ == "__main__":
     try:

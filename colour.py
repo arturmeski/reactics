@@ -7,6 +7,8 @@ C_ENDC = '\033[0m'
 C_BOLD = '\033[1m'
 C_UNDERLINE = '\033[4m'
 
+C_MARK_INFO = C_BOLD + "[" + C_GREEN + "*" + C_ENDC + C_BOLD + "]" + C_ENDC
+
 def colour_str(col, s):
     return col + s + C_ENDC
     
