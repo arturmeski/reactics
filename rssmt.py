@@ -41,12 +41,22 @@ def process():
 ##################################################################    
 
 def main():
-            
+    
     print_banner()
 
     # process()
     r = ReactionSystem()
+    r.add_bg_set_entity("inc")
+    r.add_bg_set_entity("dec")
+    
     c = ExtendedContextAutomaton(r)
+    c.add_init_state("init")
+    c.add_state("working")
+    c.add_action("act1")
+    c.add_action("act2")
+    c.add_transition("init", "act1", ([],[],["inc"]), "working")
+    c.add_transition("working", "act2", ([],[],["inc"]), "working")
+    
     rc = ReactionSystemWithAutomaton(r,c)
 
     rc.show()

@@ -61,7 +61,7 @@ class ContextAutomaton(object):
         try:
             return self._states.index(name)
         except ValueError:
-            print("Undefined context automaton state: " + repr(name))
+            print_error("Undefined context automaton state: " + repr(name))
             exit(1)
 
     def get_state_name(self, state_id):
@@ -73,13 +73,24 @@ class ContextAutomaton(object):
     def print_states(self):
          for state in self._states:
             print(state)
-            
-    def is_valid_context(self, context):
-        if set(context).issubset(self._reaction_system.background_set):
+    
+    def is_valid_rs_set(self, elements):
+        if set(elements).issubset(self._reaction_system.background_set):
             return True
         else:
             return False
+            
+    def is_valid_context(self, context):
+        return self.is_valid_rs_set(context)
         
+    def get_set_of_ids(self, elements):
+        """Converts a set/list/tuple of entities into a set of their ids"""
+        
+        new_set = set()
+        for e in set(elements):
+            new_set.add(self._reaction_system.get_entity_id(e))
+        return new_set
+    
     def add_transition(self, src, context_set, dst):
         if not type(context_set) is set and not type(context_set) is list:
             print("Contexts set must be of type set or list")
@@ -99,16 +110,19 @@ class ContextAutomaton(object):
         
         self._transitions.append((self.get_state_id(src),new_context_set,self.get_state_id(dst)))
 
-    def context2str(self, ctx):
+    def rsset2str(self, elements):
         """Converts the set of entities ids into the string with their names"""
-        if len(ctx) == 0:
+        if len(elements) == 0:
             return "0"
         s = "{"
-        for c in ctx:
+        for c in elements:
             s += " " + self._reaction_system.get_entity_name(c) 
         s += " }"
         return s
-        
+    
+    def context2str(self, ctx):
+        return self.rsset2str(ctx)
+                
     def show_transitions(self):
         print(C_MARK_INFO + " Context automaton transitions:")
         for transition in self._transitions:
@@ -134,8 +148,75 @@ class ContextAutomaton(object):
 class ExtendedContextAutomaton(ContextAutomaton):
     """Extended Context Automaton"""
     def __init__(self, reaction_system):
+        self._actions = []
         super(ExtendedContextAutomaton, self).__init__(reaction_system)
+    
+    def add_transition(self, src, action, ctx_reaction, dst):
         
+        ctx_reactants, ctx_inhibitors, ctx_products = ctx_reaction 
+        
+        if not type(ctx_products) is set and not type(ctx_products) is list:
+            print("Contexts set (context products) must be of type set or list")
+        
+        if not self.is_valid_rs_set(ctx_reactants):
+            raise RuntimeError("one of the entities in the reactants set is unknown (undefined)!")
+        
+        if not self.is_valid_rs_set(ctx_inhibitors):
+            raise RuntimeError("one of the entities in the inhibitors set is unknown (undefined)!")
+        
+        if not self.is_valid_rs_set(ctx_products):
+            raise RuntimeError("one of the entities in the context set is unknown (undefined)!")        
+        
+        if not self.is_state(src):
+            raise RuntimeError("\"" + src + "\" is an unknown (undefined) state")
+
+        if not self.is_state(dst):
+            raise RuntimeError("\"" + dst + "\" is an unknown (undefined) state")
+
+        src_id = self.get_state_id(src)
+        dst_id = self.get_state_id(dst)
+        act_id = self.get_action_id(action)
+        r_ids = self.get_set_of_ids(ctx_reactants)
+        i_ids = self.get_set_of_ids(ctx_inhibitors)
+        p_ids = self.get_set_of_ids(ctx_products)
+        
+        self._transitions.append((src_id, act_id, (r_ids, i_ids, p_ids), dst_id))
+    
+    def show_transitions(self):
+        print(C_MARK_INFO + " Context automaton transitions:")
+        for src_id, act_id, reaction, dst_id in self._transitions:
+            str_transition = self.get_state_name(src_id) + " --( " 
+            str_transition += self.get_action_name(act_id) + " | "
+            str_transition += "( " + self.rsset2str(reaction[0]) + "," + self.rsset2str(reaction[1]) + "," + self.rsset2str(reaction[2]) + " )"
+            str_transition += " )--> " + self.get_state_name(dst_id)
+            print(" - " + str_transition)
+    
+    def add_action(self, action_name):
+        if action_name not in self._actions:
+            self._actions.append(action_name)
+        else:
+            print("\'%s\' already added. skipping..." % (action_name,))
+    
+    def get_action_id(self, action_name):
+        try:
+            return self._actions.index(action_name)
+        except ValueError:
+            print_error("Undefined context automaton action: " + repr(action_name))
+            exit(1)
+    
+    def get_action_name(self, action_id):
+        return self._actions[action_id]
+                        
+    def show_actions(self):
+        print(C_MARK_INFO + " Context automaton actions:")
+        for act in self._actions:
+            print(" - " + act)
+    
+    def show(self):
+        self.show_states()
+        self.show_actions()
+        self.show_transitions()
+                    
 class ContextAutomatonWithConcentrations(ContextAutomaton):
 
     def __init__(self, reaction_system):
