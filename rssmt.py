@@ -6,11 +6,11 @@
 
 """
 
-from rctsys import ReactionSystem,ReactionSystemWithConcentrations,ContextAutomatonWithConcentrations,ReactionSystemWithAutomaton
-from smtchecker import SmtChecker
-from smtcheckerpgrs import SmtCheckerPGRS
-from smtcheckerdistribrs import SmtCheckerDistribRS
-from smtcheckerrsc import SmtCheckerRSC
+from rctsys                 import *
+from smtchecker             import SmtChecker
+from smtcheckerpgrs         import SmtCheckerPGRS
+from smtcheckerdistribrs    import SmtCheckerDistribRS
+from smtcheckerrsc          import SmtCheckerRSC
 import sys
 import rs_examples
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-from rctsys import ReactionSystem,ReactionSystemWithConcentrations,ContextAutomatonWithConcentrations,ReactionSystemWithAutomaton
-from distrib_rctsys import DistributedReactionSystem
-from smtchecker import SmtChecker
-from smtcheckerpgrs import SmtCheckerPGRS
-from smtcheckerdistribrs import SmtCheckerDistribRS
-from smtcheckerrsc import SmtCheckerRSC
+from rctsys                 import *
+from distrib_rctsys         import *
+from smtchecker             import SmtChecker
+from smtcheckerpgrs         import SmtCheckerPGRS
+from smtcheckerdistribrs    import SmtCheckerDistribRS
+from smtcheckerrsc          import SmtCheckerRSC
 import sys
 import resource
 
@@ -25,7 +25,7 @@ def chain_reaction(print_system=False):
         print("be reasonable")
         exit(1)
     
-    r = ReactionSystemWithConcentrations()    
+    r = ReactionSystemWithConcentrations()
     r.add_bg_set_entity(("inc",1))
     # r.add_bg_set_entity(("reset",1))
     r.add_bg_set_entity(("dec",1))
