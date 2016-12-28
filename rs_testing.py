@@ -17,8 +17,8 @@ def test_extended_automaton():
     c.add_state("working")
     c.add_action("act1")
     c.add_action("act2")
-    c.add_transition("init", "act1", ([],[],["inc"]), "working")
-    c.add_transition("working", "act2", ([],[],["inc"]), "working")
+    c.add_transition("init", ["act1", "act2"], ([],[],["inc"]), "working")
+    c.add_transition("working", ["act2"], ([],[],["inc"]), "working")
 
     rc = ReactionSystemWithAutomaton(r,c)
 
