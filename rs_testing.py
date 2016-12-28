@@ -12,15 +12,27 @@ def test_extended_automaton():
     r.add_bg_set_entity("inc")
     r.add_bg_set_entity("dec")
 
-    c = ExtendedContextAutomaton(r)
-    c.add_init_state("init")
-    c.add_state("working")
-    c.add_action("act1")
-    c.add_action("act2")
-    c.add_transition("init", ["act1", "act2"], ([],[],["inc"]), "working")
-    c.add_transition("working", ["act2"], ([],[],["inc"]), "working")
+    c1 = ExtendedContextAutomaton(r)
+    c1.add_init_state("init")
+    c1.name = "catest"
+    c1.add_state("working")
+    c1.add_action("act1")
+    c1.add_action("act2")
+    c1.add_transition("init", ["act1", "act2"], ([],[],["inc"]), "working")
+    c1.add_transition("working", ["act2"], ([],[],["inc"]), "working")
 
-    rc = ReactionSystemWithAutomaton(r,c)
+    c2 = ExtendedContextAutomaton(r)
+    c2.add_init_state("init")
+    c2.name = "cxxxx"
+    c2.add_state("working")
+    c2.add_action("act1")
+    c2.add_action("act2")
+    c2.add_transition("init", ["act1", "act2"], ([],[],["inc"]), "working")
+    c2.add_transition("working", ["act2"], ([],[],["inc"]), "working")
+
+    na = NetworkOfContextAutomata([c1,c2])
+
+    rc = ReactionSystemWithAutomaton(r,na)
 
     rc.show()
 

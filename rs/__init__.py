@@ -8,3 +8,4 @@ from rs.reaction_system_with_automaton import ReactionSystemWithAutomaton
 
 from rs.extended_context_automaton import ExtendedContextAutomaton
 
+from rs.network_of_context_automata import NetworkOfContextAutomata

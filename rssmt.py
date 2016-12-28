@@ -18,11 +18,15 @@ import resource
 
 profiling = False
 
+##################################################################    
+
 version = "2016/12/28/00"
 rsmc_banner = """Reaction Systems SMT-Based Model Checking
 
 Version: """ + version + """
 Author:  Artur Męski <meski@ipipan.waw.pl> / <artur.meski@ncl.ac.uk>"""
+
+##################################################################    
 
 def print_banner():
     print()
@@ -33,11 +37,12 @@ def print_banner():
 ##################################################################    
 
 def main():
+    """Main function"""
     
     print_banner()
-    
     rs_testing.run_tests()
-    
+
+##################################################################    
     
 if __name__ == "__main__":
     try:

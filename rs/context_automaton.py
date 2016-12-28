@@ -8,6 +8,7 @@ class ContextAutomaton(object):
         self._transitions = []
         self._init_state = None
         self._reaction_system = reaction_system
+        self._name = ""
     
     @property
     def states(self):
@@ -17,6 +18,14 @@ class ContextAutomaton(object):
     def transitions(self):
         return self._transitions
     
+    @property
+    def name(self):
+        return self._name
+    
+    @name.setter
+    def name(self, automaton_name):
+        self._name = automaton_name
+        
     def add_state(self, name):
         if name not in self._states:
             self._states.append(name)
@@ -126,7 +135,13 @@ class ContextAutomaton(object):
             else:
                 print()
 
+    def show_header(self):
+        if self.name:
+            name_string = ": " + colour_str(C_BOLD, self.name)
+            print(C_MARK_INFO + " Context automaton" + name_string)       
+
     def show(self):
+        self.show_header()
         self.show_states()
         self.show_transitions()
 

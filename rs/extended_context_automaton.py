@@ -97,6 +97,5 @@ class ExtendedContextAutomaton(ContextAutomaton):
             print(" - " + act + " (id=" + str(self.get_action_id(act)) + ")")
     
     def show(self):
-        self.show_states()
+        super(ExtendedContextAutomaton, self).show()
         self.show_actions()
-        self.show_transitions()
