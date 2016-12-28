@@ -10,12 +10,10 @@ import resource
 class SmtCheckerRSNA(object):
     """SMT-based Model Checking for Reaction Systems with Network of Automata"""
 
-    def __init__(self, rsca):
-
-        rsca.sanity_check()
+    def __init__(self, reaction_system_with_netaut):
         
-        self.rs = rsca.rs
-        self.ca = rsca.ca        
+        self.rs = reaction_system_with_netaut.rs
+        self.ca = reaction_system_with_netaut.cas
 
         self.v = []
         self.v_ctx = []

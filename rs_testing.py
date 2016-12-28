@@ -4,8 +4,8 @@ import rs_examples
 
 def run_tests():
     
-    # test_extended_automaton()
-    process()
+    test_extended_automaton()
+    # process()
 
 def test_extended_automaton():
     
@@ -33,11 +33,11 @@ def test_extended_automaton():
 
     na = NetworkOfContextAutomata([c1,c2])
 
-    rna = ReactionSystemWithAutomaton(r,na)
+    rna = ReactionSystemWithNetworkOfAutomata(r,na)
 
     rna.show()
     
-    checker = SmtCheckerRS(rna)
+    checker = SmtCheckerRSNA(rna)
     
 
 def process():
