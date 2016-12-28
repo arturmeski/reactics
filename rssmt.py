@@ -6,11 +6,8 @@
 
 """
 
-from rctsys                 import *
-from smtchecker             import SmtChecker
-from smtcheckerpgrs         import SmtCheckerPGRS
-from smtcheckerdistribrs    import SmtCheckerDistribRS
-from smtcheckerrsc          import SmtCheckerRSC
+from rs import *
+from smt import *
 import sys
 import rs_examples
 
