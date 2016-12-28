@@ -17,7 +17,7 @@ import resource
 
 profiling = False
 
-version = "2016/02/21/00"
+version = "2016/12/28/00"
 rsmc_banner = """Reaction Systems SMT-Based Model Checking
 
 Version: """ + version + """
