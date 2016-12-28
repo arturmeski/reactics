@@ -67,7 +67,7 @@ def chain_reaction(print_system=False):
         if print_system:
             print("\nTranslated:")
             orc.show()
-        smt_tr_rs = SmtCheckerPGRS(orc)
+        smt_tr_rs = SmtCheckerRS(orc)
         smt_tr_rs.check_reachability(['e_'+str(chainLen)+"#"+str(maxConc)])
     
     # print("Reaction System with Concentrations:", smt_rsc.get_verification_time())
@@ -181,7 +181,7 @@ def heat_shock_response(print_system=True,verify_rsc=True):
         if print_system:
             print("\nTranslated:")
             orc.show()
-        smt_tr_rs = SmtCheckerPGRS(orc)
+        smt_tr_rs = SmtCheckerRS(orc)
         smt_tr_rs.check_reachability(rs_prop)
 
 def state_translate_rsc2rs(p):

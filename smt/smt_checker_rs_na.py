@@ -7,7 +7,8 @@ from time import time
 from sys import stdout
 import resource
 
-class SmtCheckerPGRS(object):
+class SmtCheckerRSNA(object):
+    """SMT-based Model Checking for Reaction Systems with Network of Automata"""
 
     def __init__(self, rsca):
 

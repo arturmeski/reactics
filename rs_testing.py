@@ -32,9 +32,12 @@ def test_extended_automaton():
 
     na = NetworkOfContextAutomata([c1,c2])
 
-    rc = ReactionSystemWithAutomaton(r,na)
+    rna = ReactionSystemWithAutomaton(r,na)
 
-    rc.show()
+    rna.show()
+    
+    checker = SmtCheckerRS(rna)
+    
 
 def process():
     
@@ -44,15 +47,15 @@ def process():
     
     
 
-# PGRS:
+# RS:
 # rsca = rs_examples.ca_toy_ex1()
 # rsca.show()
-# smt = SmtCheckerPGRS(rsca)
+# smt = SmtCheckerRS(rsca)
 # smt.check_reachability(rs_examples.ca_toy_ex1_property1(), print_time=True)
 
 # rsca = rs_examples.ca_bitctr(N)
 # rsca.show(True)
-# smt = SmtCheckerPGRS(rsca)
+# smt = SmtCheckerRS(rsca)
 # smt.check_reachability(rs_examples.ca_bitctr_property(N), print_time=True)
 
 # Distributed RS:
