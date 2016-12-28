@@ -1,10 +1,11 @@
 from rs import *
 from smt import *
+import rs_examples 
 
 def run_tests():
     
-    test_extended_automaton()
-    # process()
+    # test_extended_automaton()
+    process()
 
 def test_extended_automaton():
     

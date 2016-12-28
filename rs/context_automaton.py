@@ -1,6 +1,6 @@
 from sys import exit
 from colour import *
-
+        
 class ContextAutomaton(object):
     
     def __init__(self, reaction_system):

@@ -6,10 +6,7 @@ from rs.context_automaton import ContextAutomaton
 class ContextAutomatonWithConcentrations(ContextAutomaton):
 
     def __init__(self, reaction_system):
-        self._states = []
-        self._transitions = []
-        self._init_state = None
-        self._reaction_system = reaction_system
+        super(ContextAutomatonWithConcentrations, self).__init__(reaction_system)
     
     def is_valid_context(self, context):
         if set([e for e,lvl in context]).issubset(self._reaction_system.background_set):
