@@ -52,6 +52,8 @@ class SmtCheckerRSNA(object):
             variables.append(Bool("L"+str(level)+"_"+entity))
         self.v.append(variables)
         
+        # TODO: tutaj musimy mieć zestaw zmiennych dla każdego automatu
+        
         self.ca_state.append(Int("CA"+str(level)+"_state"))
 
     def enc_init_state(self, level):
