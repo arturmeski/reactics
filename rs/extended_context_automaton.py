@@ -8,7 +8,11 @@ class ExtendedContextAutomaton(ContextAutomaton):
     def __init__(self, reaction_system):
         self._actions = []
         super(ExtendedContextAutomaton, self).__init__(reaction_system)
-        
+    
+    @property
+    def number_of_actions(self):
+        return len(self._actions)
+    
     def add_transition(self, src, actions, ctx_reaction, dst):
         """Adds a transition
         

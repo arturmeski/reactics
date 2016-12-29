@@ -39,6 +39,7 @@ def test_extended_automaton():
     
     checker = SmtCheckerRSNA(rna)
     
+    checker.check_reachability([])
 
 def process():
     

@@ -43,9 +43,9 @@ class SmtCheckerRS(object):
 
         self.v_ctx.append(variables)
 
-    def prepare_state_variables(self):
-        """Encodes all the state variables"""
-
+    def prepare_rs_state_variables(self):
+        """Encodes all the state variables of the reaction system"""
+    
         level = self.next_level_to_encode
 
         variables = []
@@ -53,19 +53,36 @@ class SmtCheckerRS(object):
             variables.append(Bool("L"+str(level)+"_"+entity))
         self.v.append(variables)
         
+    def prepare_context_controller_variables(self):
+        """Encodes all the variables required for controlling context sequences"""
+
+        level = self.next_level_to_encode
+        
         self.ca_state.append(Int("CA"+str(level)+"_state"))
+
+    def prepare_state_variables(self):
+        """Encodes all the state variables"""
+    
+        self.prepare_rs_state_variables()
+        self.prepare_context_controller_variables()    
+
+    def enc_rs_init_state(self, level):
+        """Encodes the initial state for the reaction system"""
+        
+        rs_init_state_enc = True
+        for v in self.v[level]:
+            rs_init_state_enc = simplify(And(rs_init_state_enc, Not(v))) # the initial state is empty
+        return rs_init_state_enc
+
+    def enc_context_controller_init_state(self, level):
+        """Encodes the initial state for controlling context sequences"""
+        
+        return self.ca_state[level] == self.ca.get_init_state_id()
 
     def enc_init_state(self, level):
         """Encodes the initial state at the given level"""
 
-        rs_init_state_enc = True
-
-        for v in self.v[level]:
-            rs_init_state_enc = simplify(And(rs_init_state_enc, Not(v))) # the initial state is empty
-
-        ca_init_state_enc = self.ca_state[level] == self.ca.get_init_state_id()
-        
-        init_state_enc = simplify(And(rs_init_state_enc, ca_init_state_enc))
+        init_state_enc = simplify(And(self.enc_rs_init_state(level), self.enc_context_controller_init_state(level)))
 
         return init_state_enc
 
@@ -103,6 +120,8 @@ class SmtCheckerRS(object):
         return simplify(enc_ent_prod)
         
     def enc_transition_relation(self, level):
+        """Encodes the combined transition relation"""
+        
         return simplify(And(self.enc_rs_trans(level), self.enc_automaton_trans(level)))
 
     def enc_rs_trans(self, level):
@@ -122,29 +141,34 @@ class SmtCheckerRS(object):
 
         return enc_trans
     
+    def enc_automaton_single_trans(self, level, transition):
+        
+        src,ctx,dst = transition
+        
+        src_enc = self.ca_state[level] == src
+        dst_enc = self.ca_state[level+1] == dst
+        
+        all_ent = set(range(len(self.rs.background_set)))
+        incl_ctx = ctx
+        excl_ctx = all_ent - incl_ctx
+        
+        ctx_enc = True
+        
+        for c in incl_ctx:
+            ctx_enc = simplify(And(ctx_enc, self.v_ctx[level][c]))
+        for c in excl_ctx:
+            ctx_enc = simplify(And(ctx_enc, Not(self.v_ctx[level][c])))
+        
+        enc_single_trans = simplify(And(src_enc, ctx_enc, dst_enc))
+        
+        return enc_single_trans
+    
     def enc_automaton_trans(self, level):
         """Encodes the transition relation for the context automaton"""
         
         enc_trans = False
-    
-        for src,ctx,dst in self.ca.transitions:
-                src_enc = self.ca_state[level] == src
-                dst_enc = self.ca_state[level+1] == dst
-                
-                all_ent = set(range(len(self.rs.background_set)))
-                incl_ctx = ctx
-                excl_ctx = all_ent - incl_ctx
-                
-                ctx_enc = True
-                
-                for c in incl_ctx:
-                    ctx_enc = simplify(And(ctx_enc, self.v_ctx[level][c]))
-                for c in excl_ctx:
-                    ctx_enc = simplify(And(ctx_enc, Not(self.v_ctx[level][c])))
-                
-                cur_trans = simplify(And(src_enc, ctx_enc, dst_enc))
-                
-                enc_trans = simplify(Or(enc_trans, cur_trans))
+        for transition in self.ca.transitions:                
+                enc_trans = simplify(Or(enc_trans, self.enc_automaton_single_trans(level, transition)))
         
         return enc_trans
 
