@@ -15,6 +15,14 @@ class ReactionSystem(object):
         self.init_contexts = []
         self.context_entities = []
 
+    @property
+    def background_set_size(self):
+        return len(self.background_set)
+        
+    @property
+    def set_of_bgset_ids(self):
+        return set(range(self.background_set_size))
+
     def assume_not_in_bgset(self, name):
         if self.is_in_background_set(name):
             raise RuntimeError("The entity " + name + " is already on the list")

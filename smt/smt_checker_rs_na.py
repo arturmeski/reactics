@@ -59,45 +59,26 @@ class SmtCheckerRSNA(SmtCheckerRS):
         
     def enc_transition_relation(self, level):
         return simplify(And(self.enc_rs_trans(level), self.enc_automaton_trans(level)))
-    
-    def enc_automaton_single_trans(self, level, transition):
 
-        src,actions,ctx_reaction,dst = transition
-
-        src_enc = self.ca_state[level] == src
-        dst_enc = self.ca_state[level+1] == dst
-
-        all_ent = set(range(len(self.rs.background_set)))
-        incl_ctx = ctx
-        excl_ctx = all_ent - incl_ctx
-
-        ctx_enc = True
-
-        for c in incl_ctx:
-            ctx_enc = simplify(And(ctx_enc, self.v_ctx[level][c]))
-        for c in excl_ctx:
-            ctx_enc = simplify(And(ctx_enc, Not(self.v_ctx[level][c])))
-
-        enc_single_trans = simplify(And(src_enc, ctx_enc, dst_enc))
-
-        return enc_single_trans
-    
-    def enc_single_automaton_trans(self, level, automaton):
-        
-        enc_aut_trans = False
-        for transition in automaton.transitions:
-            enc_aut_trans = simplify(Or(enc_aut_trans, self.enc_automaton_single_trans(level, transition)))
-        
-        return enc_aut_trans
-    
     def enc_automaton_trans(self, level):
         """Encodes the transition relation for the context automaton"""
         
-        enc_canet = True
-        for aut in self.canet:
-            enc_canet = simplify(And(enc_canet, self.enc_single_automaton_trans(level, aut)))
+        enc_trans = True
+                
+        prod_context = self.canet.prod_entities
+        never_produced_context = self.rs.set_of_bgset_ids - prod_context
+        
+        # producible entities:
+        for ent in prod_context:
+            actions_producing_ent = self.canet.get_actions_producing_entity(ent)            
+            for act in actions_producing_ent:
+                automata_with_act = self.canet.get_automata_with_action(act)
+                for aut_id in automata_with_act:
+                    aut = self.canet.automata[aut_id]
 
-        return enc_canet
+        # entities that are never produced:
+        
+        return enc_trans
 
     def check_reachability(self, state, print_witness=True, print_time=True, print_mem=True):
     
@@ -108,4 +89,6 @@ class SmtCheckerRSNA(SmtCheckerRS):
         self.prepare_all_variables()
         self.prepare_all_variables()
         self.prepare_all_variables()
+        
+        print(self.enc_automaton_trans(0))
 

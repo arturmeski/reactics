@@ -24,8 +24,8 @@ version = "2016/12/28/00"
 rsmc_banner = """
 Reaction Systems SMT-Based Model Checking
 
-Version: """ + version + """
-Author:  Artur Męski <meski@ipipan.waw.pl> / <artur.meski@ncl.ac.uk>
+Version:  """ + version + """
+Author:   Artur Męski <meski@ipipan.waw.pl> / <artur.meski@ncl.ac.uk>
 """
 
 ##################################################################    

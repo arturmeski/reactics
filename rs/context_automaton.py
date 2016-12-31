@@ -9,7 +9,8 @@ class ContextAutomaton(object):
         self._init_state = None
         self._reaction_system = reaction_system
         self._name = ""
-    
+        self._prod_entities = set()
+        
     @property
     def states(self):
         return self._states
@@ -17,6 +18,14 @@ class ContextAutomaton(object):
     @property
     def transitions(self):
         return self._transitions
+    
+    @property
+    def prod_entities(self):
+        return self._prod_entities
+    
+    @property
+    def reaction_system(self):
+        return self._reaction_system
     
     @property
     def name(self):
@@ -101,6 +110,8 @@ class ContextAutomaton(object):
         new_context_set = set()
         for e in set(context_set):
             new_context_set.add(self._reaction_system.get_entity_id(e))
+            
+        self._prod_entities |= new_context_set
         
         self._transitions.append((self.get_state_id(src),new_context_set,self.get_state_id(dst)))
 
@@ -140,8 +151,14 @@ class ContextAutomaton(object):
             name_string = ": " + colour_str(C_BOLD, self.name)
             print(C_MARK_INFO + " Context automaton" + name_string)       
 
+    def show_prod_entities(self):
+        print(C_MARK_INFO + " Context automaton possible products:")
+        for entity in self._prod_entities:
+            print(" - " + self._reaction_system.get_entity_name(entity))
+        
     def show(self):
         self.show_header()
         self.show_states()
         self.show_transitions()
+        self.show_prod_entities()
 
