@@ -50,6 +50,14 @@ class ExtendedContextAutomaton(ContextAutomaton):
         else:
             return set()
     
+    def can_produce_entity(self, entity):
+        """Check if the automaton can produce an entity"""
+
+        if entity in self._actions_for_products:
+            return True
+        else:
+            return False
+    
     def add_transition(self, src, actions, ctx_reaction, dst):
         """Adds a transition
         

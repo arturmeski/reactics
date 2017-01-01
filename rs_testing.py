@@ -10,10 +10,12 @@ def run_tests():
 def test_extended_automaton():
     
     r = ReactionSystem()
+    r.add_bg_set_entity("a")
+    r.add_bg_set_entity("b")
     r.add_bg_set_entity("inc")
     r.add_bg_set_entity("dec")
     r.add_bg_set_entity("decx")
-    
+    r.add_bg_set_entity("baam")
 
     c1 = ExtendedContextAutomaton(r)
     c1.add_init_state("init")
@@ -21,7 +23,7 @@ def test_extended_automaton():
     c1.add_state("working")
     c1.add_action("act1")
     c1.add_action("act2")
-    c1.add_transition("init", ["act1", "act2"], ([],[],["inc","dec"]), "working")
+    c1.add_transition("init", ["act1", "act2"], (["a"],["b"],["inc","dec"]), "working")
     c1.add_transition("working", ["act2"], ([],[],["inc"]), "working")
 
     c2 = ExtendedContextAutomaton(r)
@@ -39,6 +41,13 @@ def test_extended_automaton():
     c3.add_state("working")
     c3.add_action("act1")
     c3.add_transition("init", ["act1"], ([],[],["inc"]), "working")
+    
+    c4 = ExtendedContextAutomaton(r)
+    c4.add_init_state("init")
+    c4.name = "c4"
+    c4.add_state("w")
+    c4.add_action("action_x")
+    c4.add_transition("init", ["action_x"], ([],[],["baam"]), "w")
     #
     # c4 = ExtendedContextAutomaton(r)
     # c4.add_init_state("init")
@@ -58,7 +67,7 @@ def test_extended_automaton():
     # c5.add_transition("init", ["act1", "act2"], ([],[],["inc"]), "working")
     # c5.add_transition("working", ["act2"], ([],[],["inc"]), "working")
 
-    na = NetworkOfContextAutomata(r, [c1,c2,c3])
+    na = NetworkOfContextAutomata(r, [c1,c2,c3,c4])
 
     rna = ReactionSystemWithNetworkOfAutomata(r,na)
 

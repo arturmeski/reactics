@@ -33,6 +33,10 @@ class NetworkOfContextAutomata(object):
         """Returns the set of entities that can potentially be produced by the automata in the network"""
         return self._prod_entities
 
+    @property
+    def automata_ids(self):
+        return set(range(len(self.automata)))
+
     def sanity_check(self):
         """Performs a sanity check of the network of automata"""
         
