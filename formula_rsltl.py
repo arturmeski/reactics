@@ -1,6 +1,6 @@
 from enum import Enum
 
-LTL_form_type = Enum('LTL_form_type', 'bag l_and l_or l_not globally next until release')
+rsLTL_form_type = Enum('rsLTL_form_type', 'bag l_and l_or l_not globally next until release')
 BagDesc_oper = Enum('BagDesc_oper', 'entity l_and l_or l_not lt le eq ge gt')
 
 class BagDescription(object):
@@ -69,51 +69,51 @@ class FormulaLTL(object):
         self.bag_descr = bag
     
     def __repr__(self):
-        if self.f_type == LTL_form_type.bag:
+        if self.f_type == rsLTL_form_type.bag:
             return repr(self.bag_descr)
-        if self.f_type == LTL_form_type.l_not:
+        if self.f_type == rsLTL_form_type.l_not:
             return "~( " + repr(self.left_operand) + " )"
-        if self.f_type == LTL_form_type.globally:
+        if self.f_type == rsLTL_form_type.globally:
             return "G( " + repr(self.left_operand) + " )"
-        if self.f_type == LTL_form_type.next:
+        if self.f_type == rsLTL_form_type.next:
             return "X( " + repr(self.left_operand) + " )"
-        if self.f_type == LTL_form_type.l_and:
+        if self.f_type == rsLTL_form_type.l_and:
             return "( " + repr(self.left_operand) + " & " + repr(self.right_operand) + " )"
-        if self.f_type == LTL_form_type.l_or:
+        if self.f_type == rsLTL_form_type.l_or:
             return "( " + repr(self.left_operand) + " | " + repr(self.right_operand) + " )"
-        if self.f_type == LTL_form_type.until:
+        if self.f_type == rsLTL_form_type.until:
             return "( " + repr(self.left_operand) + " U " + repr(self.right_operand) + " )"
-        if self.f_type == LTL_form_type.release:
+        if self.f_type == rsLTL_form_type.release:
             return "( " + repr(self.left_operand) + " R " + repr(self.right_operand) + " )"
 
     @classmethod
     def f_bag(cls, bag_descr):
-        return cls(LTL_form_type.bag, bag = bag_descr)
+        return cls(rsLTL_form_type.bag, bag = bag_descr)
 
     @classmethod
     def f_X(cls, arg):
-        return cls(LTL_form_type.next, L_oper = arg)
+        return cls(rsLTL_form_type.next, L_oper = arg)
 
     @classmethod
     def f_G(cls, arg):
-        return cls(LTL_form_type.globally, L_oper = arg)
+        return cls(rsLTL_form_type.globally, L_oper = arg)
     
     @classmethod
     def f_U(cls, arg_L, arg_R):
-        return cls(LTL_form_type.until, L_oper = arg_L, R_oper = arg_R)
+        return cls(rsLTL_form_type.until, L_oper = arg_L, R_oper = arg_R)
 
     @classmethod
     def f_R(cls, arg_L, arg_R):
-        return cls(LTL_form_type.release, L_oper = arg_L, R_oper = arg_R)
+        return cls(rsLTL_form_type.release, L_oper = arg_L, R_oper = arg_R)
         
     def __and__(self, other):
-        return FormulaLTL(LTL_form_type.l_and, L_oper = self, R_oper = other)
+        return FormulaLTL(rsLTL_form_type.l_and, L_oper = self, R_oper = other)
     
     def __or__(self, other):
-        return FormulaLTL(LTL_form_type.l_or, L_oper = self, R_oper = other)
+        return FormulaLTL(rsLTL_form_type.l_or, L_oper = self, R_oper = other)
     
     def __invert__(self):
-        return FormulaLTL(LTL_form_type.l_not, L_oper = self)
+        return FormulaLTL(rsLTL_form_type.l_not, L_oper = self)
 
 
 x = ~( FormulaLTL.f_X( FormulaLTL.f_bag( ~((BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3)) ) ) ) & FormulaLTL.f_X( FormulaLTL.f_bag( ~((BagDescription.f_entity("ent3") == 1) ) ) ) 
