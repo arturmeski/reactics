@@ -9,6 +9,8 @@ from itertools import chain
 import resource
 from colour import *
 
+import logics
+
 # def simplify(x):
 #     return x
 
@@ -362,6 +364,11 @@ class SmtCheckerRSC(object):
                     if int(var_rep) > 0:
                         print(" " + self.rs.get_entity_name(var_id) + "=" + var_rep, end="")
                 print(" }")
+                
+    def check_rsltl(self, formula, print_witness=True):
+        """Bounded Model Checking for rsLTL properties"""
+        
+        
 
     def check_reachability(self, state, print_witness=True, 
             print_time=True, print_mem=True, max_level=100):
