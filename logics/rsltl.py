@@ -125,5 +125,10 @@ class Formula_rsLTL(object):
 #x = ~( FormulaLTL.f_X(BagDescription.f_TRUE(), FormulaLTL.f_bag( ~((BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3)) ) ) ) & FormulaLTL.f_X(BagDescription.f_TRUE(), FormulaLTL.f_bag( ~((BagDescription.f_entity("ent3") == 1) ) ) ) 
 #print(x)
 
-
-
+class Encoder_rsLTL(object):
+    """Class for encoding rsLTL formulae for a given smt_checker instance"""
+        
+    def __init__(self, smt_checker):
+        self.smt_checker = smt_checker
+        
+    
