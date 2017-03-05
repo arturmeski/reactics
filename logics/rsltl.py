@@ -99,6 +99,10 @@ class Formula_rsLTL(object):
         if self.f_type == rsLTL_form_type.release:
             return "( " + repr(self.left_operand) + " R[" + repr(self.sub_operand) + "]" + repr(self.right_operand) + " )"
 
+    @property
+    def is_bag(self):
+        return self.f_type == rsLTL_form_type.bag
+
     @classmethod
     def f_bag(cls, bag_descr):
         return cls(rsLTL_form_type.bag, bag = bag_descr)
@@ -120,16 +124,15 @@ class Formula_rsLTL(object):
         return cls(rsLTL_form_type.release, L_oper = arg_L, R_oper = arg_R, sub_oper = sub)
         
     def __and__(self, other):
-        return FormulaLTL(rsLTL_form_type.l_and, L_oper = self, R_oper = other)
+        return Formula_rsLTL(rsLTL_form_type.l_and, L_oper = self, R_oper = other)
     
     def __or__(self, other):
-        return FormulaLTL(rsLTL_form_type.l_or, L_oper = self, R_oper = other)
+        return Formula_rsLTL(rsLTL_form_type.l_or, L_oper = self, R_oper = other)
     
     def __invert__(self):
-        return FormulaLTL(rsLTL_form_type.l_not, L_oper = self)
+        return Formula_rsLTL(rsLTL_form_type.l_not, L_oper = self)
 
-#x = ~( FormulaLTL.f_X(BagDescription.f_TRUE(), FormulaLTL.f_bag( ~((BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3)) ) ) ) & FormulaLTL.f_X(BagDescription.f_TRUE(), FormulaLTL.f_bag( ~((BagDescription.f_entity("ent3") == 1) ) ) ) 
-#print(x)
+
 
 class Encoder_rsLTL(object):
     """Class for encoding rsLTL formulae for a given smt_checker instance"""
@@ -174,34 +177,50 @@ class Encoder_rsLTL(object):
             
         if bag_formula.f_type == BagDesc_oper.gt:
             return self.encode_bag(bag_formula.left_operand, level, context) > int(bag_formula.right_operand)
+    
+    def encode_bag_state(self, bag_formula, level):
+        return self.encode_bag(bag_formula, level)
         
-    def encode(self, formula, position, bound):
+    def encode_bag_ctx(self, bag_formula, level):
+        return self.encode_bag(bag_formula, level, context=True)
+      
+    def encode(self, formula, level, bound):
+        
+        if level > bound:
+            return False
     
         if formula.f_type == rsLTL_form_type.bag:
-            return self.encode_bag()
+            return self.encode_bag_state(formula.bag_descr, level)
 
+        if formula.f_type == rsLTL_form_type.l_not:
+            subform = formula.left_operand
+            if subform.is_bag:
+                return Not(self.encode_bag_state(subform, level))
+            else:
+                raise RuntimeError("Negation can be applied only to bags")
         
-            
-        # if formula.f_type == rsLTL_form_type.l_not:
-        #     return "~( " + repr(formula.left_operand) + " )"
-        #
-        # if formula.f_type == rsLTL_form_type.globally:
-        #     return "G[" + repr(self.sub_operand) + "]( " + repr(formula.left_operand) + " )"
-        #
-        # if formula.f_type == rsLTL_form_type.next:
-        #     return "X[" + repr(self.sub_operand) + "]( " + repr(formula.left_operand) + " )"
-        #
-        # if formula.f_type == rsLTL_form_type.l_and:
-        #     return "( " + repr(formula.left_operand) + " & " + repr(formula.right_operand) + " )"
-        #
-        # if formula.f_type == rsLTL_form_type.l_or:
-        #     return "( " + repr(formula.left_operand) + " | " + repr(formula.right_operand) + " )"
-        #
+        if formula.f_type == rsLTL_form_type.l_and:
+            return And(self.encode(formula.left_operand, level, bound), self.encode(formula.right_operand, level, bound))
+
+        if formula.f_type == rsLTL_form_type.l_or:
+            return Or(self.encode(formula.left_operand, level, bound), self.encode(formula.right_operand, level, bound))
+
+        if formula.f_type == rsLTL_form_type.next:
+            enc = And(self.encode(formula.left_operand, level+1, bound), self.encode_bag_ctx(formula.sub_operand, level))
+            return enc 
+
+        if formula.f_type == rsLTL_form_type.globally:
+            enc = And(self.encode(formula.left_operand, level, bound), 
+                self.encode(formula, level+1, bound),
+                self.encode_bag_ctx(formula.sub_operand, level))
+        
         # if formula.f_type == rsLTL_form_type.until:
         #     return "( " + repr(formula.right_operand) + " U[" + repr(self.sub_operand) + "]" + repr(formula.right_operand) + " )"
         #
         # if formula.left_ == rsLTL_form_type.release:
         #     return "( " + repr(formula.left_operand) + " R[" + repr(self.sub_operand) + "]" + repr(formula.right_operand) + " )"
-        
-        
-    
+
+
+#x = ~( Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_bag( ~((BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3)) ) ) ) & Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_bag( ~((BagDescription.f_entity("ent3") == 1) ) ) )
+#print(x)
+
