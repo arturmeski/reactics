@@ -368,10 +368,13 @@ class SmtCheckerRSC(object):
     def check_rsltl(self, formula, print_witness=True):
         """Bounded Model Checking for rsLTL properties"""
         
+    def dummy_unroll(self, levels):
         
+        for i in range(levels):
+            self.prepare_all_variables()
 
     def check_reachability(self, state, print_witness=True, 
-            print_time=True, print_mem=True, max_level=100):
+            print_time=True, print_mem=True, max_level=1000):
         """Main testing function"""
 
         if print_time:

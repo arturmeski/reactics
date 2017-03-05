@@ -133,7 +133,6 @@ class Formula_rsLTL(object):
         return Formula_rsLTL(rsLTL_form_type.l_not, L_oper = self)
 
 
-
 class Encoder_rsLTL(object):
     """Class for encoding rsLTL formulae for a given smt_checker instance"""
         
@@ -145,7 +144,7 @@ class Encoder_rsLTL(object):
         
     def encode_bag(self, bag_formula, level, context=False):
         if bag_formula.f_type == BagDesc_oper.entity:
-            entity_id = self.rs.get_entity_id(self.entity)
+            entity_id = self.rs.get_entity_id(bag_formula.entity)
             if context:
                 return self.v_ctx[level][entity_id]
             else:

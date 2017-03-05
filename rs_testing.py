@@ -1,11 +1,39 @@
 from rs import *
 from smt import *
 import rs_examples 
+from logics import *
 
 def run_tests():
     
-    test_extended_automaton()
+    # test_extended_automaton()
     # process()
+    test_rsLTL()
+    
+def test_rsLTL():
+
+    r = ReactionSystemWithConcentrations()
+    r.add_bg_set_entity(("a",2))
+    r.add_bg_set_entity(("inc",2))
+    r.add_bg_set_entity(("dec",2))
+    r.add_bg_set_entity(("ent1",5))
+    r.add_bg_set_entity(("ent2",3))
+    r.add_bg_set_entity(("ent3",3))
+
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("init")
+    c.add_state("working")
+    c.add_transition("init", [("a",1),("inc",1)], "working")
+    c.add_transition("working", [("inc",1)], "working")
+
+    x = ( Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_bag( ~((BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3)) ) ) ) & Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_bag( ~((BagDescription.f_entity("ent3") == 1) ) ) )
+    print(x)
+    
+    rc = ReactionSystemWithAutomaton(r,c)
+    checker = SmtCheckerRSC(rc)
+    checker.dummy_unroll(10)
+    e = Encoder_rsLTL(checker)
+    
+    print(e.encode(x, 1, 10))
 
 def test_extended_automaton():
     

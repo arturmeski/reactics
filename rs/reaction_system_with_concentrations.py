@@ -23,7 +23,7 @@ class ReactionSystemWithConcentrations(ReactionSystem):
             name,def_max_conc = e
         elif type(e) is str:
             name = e
-            print("\n\nWARNING: no maximal concentration level specified for:", e, "\n\n")
+            print("\nWARNING: no maximal concentration level specified for:", e, "\n")
         else:
             raise RuntimeError("Bad entity type when adding background set element")
 
