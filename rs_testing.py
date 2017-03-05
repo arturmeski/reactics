@@ -25,15 +25,16 @@ def test_rsLTL():
     c.add_transition("init", [("a",1),("inc",1)], "working")
     c.add_transition("working", [("inc",1)], "working")
 
-    x = ( Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_bag( ~((BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3)) ) ) ) & Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_bag( ~((BagDescription.f_entity("ent3") == 1) ) ) )
+    # x = ( Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_bag( ~((BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3)) ) ) ) & Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_bag( ~((BagDescription.f_entity("ent3") == 1) ) ) )
+    x = Formula_rsLTL.f_G((BagDescription.f_entity("inc") > 0), (BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3))
     print(x)
     
     rc = ReactionSystemWithAutomaton(r,c)
     checker = SmtCheckerRSC(rc)
-    checker.dummy_unroll(10)
+    checker.dummy_unroll(1000)
     e = Encoder_rsLTL(checker)
     
-    print(e.encode(x, 1, 10))
+    print(e.encode(x, 0, 10))
 
 def test_extended_automaton():
     

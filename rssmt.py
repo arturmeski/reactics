@@ -20,7 +20,7 @@ profiling = False
 
 ##################################################################    
 
-version = "2016/12/28/00"
+version = "2017/03/05/00"
 rsmc_banner = """
 Reaction Systems SMT-Based Model Checking
 
