@@ -1,3 +1,4 @@
+from z3 import *
 from enum import Enum
 
 rsLTL_form_type = Enum('rsLTL_form_type', 'bag l_and l_or l_not globally next until release')
@@ -21,8 +22,6 @@ class BagDescription(object):
             return "( " + repr(self.left_operand) + " | " + repr(self.right_operand) + " )"
         if self.f_type == BagDesc_oper.l_not:
             return "~" + repr(self.left_operand)
-        if self.f_type == BagDesc_oper.entity:
-            return entity
         if self.f_type == BagDesc_oper.lt:
             return repr(self.left_operand) + " < " + repr(self.right_operand)
         if self.f_type == BagDesc_oper.le:
@@ -33,6 +32,13 @@ class BagDescription(object):
             return repr(self.left_operand) + " >= " + repr(self.right_operand)
         if self.f_type == BagDesc_oper.gt:
             return repr(self.left_operand) + " > " + repr(self.right_operand)
+            
+    def sanity_check(self):
+        """Checks if the right operands for the relations are integers"""
+        
+        # TODO
+        
+        pass
 
     @classmethod
     def f_entity(cls, entity_name):
@@ -130,5 +136,72 @@ class Encoder_rsLTL(object):
         
     def __init__(self, smt_checker):
         self.smt_checker = smt_checker
+        self.v = smt_checker.v
+        self.v_ctx = smt_checker.v_ctx
+        self.rs = smt_checker.rs
+        
+    def encode_bag(self, bag_formula, level, context=False):
+        if bag_formula.f_type == BagDesc_oper.entity:
+            entity_id = self.rs.get_entity_id(self.entity)
+            if context:
+                return self.v_ctx[level][entity_id]
+            else:
+                return self.v[level][entity_id]
+            
+        if bag_formula.f_type == BagDesc_oper.true:
+            return True
+            
+        if bag_formula.f_type == BagDesc_oper.l_and:
+            return And(self.encode_bag(bag_formula.left_operand, level, context), self.encode_bag(bag_formula.left_.right_operand, level, context))
+            
+        if bag_formula.f_type == BagDesc_oper.l_or:
+            return Or(self.encode_bag(bag_formula.left_operand, level, context), self.encode_bag(bag_formula.right_operand, level, context))
+            
+        if bag_formula.f_type == BagDesc_oper.l_not:
+            return Not(self.encode_bag(bag_formula.left_operand, level, context))
+            
+        if bag_formula.f_type == BagDesc_oper.lt:
+            return self.encode_bag(bag_formula.left_operand, level, context) < int(bag_formula.right_operand)
+            
+        if bag_formula.f_type == BagDesc_oper.le:
+            return self.encode_bag(bag_formula.left_operand, level, context) <= int(bag_formula.right_operand)
+            
+        if bag_formula.f_type == BagDesc_oper.eq:
+            return self.encode_bag(bag_formula.left_operand, level, context) == int(bag_formula.right_operand)
+            
+        if bag_formula.f_type == BagDesc_oper.ge:
+            return self.encode_bag(bag_formula.left_operand, level, context) >= int(bag_formula.right_operand)
+            
+        if bag_formula.f_type == BagDesc_oper.gt:
+            return self.encode_bag(bag_formula.left_operand, level, context) > int(bag_formula.right_operand)
+        
+    def encode(self, formula, position, bound):
+    
+        if formula.f_type == rsLTL_form_type.bag:
+            return self.encode_bag()
+
+        
+            
+        # if formula.f_type == rsLTL_form_type.l_not:
+        #     return "~( " + repr(formula.left_operand) + " )"
+        #
+        # if formula.f_type == rsLTL_form_type.globally:
+        #     return "G[" + repr(self.sub_operand) + "]( " + repr(formula.left_operand) + " )"
+        #
+        # if formula.f_type == rsLTL_form_type.next:
+        #     return "X[" + repr(self.sub_operand) + "]( " + repr(formula.left_operand) + " )"
+        #
+        # if formula.f_type == rsLTL_form_type.l_and:
+        #     return "( " + repr(formula.left_operand) + " & " + repr(formula.right_operand) + " )"
+        #
+        # if formula.f_type == rsLTL_form_type.l_or:
+        #     return "( " + repr(formula.left_operand) + " | " + repr(formula.right_operand) + " )"
+        #
+        # if formula.f_type == rsLTL_form_type.until:
+        #     return "( " + repr(formula.right_operand) + " U[" + repr(self.sub_operand) + "]" + repr(formula.right_operand) + " )"
+        #
+        # if formula.left_ == rsLTL_form_type.release:
+        #     return "( " + repr(formula.left_operand) + " R[" + repr(self.sub_operand) + "]" + repr(formula.right_operand) + " )"
+        
         
     
