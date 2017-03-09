@@ -197,8 +197,13 @@ class Encoder_rsLTL(object):
     def encode_bag_ctx(self, bag_formula, level):
         return self.encode_bag(bag_formula, level, context=True)
       
-    def encode(self, formula, level, bound):
+    def encode(self, formula, level, bound, loop_level=None):
         
+        if loop_level != None and level == bound:
+            next_level = loop_level
+        else:
+            next_level = level + 1
+                    
         if not isinstance(formula, Formula_rsLTL):
             raise NotImplementedError("Unsupported formula type: " + str(type(formula)))
         
@@ -217,36 +222,39 @@ class Encoder_rsLTL(object):
         
         elif formula.f_type == rsLTL_form_type.l_and:
             return And(
-                    self.encode(formula.left_operand, level, bound), 
-                    self.encode(formula.right_operand, level, bound)
+                    self.encode(formula.left_operand, level, bound, loop_level), 
+                    self.encode(formula.right_operand, level, bound, loop_level)
                 )
 
         elif formula.f_type == rsLTL_form_type.l_or:
             return Or(
-                    self.encode(formula.left_operand, level, bound), 
-                    self.encode(formula.right_operand, level, bound)
+                    self.encode(formula.left_operand, level, bound, loop_level), 
+                    self.encode(formula.right_operand, level, bound, loop_level)
                 )
 
         elif formula.f_type == rsLTL_form_type.t_next:
             enc = And(
-                    self.encode(formula.left_operand, level+1, bound), 
+                    self.encode(formula.left_operand, next_level, bound, loop_level), 
                     self.encode_bag_ctx(formula.sub_operand, level)
                 )
             return enc 
 
         elif formula.f_type == rsLTL_form_type.t_globally:
             enc = And(
-                    self.encode(formula.left_operand, level, bound), 
+                    self.encode(formula.left_operand, level, bound, loop_level),
                     self.encode_bag_ctx(formula.sub_operand, level),
-                    self.encode(formula, level+1, bound)
+                    self.encode(formula, next_level, bound, loop_level)
                 )
+            # enc = True
+            # for i in range(level, bound+1):
+                
             return enc
             
         elif formula.f_type == rsLTL_form_type.t_finally:
             enc = Or(
-                    self.encode(formula.left_operand, level, bound),
+                    self.encode(formula.left_operand, level, bound, loop_level),
                     And(
-                        self.encode(formula, level+1, bound), 
+                        self.encode(formula, next_level, bound, loop_level), 
                         self.encode_bag_ctx(formula.sub_operand, level)
                     )
                 )
@@ -254,10 +262,10 @@ class Encoder_rsLTL(object):
 
         elif formula.f_type == rsLTL_form_type.t_until:
             enc = Or(
-                    self.encode(formula.right_operand, level, bound), 
+                    self.encode(formula.right_operand, level, bound, loop_level), 
                     And(
-                        self.encode(formula.left_operand, level, bound),
-                        self.encode(formula, level+1, bound),
+                        self.encode(formula.left_operand, level, bound, loop_level),
+                        self.encode(formula, next_level, bound, loop_level),
                         self.encode_bag_ctx(formula.sub_operand, level)
                     )
                 )
@@ -265,11 +273,11 @@ class Encoder_rsLTL(object):
             
         elif formula.f_type == rsLTL_form_type.t_release:
             enc = And(
-                    self.encode(formula.right_operand, level, bound), 
+                    self.encode(formula.right_operand, level, bound, loop_level), 
                     Or(
-                        self.encode(formula.left_operand, level, bound),
+                        self.encode(formula.left_operand, level, bound, loop_level),
                         And(
-                            self.encode(formula, level+1, bound),
+                            self.encode(formula, next_level, bound, loop_level),
                             self.encode_bag_ctx(formula.sub_operand, level)
                         )
                     )

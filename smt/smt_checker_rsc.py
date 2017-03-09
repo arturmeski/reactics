@@ -31,6 +31,8 @@ class SmtCheckerRSC(object):
         self.ca_state = []
         self.next_level_to_encode = 0
 
+        self.loop_position = Int("loop_position")
+
         self.solver = Solver()
         
         self.verification_time = None
@@ -370,11 +372,41 @@ class SmtCheckerRSC(object):
         
     def dummy_unroll(self, levels):
         """Unrolls the variables for testing purposes"""
-        
-        for i in range(levels):
-            self.prepare_all_variables()
-        print(C_MARK_INFO + " Dummy Unrolling done.")
 
+        self.current_level = 0     
+        for i in range(levels+1):
+            self.prepare_all_variables()
+            self.current_level += 1
+
+        print(C_MARK_INFO + " Dummy Unrolling done.")
+    
+    def state_equality(self, level_A, level_B):
+        """Encodes equality of two states at two different levels"""
+        
+        eq_enc = True
+        
+        print(level_A, level_B, self.current_level)
+        print(len(self.v), self.v)
+        
+        for e_i in range(len(self.rs.background_set)):
+            e_i_equality = self.v[level_A][e_i] == self.v[level_B][e_i]
+            eq_enc = simplify(And(eq_enc, e_i_equality))
+            
+        return eq_enc
+    
+    def get_loop_encodings(self):
+        
+        k = self.current_level-1 # TODO: cos jest pokichane z tymi indeksami. sprawdzic. zasypiam.
+        loop_var = self.loop_position
+        
+        loop_k = True
+        for i in range(1,k+1):
+            loop_k = simplify(And(loop_k, Implies( loop_var == i, self.state_equality(i-1, k) )))
+        
+        loop_enc = loop_k
+        
+        return loop_enc
+        
     def check_reachability(self, state, print_witness=True, 
             print_time=True, print_mem=True, max_level=1000):
         """Main testing function"""
@@ -445,43 +477,43 @@ class SmtCheckerRSC(object):
         init_s = self.enc_init_state(0)
         print(init_s)
         self.solver.add(init_s)
-        current_level = 0
+        self.current_level = 0
 
         self.prepare_all_variables()
         
         while True:
             self.prepare_all_variables()
 
-            print("-----[ Working at level=" + str(current_level) + " ]-----")
+            print("-----[ Working at level=" + str(self.current_level) + " ]-----")
             stdout.flush()
 
             # reachability test:
             print("[i] Adding the reachability test...")       
             self.solver.push()
 
-            s = self.enc_min_state(current_level,state)
+            s = self.enc_min_state(self.current_level,state)
             print("Test: ", s)
             
             self.solver.add(s)
                 
             result = self.solver.check()
             if result == sat:
-                print("\n[+] " + colour_str(C_RED, "SAT at level=" + str(current_level)))
+                print("\n[+] " + colour_str(C_RED, "SAT at level=" + str(self.current_level)))
                 if print_witness:
-                    self.decode_witness(current_level)
+                    self.decode_witness(self.current_level)
                 break
             else:
                 self.solver.pop()
 
             print("[i] Unrolling the transition relation")
-            t = self.enc_transition_relation(current_level)
+            t = self.enc_transition_relation(self.current_level)
             print(t)
             self.solver.add(t)
 
-            print("-----[ level=" + str(current_level) + " done ]")
-            current_level += 1
+            print("-----[ level=" + str(self.current_level) + " done ]")
+            self.current_level += 1
 
-            if current_level > max_level:
+            if self.current_level > max_level:
                 print("Stopping at level=" + str(max_level))
                 break
             else:
