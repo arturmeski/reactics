@@ -9,7 +9,7 @@ from itertools import chain
 import resource
 from colour import *
 
-import logics
+from logics import rsLTL_Encoder
 
 # def simplify(x):
 #     return x
@@ -367,50 +367,9 @@ class SmtCheckerRSC(object):
                         print(" " + self.rs.get_entity_name(var_id) + "=" + var_rep, end="")
                 print(" }")
                 
-    def check_rsltl(self, formula, print_witness=True):
+    def check_rsltl(self, formula, print_witness=True, print_time=True, print_mem=True, max_level=None):
         """Bounded Model Checking for rsLTL properties"""
         
-    def dummy_unroll(self, levels):
-        """Unrolls the variables for testing purposes"""
-
-        self.current_level = 0     
-        for i in range(levels+1):
-            self.prepare_all_variables()
-            self.current_level += 1
-
-        print(C_MARK_INFO + " Dummy Unrolling done.")
-    
-    def state_equality(self, level_A, level_B):
-        """Encodes equality of two states at two different levels"""
-        
-        eq_enc = True
-        
-        print(level_A, level_B, self.current_level)
-        print(len(self.v), self.v)
-        
-        for e_i in range(len(self.rs.background_set)):
-            e_i_equality = self.v[level_A][e_i] == self.v[level_B][e_i]
-            eq_enc = simplify(And(eq_enc, e_i_equality))
-            
-        return eq_enc
-    
-    def get_loop_encodings(self):
-        
-        k = self.current_level-1 # TODO: cos jest pokichane z tymi indeksami. sprawdzic. zasypiam.
-        loop_var = self.loop_position
-        
-        loop_k = True
-        for i in range(1,k+1):
-            loop_k = simplify(And(loop_k, Implies( loop_var == i, self.state_equality(i-1, k) )))
-        
-        loop_enc = loop_k
-        
-        return loop_enc
-        
-    def check_reachability(self, state, print_witness=True, 
-            print_time=True, print_mem=True, max_level=1000):
-        """Main testing function"""
-
         if print_time:
             # start = time()
             start = resource.getrusage(resource.RUSAGE_SELF).ru_utime
@@ -420,13 +379,15 @@ class SmtCheckerRSC(object):
         current_level = 0
 
         self.prepare_all_variables()
-        
+    
         self.solver.add(self.enc_concentration_levels_assertion(0))
-        
+    
+        encoder = rsLTL_Encoder(self)
+    
         while True:
             self.prepare_all_variables()
             self.solver.add(self.enc_concentration_levels_assertion(current_level+1))
-            
+        
             print("\n{:-^70}".format("[ Working at level=" + str(current_level) + " ]"))
             stdout.flush()
 
@@ -434,8 +395,8 @@ class SmtCheckerRSC(object):
             print("[" + colour_str(C_BOLD, "i") + "] Adding the reachability test...")       
             self.solver.push()
 
-            self.solver.add(self.enc_state_with_blocking(current_level,state))
-                
+            self.solver.add(encoder.encode(formula, 0, current_level))
+            
             result = self.solver.check()
             if result == sat:
                 print("[" + colour_str(C_BOLD, "+") + "] " + colour_str(C_GREEN, "SAT at level=" + str(current_level)))
@@ -452,7 +413,105 @@ class SmtCheckerRSC(object):
             print("{:->70}".format("[ level=" + str(current_level) + " done ]"))
             current_level += 1
 
-            if current_level > max_level:
+            if not max_level is None and current_level > max_level:
+                print("Stopping at level=" + str(max_level))
+                break
+
+        if print_time:
+            # stop = time()
+            stop = resource.getrusage(resource.RUSAGE_SELF).ru_utime
+            self.verification_time = stop-start
+            print()
+            print("\n[i] {: >60}".format(" Time: " + repr(self.verification_time) + " s"))
+        
+        if print_mem:
+            print("[i] {: >60}".format(" Memory: " + repr(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)) + " MB"))
+        
+    def dummy_unroll(self, levels):
+        """Unrolls the variables for testing purposes"""
+
+        self.current_level = -1     
+        for i in range(levels+1):
+            self.prepare_all_variables()
+            self.current_level += 1
+
+        print(C_MARK_INFO + " Dummy Unrolling done.")
+    
+    def state_equality(self, level_A, level_B):
+        """Encodes equality of two states at two different levels"""
+        
+        eq_enc = True
+        
+        for e_i in range(len(self.rs.background_set)):
+            e_i_equality = self.v[level_A][e_i] == self.v[level_B][e_i]
+            eq_enc = simplify(And(eq_enc, e_i_equality))
+
+        return eq_enc
+    
+    def get_loop_encodings(self):
+        
+        k = self.current_level
+        loop_var = self.loop_position
+        
+        loop_enc = True
+        
+        """
+        (loop_var == i) means that there is a loop taking back to the state (i-1)
+        
+        Therefore, the encoding starts at 1, not at 0.
+        """
+        
+        for i in range(1,k+1):
+            loop_enc = simplify(And(loop_enc, Implies( loop_var == i, self.state_equality(i-1, k) )))
+        
+        return loop_enc
+        
+    def check_reachability(self, state, print_witness=True, 
+            print_time=True, print_mem=True, max_level=1000):
+        """Main testing function"""
+
+        if print_time:
+            # start = time()
+            start = resource.getrusage(resource.RUSAGE_SELF).ru_utime
+
+        self.prepare_all_variables()
+        self.solver.add(self.enc_init_state(0))
+        self.current_level = 0
+
+        self.prepare_all_variables()
+        
+        self.solver.add(self.enc_concentration_levels_assertion(0))
+        
+        while True:
+            self.prepare_all_variables()
+            self.solver.add(self.enc_concentration_levels_assertion(self.current_level+1))
+            
+            print("\n{:-^70}".format("[ Working at level=" + str(self.current_level) + " ]"))
+            stdout.flush()
+
+            # reachability test:
+            print("[" + colour_str(C_BOLD, "i") + "] Adding the reachability test...")       
+            self.solver.push()
+
+            self.solver.add(self.enc_state_with_blocking(self.current_level,state))
+                
+            result = self.solver.check()
+            if result == sat:
+                print("[" + colour_str(C_BOLD, "+") + "] " + colour_str(C_GREEN, "SAT at level=" + str(self.current_level)))
+                if print_witness:
+                    print("\n{:=^70}".format("[ WITNESS ]"))
+                    self.decode_witness(self.current_level)
+                break
+            else:
+                self.solver.pop()
+
+            print("[" + colour_str(C_BOLD, "i") + "] Unrolling the transition relation")
+            self.solver.add(self.enc_transition_relation(self.current_level))
+
+            print("{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
+            self.current_level += 1
+
+            if self.current_level > max_level:
                 print("Stopping at level=" + str(max_level))
                 break
 

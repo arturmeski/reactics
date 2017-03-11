@@ -31,11 +31,12 @@ def test_rsLTL():
     
     rc = ReactionSystemWithAutomaton(r,c)
     checker = SmtCheckerRSC(rc)
-    checker.dummy_unroll(10)
-    #e = Encoder_rsLTL(checker)
     
-    print(checker.get_loop_encodings())
+    checker.check_rsltl(formula=x)
     
+    # checker.dummy_unroll(10)
+    # e = rsLTL_Encoder(checker)
+    # print(checker.get_loop_encodings())
     # print(e.encode(x, 0, 10))
 
 def test_extended_automaton():
