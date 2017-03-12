@@ -26,17 +26,27 @@ class SmtCheckerRSC(object):
         self.rs = rsca.rs
         self.ca = rsca.ca
 
+        self.initialise()
+    
+    def initialise(self):
+        """Initialises all the variables used by the checker"""
+        
         self.v = []
         self.v_ctx = []
         self.ca_state = []
         self.next_level_to_encode = 0
-
+        
         self.loop_position = Int("loop_position")
-
+        
         self.solver = Solver()
         
-        self.verification_time = None
+        self.verification_time = None        
 
+    def reset(self):
+        """Reinitialises the state of the checker"""
+        
+        self.initialise()
+        
     def prepare_all_variables(self):
         """Encodes all the variables"""
 
@@ -370,6 +380,8 @@ class SmtCheckerRSC(object):
     def check_rsltl(self, formula, print_witness=True, print_time=True, print_mem=True, max_level=None):
         """Bounded Model Checking for rsLTL properties"""
         
+        self.reset()
+        
         print("[" + colour_str(C_BOLD, "i") + "] Running rsLTL bounded model checking")
         
         if print_time:
@@ -475,6 +487,8 @@ class SmtCheckerRSC(object):
             print_time=True, print_mem=True, max_level=1000):
         """Main testing function"""
 
+        self.reset()
+
         if print_time:
             # start = time()
             start = resource.getrusage(resource.RUSAGE_SELF).ru_utime
@@ -536,6 +550,8 @@ class SmtCheckerRSC(object):
     def show_encoding(self, state, print_witness=True, 
             print_time=False, print_mem=False, max_level=100):
         """Encoding debug function"""
+
+        self.reset()
 
         self.prepare_all_variables()
         init_s = self.enc_init_state(0)

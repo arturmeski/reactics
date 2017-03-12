@@ -71,16 +71,28 @@ def heat_shock_response(print_system=True):
     
     # prop_req = [("hsp:hsf",1),("hse",1),("prot",1)]
     # prop_block = [("temp",stress_temp)]
-    prop_req   = [ ("mfp",1) ]
-    prop_block = [ ]
-    prop       = (prop_req,prop_block)
-    rs_prop    = (state_translate_rsc2rs(prop_req),state_translate_rsc2rs(prop_block))
-    
-    f_reach_mfp = Formula_rsLTL.f_F(BagDescription.f_TRUE(), (BagDescription.f_entity("mfp") > 0) )
+    # prop_req   = [ ("mfp",1) ]
+    # prop_block = [ ]
+    # prop       = (prop_req,prop_block)
+    # rs_prop    = (state_translate_rsc2rs(prop_req),state_translate_rsc2rs(prop_block))
+    #
+    # f_reach_mfp = Formula_rsLTL.f_F(BagDescription.f_TRUE(), (BagDescription.f_entity("mfp") > 0) )
     
     smt_rsc = SmtCheckerRSC(rc)
+    
+    # (1) if we keep increasing the temperature the protein will eventually misfold
+    # f_mfp_when_heating = Formula_rsLTL.f_X(BagDescription.f_TRUE(),
+    #         Formula_rsLTL.f_F(BagDescription.f_entity("heat") > 0, (BagDescription.f_entity("mfp") > 0) )
+    #     )
+    # smt_rsc.check_rsltl(formula=f_mfp_when_heating)
+    
+    # (2) when heating, we finally exceed the stress_temp
+    f_2 = Formula_rsLTL.f_X(BagDescription.f_TRUE(),
+            Formula_rsLTL.f_F(BagDescription.f_entity("heat") > 0, (BagDescription.f_entity("temp") > stress_temp))
+        )
+    smt_rsc.check_rsltl(formula=f_2)
+    
     # smt_rsc.check_reachability(prop,max_level=40)
-    smt_rsc.check_rsltl(formula=f_reach_mfp)
 
 def state_translate_rsc2rs(p):
     return [e[0] + "#" + str(e[1]) for e in p]    

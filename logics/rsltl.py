@@ -50,7 +50,7 @@ class Formula_rsLTL(object):
 
     @classmethod
     def f_X(cls, sub, arg):
-        return cls(rsLTL_form_type.next, L_oper = arg, sub_oper = sub)
+        return cls(rsLTL_form_type.t_next, L_oper = arg, sub_oper = sub)
 
     @classmethod
     def f_G(cls, sub, arg):

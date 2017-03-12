@@ -24,7 +24,7 @@ class rsLTL_Encoder(object):
             
         if bag_formula.f_type == BagDesc_oper.l_and:
             return And(self.encode_bag(bag_formula.left_operand, level, context), 
-                self.encode_bag(bag_formula.left_.right_operand, level, context))
+                self.encode_bag(bag_formula.right_operand, level, context))
             
         if bag_formula.f_type == BagDesc_oper.l_or:
             return Or(self.encode_bag(bag_formula.left_operand, level, context), 
