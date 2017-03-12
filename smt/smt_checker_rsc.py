@@ -370,6 +370,8 @@ class SmtCheckerRSC(object):
     def check_rsltl(self, formula, print_witness=True, print_time=True, print_mem=True, max_level=None):
         """Bounded Model Checking for rsLTL properties"""
         
+        print("[" + colour_str(C_BOLD, "i") + "] Running rsLTL bounded model checking")
+        
         if print_time:
             # start = time()
             start = resource.getrusage(resource.RUSAGE_SELF).ru_utime
@@ -392,11 +394,12 @@ class SmtCheckerRSC(object):
             stdout.flush()
 
             # reachability test:
-            print("[" + colour_str(C_BOLD, "i") + "] Adding the reachability test...")       
             self.solver.push()
-
+            print("[" + colour_str(C_BOLD, "i") + "] Adding the formula encoding...")
             f = encoder.encode(formula, 0, self.current_level)
             self.solver.add(f)
+            
+            print("[" + colour_str(C_BOLD, "i") + "] Adding the loops encoding...")
             self.solver.add(self.get_loop_encodings())
             
             result = self.solver.check()

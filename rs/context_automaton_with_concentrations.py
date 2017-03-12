@@ -60,4 +60,10 @@ class ContextAutomatonWithConcentrations(ContextAutomaton):
             
             ca.add_transition(ca.get_state_name(src),new_ctx,ca.get_state_name(dst))
             
-        return ca 
+        return ca
+        
+    def show(self):
+        self.show_header()
+        self.show_states()
+        self.show_transitions()
+

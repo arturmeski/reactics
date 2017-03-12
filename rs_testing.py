@@ -2,17 +2,94 @@ from rs import *
 from smt import *
 import rs_examples 
 from logics import *
+import sys
+import resource
 
 def run_tests():
     
     # test_extended_automaton()
     # process()
-    test_rsLTL()
+    heat_shock_response()
+    
+def heat_shock_response(print_system=True):
+
+    stress_temp = 42
+    max_temp = 50
+    
+    r = ReactionSystemWithConcentrations()    
+    r.add_bg_set_entity(("hsp",1))
+    r.add_bg_set_entity(("hsf",1))
+    r.add_bg_set_entity(("hsf2",1))
+    r.add_bg_set_entity(("hsf3",1))
+    r.add_bg_set_entity(("hse",1))
+    r.add_bg_set_entity(("mfp",1))
+    r.add_bg_set_entity(("prot",1))
+    r.add_bg_set_entity(("hsf3:hse",1))
+    r.add_bg_set_entity(("hsp:mfp",1))
+    r.add_bg_set_entity(("hsp:hsf",1))
+    r.add_bg_set_entity(("temp",max_temp))
+    r.add_bg_set_entity(("heat",1))
+    r.add_bg_set_entity(("cool",1))
+    
+    r.add_reaction([("hsf",1)],                         [("hsp",1)],        [("hsf3",1)])
+    r.add_reaction([("hsf",1),("hsp",1),("mfp",1)],     [],                 [("hsf3",1)])
+    r.add_reaction([("hsf3",1)],                        [("hse",1),("hsp",1)],[("hsf",1)])
+    r.add_reaction([("hsf3",1),("hsp",1),("mfp",1)],    [("hse",1)],        [("hsf",1)])
+    r.add_reaction([("hsf3",1),("hse",1)],              [("hsp",1)],        [("hsf3:hse",1)])
+    r.add_reaction([("hsp",1),("hsf3",1),("mfp",1),("hse",1)],[],           [("hsf3:hse",1)])
+    r.add_reaction([("hse",1)],                         [("hsf3",1)],       [("hse",1)])
+    r.add_reaction([("hsp",1),("hsf3",1),("hse",1)],    [("mfp",1)],        [("hse",1)])
+    r.add_reaction([("hsf3:hse",1)],                    [("hsp",1)],        [("hsp",1),("hsf3:hse",1)])
+    r.add_reaction([("hsp",1),("mfp",1),("hsf3:hse",1)],[],                 [("hsp",1),("hsf3:hse",1)])
+    r.add_reaction([("hsf",1),("hsp",1)],               [("mfp",1)],        [("hsp:hsf",1)])
+    r.add_reaction([("hsp:hsf",1),("temp",stress_temp)],[],                 [("hsf",1),("hsp",1)])
+    r.add_reaction([("hsp:hsf",1)],                     [("temp",stress_temp)],[("hsp:hsf",1)])
+    r.add_reaction([("hsp",1),("hsf3:hse",1)],          [("mfp",1)],        [("hse",1),("hsp:hsf",1)])
+    r.add_reaction([("temp",stress_temp),("prot",1)],   [],                     [("mfp",1),("prot",1)])
+    r.add_reaction([("prot",1)],                        [("temp",stress_temp)], [("prot",1)])
+    r.add_reaction([("hsp",1),("mfp",1)],               [],                 [("hsp:mfp",1)])
+    r.add_reaction([("mfp",1)],                         [("hsp",1)],        [("mfp",1)])
+    r.add_reaction([("hsp:mfp",1)],                     [],                 [("hsp",1),("prot",1)])
+
+    r.add_reaction_inc("temp", "heat", [("temp",1)],[("temp",max_temp)])
+    r.add_reaction_dec("temp", "cool", [("temp",1)],[])
+
+    r.add_permanency("temp",[("heat",1),("cool",1)])
+
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("0")
+    c.add_state("1")
+    c.add_transition("0", [("hsf",1),("prot",1),("hse",1),("temp",35)], "1")
+    c.add_transition("1", [("cool",1)], "1")
+    c.add_transition("1", [("heat",1)], "1")
+    c.add_transition("1", [], "1")
+
+    rc = ReactionSystemWithAutomaton(r,c)
+    
+    if print_system:
+        rc.show()
+    
+    # prop_req = [("hsp:hsf",1),("hse",1),("prot",1)]
+    # prop_block = [("temp",stress_temp)]
+    prop_req   = [ ("mfp",1) ]
+    prop_block = [ ]
+    prop       = (prop_req,prop_block)
+    rs_prop    = (state_translate_rsc2rs(prop_req),state_translate_rsc2rs(prop_block))
+    
+    f_reach_mfp = Formula_rsLTL.f_F(BagDescription.f_TRUE(), (BagDescription.f_entity("mfp") > 0) )
+    
+    smt_rsc = SmtCheckerRSC(rc)
+    # smt_rsc.check_reachability(prop,max_level=40)
+    smt_rsc.check_rsltl(formula=f_reach_mfp)
+
+def state_translate_rsc2rs(p):
+    return [e[0] + "#" + str(e[1]) for e in p]    
     
 def test_rsLTL():
 
     r = ReactionSystemWithConcentrations()
     r.add_bg_set_entity(("inc",2))
+    r.add_bg_set_entity(("ent1",1))
     r.add_bg_set_entity(("ent2",5))
     r.add_reaction([("ent2",1),("inc",1)],[],[("ent2",2)])
     r.add_reaction([("ent2",2)],[],[("ent2",2)])
@@ -24,9 +101,9 @@ def test_rsLTL():
     c.add_transition("working", [("inc",1)], "working")
 
     # x = ( Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_bag( ~((BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3)) ) ) ) & Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_bag( ~((BagDescription.f_entity("ent3") == 1) ) ) )
-    # x = Formula_rsLTL.f_G((BagDescription.f_entity("inc") > 0), (BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3))
+    x = Formula_rsLTL.f_G((BagDescription.f_entity("inc") > 0), (BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3))
     
-    x = Formula_rsLTL.f_F(BagDescription.f_TRUE(), (BagDescription.f_entity("ent2") == 2) )
+    #x = Formula_rsLTL.f_F(BagDescription.f_TRUE(), (BagDescription.f_entity("ent2") == 2) )
     
     print(x)
     
