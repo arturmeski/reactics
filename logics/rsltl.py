@@ -61,8 +61,8 @@ class Formula_rsLTL(object):
         return cls(rsLTL_form_type.t_until, L_oper = arg_L, R_oper = arg_R, sub_oper = sub)
 
     @classmethod
-    def f_F(cls, sub, arg_L, arg_R):
-        return cls(rsLTL_form_type.t_finally, L_oper = arg_L, R_oper = arg_R, sub_oper = sub)
+    def f_F(cls, sub, arg_L):
+        return cls(rsLTL_form_type.t_finally, L_oper = arg_L, sub_oper = sub)
 
     @classmethod
     def f_R(cls, sub, arg_L, arg_R):

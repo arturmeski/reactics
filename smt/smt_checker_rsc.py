@@ -376,7 +376,7 @@ class SmtCheckerRSC(object):
 
         self.prepare_all_variables()
         self.solver.add(self.enc_init_state(0))
-        current_level = 0
+        self.current_level = 0
 
         self.prepare_all_variables()
     
@@ -386,34 +386,36 @@ class SmtCheckerRSC(object):
     
         while True:
             self.prepare_all_variables()
-            self.solver.add(self.enc_concentration_levels_assertion(current_level+1))
+            self.solver.add(self.enc_concentration_levels_assertion(self.current_level+1))
         
-            print("\n{:-^70}".format("[ Working at level=" + str(current_level) + " ]"))
+            print("\n{:-^70}".format("[ Working at level=" + str(self.current_level) + " ]"))
             stdout.flush()
 
             # reachability test:
             print("[" + colour_str(C_BOLD, "i") + "] Adding the reachability test...")       
             self.solver.push()
 
-            self.solver.add(encoder.encode(formula, 0, current_level))
+            f = encoder.encode(formula, 0, self.current_level)
+            self.solver.add(f)
+            self.solver.add(self.get_loop_encodings())
             
             result = self.solver.check()
             if result == sat:
-                print("[" + colour_str(C_BOLD, "+") + "] " + colour_str(C_GREEN, "SAT at level=" + str(current_level)))
+                print("[" + colour_str(C_BOLD, "+") + "] " + colour_str(C_GREEN, "SAT at level=" + str(self.current_level)))
                 if print_witness:
                     print("\n{:=^70}".format("[ WITNESS ]"))
-                    self.decode_witness(current_level)
+                    self.decode_witness(self.current_level)
                 break
             else:
                 self.solver.pop()
 
             print("[" + colour_str(C_BOLD, "i") + "] Unrolling the transition relation")
-            self.solver.add(self.enc_transition_relation(current_level))
+            self.solver.add(self.enc_transition_relation(self.current_level))
 
-            print("{:->70}".format("[ level=" + str(current_level) + " done ]"))
-            current_level += 1
+            print("{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
+            self.current_level += 1
 
-            if not max_level is None and current_level > max_level:
+            if not max_level is None and self.current_level > max_level:
                 print("Stopping at level=" + str(max_level))
                 break
 

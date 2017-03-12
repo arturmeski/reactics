@@ -12,26 +12,28 @@ def run_tests():
 def test_rsLTL():
 
     r = ReactionSystemWithConcentrations()
-    r.add_bg_set_entity(("a",2))
     r.add_bg_set_entity(("inc",2))
-    r.add_bg_set_entity(("dec",2))
-    r.add_bg_set_entity(("ent1",5))
-    r.add_bg_set_entity(("ent2",3))
-    r.add_bg_set_entity(("ent3",3))
+    r.add_bg_set_entity(("ent2",5))
+    r.add_reaction([("ent2",1),("inc",1)],[],[("ent2",2)])
+    r.add_reaction([("ent2",2)],[],[("ent2",2)])
 
     c = ContextAutomatonWithConcentrations(r)
     c.add_init_state("init")
     c.add_state("working")
-    c.add_transition("init", [("a",1),("inc",1)], "working")
+    c.add_transition("init", [("ent2",1),("inc",1)], "working")
     c.add_transition("working", [("inc",1)], "working")
 
     # x = ( Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_bag( ~((BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3)) ) ) ) & Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_bag( ~((BagDescription.f_entity("ent3") == 1) ) ) )
-    x = Formula_rsLTL.f_G((BagDescription.f_entity("inc") > 0), (BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3))
+    # x = Formula_rsLTL.f_G((BagDescription.f_entity("inc") > 0), (BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3))
+    
+    x = Formula_rsLTL.f_F(BagDescription.f_TRUE(), (BagDescription.f_entity("ent2") == 2) )
+    
     print(x)
     
     rc = ReactionSystemWithAutomaton(r,c)
-    checker = SmtCheckerRSC(rc)
+    rc.show()
     
+    checker = SmtCheckerRSC(rc)
     checker.check_rsltl(formula=x)
     
     # checker.dummy_unroll(10)

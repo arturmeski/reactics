@@ -93,7 +93,7 @@ class rsLTL_Encoder(object):
             else: 
                 # level == bound
                 enc = False
-                for loop_level in range(1, bound):
+                for loop_level in range(1, bound+1):
                     enc = Or(enc, And(self.loop_position == loop_level, 
                         self.encode(formula.left_operand, loop_level, bound)))
                 enc = And(enc, self.encode_bag_ctx(formula.sub_operand, level))
@@ -110,13 +110,20 @@ class rsLTL_Encoder(object):
                     )
             else:
                 # level == bound
-                enc = False
-                for loop_level in range(1, bound):
-                    enc = Or(enc, And(self.loop_position == loop_level),
-                        self.encode_approx(formula, loop_level, bound),
+                enc_loops = False
+                for loop_level in range(1, bound+1):
+                    enc_loops = Or(enc, 
+                            And(
+                                self.loop_position == loop_level,
+                                self.encode_approx(formula, loop_level, bound),
+                            )
                         )
-                enc = And(enc, self.encode_bag_ctx(formula.sub_operand, level))
-                enc = simplify(enc)   
+                enc = And(
+                        self.encode(formula.left_operand, bound, bound),
+                        enc_loops, 
+                        self.encode_bag_ctx(formula.sub_operand, level)
+                    )
+                enc = simplify(enc)  
 
             return enc
 
@@ -131,14 +138,22 @@ class rsLTL_Encoder(object):
                     )
             else:
                 # level == bound
-                enc = False
-                for loop_level in range(1, bound):
-                    enc = Or(enc, 
+                enc_loops = False
+                for loop_level in range(1, bound+1):
+                    enc_loops = Or(enc_loops, 
                             And(
-                                self.loop_position == loop_level),
+                                self.loop_position == loop_level,
                                 self.encode_approx(formula, loop_level, bound),
+                            )   
                         )
-                enc = And(enc, self.encode_bag_ctx(formula.sub_operand, level))
+                    #print(enc)
+                enc = Or(self.encode(formula.left_operand, bound, bound), 
+                        And(
+                            enc_loops, 
+                            self.encode_bag_ctx(formula.sub_operand, level)
+                        )
+                    )
+                
                 enc = simplify(enc)
 
             return enc
@@ -149,7 +164,7 @@ class rsLTL_Encoder(object):
             else: 
                 # level == bound
                 inner_enc = False
-                for loop_level in range(1, bound):
+                for loop_level in range(1, bound+1):
                     inner_enc = Or(inner_enc, 
                             And(
                                 self.loop_position == loop_level, 
@@ -174,7 +189,7 @@ class rsLTL_Encoder(object):
             else: 
                 # level == bound
                 inner_enc = False
-                for loop_level in range(1, bound):
+                for loop_level in range(1, bound+1):
                     inner_enc = Or(inner_enc, 
                             And(
                                 self.loop_position == loop_level, 
@@ -193,7 +208,6 @@ class rsLTL_Encoder(object):
                     )
                 )
 
-                
             return enc
         
         else:
@@ -237,6 +251,35 @@ class rsLTL_Encoder(object):
                 enc = self.encode(formula.right_operand, bound, bound)
         
             return enc
+
+        elif formula.f_type == rsLTL_form_type.t_globally:
+            if level < bound:
+                enc = And(
+                        self.encode(formula.left_operand, level, bound),
+                        self.encode_bag_ctx(formula.sub_operand, level),
+                        self.encode_approx(formula, level + 1, bound)
+                    )
+            else:
+                # level == bound
+                enc = self.encode(formula.left_operand, bound, bound)
+
+            return enc
+
+        elif formula.f_type == rsLTL_form_type.t_finally:
+            if level < bound:
+                enc = Or(
+                        self.encode(formula.left_operand, level, bound),
+                        And(
+                            self.encode_bag_ctx(formula.sub_operand, level),
+                            self.encode_approx(formula, level + 1, bound)
+                        )
+                    )
+            else:
+                # level == bound
+                enc = self.encode(formula.left_operand, bound, bound)
+
+            return enc        
+        
 
         else:
             raise NotImplementedError("Unsupported operator in approximation encoding")
