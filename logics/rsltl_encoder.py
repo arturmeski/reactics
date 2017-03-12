@@ -112,7 +112,7 @@ class rsLTL_Encoder(object):
                 # level == bound
                 enc_loops = False
                 for loop_level in range(1, bound+1):
-                    enc_loops = Or(enc, 
+                    enc_loops = Or(enc_loops, 
                             And(
                                 self.loop_position == loop_level,
                                 self.encode_approx(formula, loop_level, bound),
