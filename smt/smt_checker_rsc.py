@@ -38,7 +38,7 @@ class SmtCheckerRSC(object):
         
         self.loop_position = Int("loop_position")
         
-        self.solver = Solver()
+        self.solver = SolverFor("QF_FD")
         
         self.verification_time = None        
 
