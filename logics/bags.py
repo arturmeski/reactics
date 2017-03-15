@@ -8,6 +8,8 @@ class BagDescription(object):
         self.right_operand = R_oper
         self.entity = entity
         
+        self.sanity_check()
+        
     def __repr__(self):
         if self.f_type == BagDesc_oper.entity:
             return self.entity
@@ -31,12 +33,13 @@ class BagDescription(object):
             return repr(self.left_operand) + " > " + repr(self.right_operand)
             
     def sanity_check(self):
-        """Checks if the right operands for the relations are integers"""
-        
-        # TODO
-        
-        pass
+        """Sanity checks"""
 
+        for operand in (self.left_operand, self.right_operand):
+            if operand:
+                if not (isinstance(operand, BagDescription) or isinstance(operand, int)):
+                    raise RuntimeError("Unexpected operand type for a bag: " + str(operand))
+        
     @classmethod
     def f_entity(cls, entity_name):
         return cls(BagDesc_oper.entity, entity = entity_name)
