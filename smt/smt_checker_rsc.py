@@ -383,6 +383,7 @@ class SmtCheckerRSC(object):
         self.reset()
         
         print("[" + colour_str(C_BOLD, "i") + "] Running rsLTL bounded model checking")
+        print("[" + colour_str(C_BOLD, "i") + "] Formula: " + str(formula))
         
         if print_time:
             # start = time()
@@ -407,8 +408,11 @@ class SmtCheckerRSC(object):
 
             # reachability test:
             self.solver.push()
-            print("[" + colour_str(C_BOLD, "i") + "] Adding the formula encoding...")
+            print("[" + colour_str(C_BOLD, "i") + "] Generating the formula encoding...")
+            encoder.init_ncalls()
             f = encoder.encode(formula, 0, self.current_level)
+            print("[" + colour_str(C_BOLD, "i") + "] Encode calls: " + str(encoder.get_ncalls()))
+            print("[" + colour_str(C_BOLD, "i") + "] Adding the formula to the solver...")
             self.solver.add(f)
             
             print("[" + colour_str(C_BOLD, "i") + "] Adding the loops encoding...")

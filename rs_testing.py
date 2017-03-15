@@ -9,7 +9,8 @@ def run_tests():
     
     # test_extended_automaton()
     # process()
-    heat_shock_response()
+    # heat_shock_response()
+    scalable_chain(print_system=True)
     
 def heat_shock_response(print_system=True):
 
@@ -96,7 +97,97 @@ def heat_shock_response(print_system=True):
 
 def state_translate_rsc2rs(p):
     return [e[0] + "#" + str(e[1]) for e in p]    
+
+
+def scalable_chain(print_system=False):
     
+    if len(sys.argv) < 1+2:
+        print("provide <chainLen> <maxConc>")
+        exit(1)
+
+    chainLen=int(sys.argv[1]) # chain length
+    maxConc=int(sys.argv[2]) # depth (max concentration)
+        
+    if chainLen < 1 or maxConc < 1:
+        print("be reasonable")
+        exit(1)
+    
+    r = ReactionSystemWithConcentrations()
+    r.add_bg_set_entity(("inc",1))
+    r.add_bg_set_entity(("dec",1))
+    
+    for i in range(1,chainLen+1):
+        r.add_bg_set_entity(("e_" + str(i),maxConc))
+    
+    for i in range(1,chainLen+1):
+        ent = "e_" + str(i)
+        r.add_reaction_inc(ent, "inc", [(ent, 1)],[(ent,maxConc)])
+        r.add_reaction_dec(ent, "dec", [(ent, 1)],[])
+        if i < chainLen:
+            r.add_reaction([(ent,maxConc)],[],[("e_"+str(i+1),1)])
+
+    r.add_reaction([("e_" + str(chainLen),maxConc)],[("dec",1)],[("e_" + str(chainLen),maxConc)])
+        
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("init")
+    c.add_state("working")
+    c.add_transition("init", [("e_1",1),("inc",1)], "working")
+    c.add_transition("working", [("inc",1)], "working")
+    
+    rc = ReactionSystemWithAutomaton(r,c)
+    
+    if print_system:
+        rc.show()
+    
+    smt_rsc = SmtCheckerRSC(rc)
+
+    prop = [('e_'+str(chainLen),maxConc)]
+    # smt_rsc.check_reachability((prop,[]),max_level=maxConc*chainLen+10)
+
+    # smt_rsc.show_encoding(prop,print_time=True,max_level=maxConc*chainLen+10)
+
+    # (1) 
+    f_1 = Formula_rsLTL.f_F( BagDescription.f_entity("inc") > 0, (BagDescription.f_entity('e_'+str(chainLen)) >= maxConc) )
+    smt_rsc.check_rsltl(formula=f_1)
+
+    # (2)
+    # f_tmp = Formula_rsLTL.f_F( BagDescription.f_entity("inc") > 0, (BagDescription.f_entity('e_'+str(chainLen)) == maxConc) )
+    # for i in range(chainLen-1,0,-1):
+    #     f_tmp = Formula_rsLTL.f_F( BagDescription.f_entity("inc") > 0, f_tmp & (BagDescription.f_entity('e_'+str(i)) == maxConc) )
+    # f_2 = f_tmp
+    # smt_rsc.check_rsltl(formula=f_2)
+    
+    # (3)
+    # f_3 = Formula_rsLTL.f_G( BagDescription.f_TRUE(),
+    #     Formula_rsLTL.f_Implies(
+    #         (BagDescription.f_entity('e_1') == 1),
+    #         Formula_rsLTL.f_F(
+    #             BagDescription.f_entity("inc") > 0,
+    #             (BagDescription.f_entity('e_'+str(i)) == maxConc)
+    #         )
+    #     )
+    # )
+    # smt_rsc.check_rsltl(formula=f_3)
+    
+    ###########################################################################
+
+    time=0
+    mem_usage=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)
+    filename_t="bench_rsc_time.log"
+    filename_m="bench_rsc_mem.log"
+    time=smt_rsc.get_verification_time()
+
+    f=open(filename_t, 'a')    
+    log_str="(" + str(chainLen) + "," + str(maxConc) + "," + str(time) + ")\n"
+    f.write(log_str)
+    f.close()
+    
+    f=open(filename_m, 'a')
+    log_str="(" + str(chainLen) + "," + str(maxConc) + "," + str(mem_usage) + ")\n"
+    f.write(log_str)
+    f.close()
+
+
 def test_rsLTL():
 
     r = ReactionSystemWithConcentrations()

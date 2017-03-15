@@ -1,5 +1,8 @@
 from logics.rsltl import *
 
+def simplify(x):
+    return x
+
 class rsLTL_Encoder(object):
     """Class for encoding rsLTL formulae for a given smt_checker instance"""
         
@@ -10,8 +13,20 @@ class rsLTL_Encoder(object):
         self.rs = smt_checker.rs
         self.loop_position = smt_checker.loop_position
         
+        self.init_ncalls()
+        
+    def init_ncalls(self):
+        self.ncalls_encode = 0
+        self.ncalls_encode_approx = 0
+        
+    def get_ncalls(self):
+        return (self.ncalls_encode, self.ncalls_encode_approx)
+        
     def encode_bag(self, bag_formula, level, context=False):
-                
+
+        if not bag_formula:
+            raise RuntimeError("bag_formula is None")
+
         if bag_formula.f_type == BagDesc_oper.entity:
             entity_id = self.rs.get_entity_id(bag_formula.entity)
             if context:
@@ -56,6 +71,8 @@ class rsLTL_Encoder(object):
       
     def encode(self, formula, level, bound):
         
+        self.ncalls_encode += 1
+        
         if not isinstance(formula, Formula_rsLTL):
             raise NotImplementedError("Unsupported formula type: " + str(type(formula)))
         
@@ -76,20 +93,26 @@ class rsLTL_Encoder(object):
             return And(
                     self.encode(formula.left_operand, level, bound), 
                     self.encode(formula.right_operand, level, bound)
-                )
+            )
 
         elif formula.f_type == rsLTL_form_type.l_or:
             return Or(
                     self.encode(formula.left_operand, level, bound), 
                     self.encode(formula.right_operand, level, bound)
-                )
+            )
 
+        elif formula.f_type == rsLTL_form_type.l_implies:
+            return Implies(
+                    self.encode(formula.left_operand, level, bound), 
+                    self.encode(formula.right_operand, level, bound)
+            )
+            
         elif formula.f_type == rsLTL_form_type.t_next:
             if level < bound:
                 enc = And(
                         self.encode(formula.left_operand, level + 1, bound), 
                         self.encode_bag_ctx(formula.sub_operand, level)
-                    )
+                )
             else: 
                 # level == bound
                 enc = False
@@ -107,22 +130,22 @@ class rsLTL_Encoder(object):
                         self.encode(formula.left_operand, level, bound),
                         self.encode_bag_ctx(formula.sub_operand, level),
                         self.encode(formula, level + 1, bound)
-                    )
+                )
             else:
                 # level == bound
                 enc_loops = False
                 for loop_level in range(1, bound+1):
                     enc_loops = Or(enc_loops, 
-                            And(
-                                self.loop_position == loop_level,
-                                self.encode_approx(formula, loop_level, bound),
-                            )
+                        And(
+                            self.loop_position == loop_level,
+                            self.encode_approx(formula, loop_level, bound),
                         )
-                enc = And(
-                        self.encode(formula.left_operand, bound, bound),
-                        enc_loops, 
-                        self.encode_bag_ctx(formula.sub_operand, level)
                     )
+                enc = And(
+                    self.encode(formula.left_operand, bound, bound),
+                    enc_loops, 
+                    self.encode_bag_ctx(formula.sub_operand, level)
+                )
                 enc = simplify(enc)  
 
             return enc
@@ -218,6 +241,9 @@ class rsLTL_Encoder(object):
         
         Used by encode()
         """
+        
+        self.ncalls_encode_approx += 1
+        
         if formula.f_type == rsLTL_form_type.t_until:
             if level < bound:
                 enc = Or(

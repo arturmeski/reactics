@@ -3,8 +3,7 @@ from enum import Enum
 
 from logics.bags import *
 
-rsLTL_form_type = Enum('rsLTL_form_type', 'bag l_and l_or l_not t_globally t_finally t_next t_until t_release')
-
+rsLTL_form_type = Enum('rsLTL_form_type', 'bag l_and l_or l_not l_implies t_globally t_finally t_next t_until t_release')
 
 class Formula_rsLTL(object):
     
@@ -35,6 +34,8 @@ class Formula_rsLTL(object):
             return "( " + repr(self.left_operand) + " & " + repr(self.right_operand) + " )"
         if self.f_type == rsLTL_form_type.l_or:
             return "( " + repr(self.left_operand) + " | " + repr(self.right_operand) + " )"
+        if self.f_type == rsLTL_form_type.l_implies:
+            return "( " + repr(self.left_operand) + " => " + repr(self.right_operand) + " )"
         if self.f_type == rsLTL_form_type.t_until:
             return "( " + repr(self.left_operand) + " U[" + repr(self.sub_operand) + "]" + repr(self.right_operand) + " )"
         if self.f_type == rsLTL_form_type.t_release:
@@ -67,6 +68,10 @@ class Formula_rsLTL(object):
     @classmethod
     def f_R(cls, sub, arg_L, arg_R):
         return cls(rsLTL_form_type.t_release, L_oper = arg_L, R_oper = arg_R, sub_oper = sub)
+        
+    @classmethod
+    def f_Implies(cls, arg_L, arg_R):
+        return cls(rsLTL_form_type.l_implies, L_oper = arg_L, R_oper = arg_R)
         
     def __and__(self, other):
         return Formula_rsLTL(rsLTL_form_type.l_and, L_oper = self, R_oper = other)
