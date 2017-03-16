@@ -101,15 +101,19 @@ def state_translate_rsc2rs(p):
 
 def scalable_chain(print_system=False):
     
-    if len(sys.argv) < 1+2:
-        print("provide <chainLen> <maxConc>")
+    if len(sys.argv) < 1+3:
+        print("arguments: <chainLen> <maxConc> <formulaNumber>")
         exit(1)
 
     chainLen=int(sys.argv[1]) # chain length
     maxConc=int(sys.argv[2]) # depth (max concentration)
+    formula_number=int(sys.argv[3])
         
     if chainLen < 1 or maxConc < 1:
         print("be reasonable")
+        exit(1)
+    if not formula_number in range(1,4+1):
+        print("formulaNumber must be in 1..4")
         exit(1)
     
     r = ReactionSystemWithConcentrations()
@@ -141,40 +145,36 @@ def scalable_chain(print_system=False):
     
     smt_rsc = SmtCheckerRSC(rc)
 
-    prop = [('e_'+str(chainLen),maxConc)]
-    # smt_rsc.check_reachability((prop,[]),max_level=maxConc*chainLen+10)
-
-    # smt_rsc.show_encoding(prop,print_time=True,max_level=maxConc*chainLen+10)
-
-    # (1) 
-    f_1 = Formula_rsLTL.f_F( BagDescription.f_entity("inc") > 0, (BagDescription.f_entity('e_'+str(chainLen)) >= maxConc) )
-    smt_rsc.check_rsltl(formula=f_1)
-
-    # (2)
-    # f_tmp = Formula_rsLTL.f_F( BagDescription.f_entity("inc") > 0, (BagDescription.f_entity('e_'+str(chainLen)) == maxConc) )
-    # for i in range(chainLen-1,0,-1):
-    #     f_tmp = Formula_rsLTL.f_F( BagDescription.f_entity("inc") > 0, f_tmp & (BagDescription.f_entity('e_'+str(i)) == maxConc) )
-    # f_2 = f_tmp
-    # smt_rsc.check_rsltl(formula=f_2)
-    
-    # (3)
-    # f_3 = Formula_rsLTL.f_G( BagDescription.f_TRUE(),
-    #     Formula_rsLTL.f_Implies(
-    #         (BagDescription.f_entity('e_1') == 1),
-    #         Formula_rsLTL.f_F(
-    #             BagDescription.f_entity("inc") > 0,
-    #             (BagDescription.f_entity('e_'+str(i)) == maxConc)
-    #         )
-    #     )
-    # )
-    # smt_rsc.check_rsltl(formula=f_3)
+    if formula_number == 1:
+        f_1 = Formula_rsLTL.f_F( BagDescription.f_entity("inc") > 0, (BagDescription.f_entity('e_'+str(chainLen)) >= maxConc) )
+        smt_rsc.check_rsltl(formula=f_1)
+    elif formula_number == 2:
+        f_tmp = Formula_rsLTL.f_F( BagDescription.f_entity("inc") > 0, (BagDescription.f_entity('e_'+str(chainLen)) == maxConc) )
+        for i in range(chainLen-1,0,-1):
+            f_tmp = Formula_rsLTL.f_F( BagDescription.f_entity("inc") > 0, f_tmp & (BagDescription.f_entity('e_'+str(i)) == maxConc) )
+        f_2 = f_tmp
+        smt_rsc.check_rsltl(formula=f_2)
+    elif formula_number == 3:
+        f_3 = Formula_rsLTL.f_G( BagDescription.f_TRUE(),
+            Formula_rsLTL.f_Implies(
+                (BagDescription.f_entity('e_1') == 1),
+                Formula_rsLTL.f_F(
+                    BagDescription.f_entity("inc") > 0,
+                    (BagDescription.f_entity('e_'+str(i)) == maxConc)
+                )
+            )
+        )
+        smt_rsc.check_rsltl(formula=f_3)
+    elif formula_number == 4:
+        f_4 = Formula_rsLTL.f_F( BagDescription.f_entity("inc") > 0 , BagDescription.f_entity('e_1') == maxConc )
+        smt_rsc.check_rsltl(formula=f_4)
     
     ###########################################################################
 
     time=0
     mem_usage=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)
-    filename_t="bench_rsc_time.log"
-    filename_m="bench_rsc_mem.log"
+    filename_t="bench_rsc_F" + str(formula_number) + "_time.log"
+    filename_m="bench_rsc_F" + str(formula_number) + "_mem.log"
     time=smt_rsc.get_verification_time()
 
     f=open(filename_t, 'a')    
