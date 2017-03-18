@@ -112,8 +112,8 @@ def scalable_chain(print_system=False):
     if chainLen < 1 or maxConc < 1:
         print("be reasonable")
         exit(1)
-    if not formula_number in range(1,4+1):
-        print("formulaNumber must be in 1..4")
+    if not formula_number in range(1,5+1):
+        print("formulaNumber must be in 1..5")
         exit(1)
     
     r = ReactionSystemWithConcentrations()
@@ -160,14 +160,19 @@ def scalable_chain(print_system=False):
                 (BagDescription.f_entity('e_1') == 1),
                 Formula_rsLTL.f_F(
                     BagDescription.f_entity("inc") > 0,
-                    (BagDescription.f_entity('e_'+str(i)) == maxConc)
+                    (BagDescription.f_entity('e_'+str(chainLen)) == maxConc)
                 )
             )
         )
+        print(i)
         smt_rsc.check_rsltl(formula=f_3)
     elif formula_number == 4:
         f_4 = Formula_rsLTL.f_F( BagDescription.f_entity("inc") > 0 , BagDescription.f_entity('e_1') == maxConc )
         smt_rsc.check_rsltl(formula=f_4)
+        
+    elif formula_number == 5:
+        f_5 = Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_U( BagDescription.f_entity("inc") > 0 , BagDescription.f_entity('e_1') > 0, BagDescription.f_entity('e_2') > 0 ) )
+        smt_rsc.check_rsltl(formula=f_5)
     
     ###########################################################################
 
