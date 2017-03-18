@@ -37,9 +37,9 @@ class Formula_rsLTL(object):
         if self.f_type == rsLTL_form_type.l_implies:
             return "( " + repr(self.left_operand) + " => " + repr(self.right_operand) + " )"
         if self.f_type == rsLTL_form_type.t_until:
-            return "( " + repr(self.left_operand) + " U[" + repr(self.sub_operand) + "]" + repr(self.right_operand) + " )"
+            return "( " + repr(self.left_operand) + " U[" + repr(self.sub_operand) + "] " + repr(self.right_operand) + " )"
         if self.f_type == rsLTL_form_type.t_release:
-            return "( " + repr(self.left_operand) + " R[" + repr(self.sub_operand) + "]" + repr(self.right_operand) + " )"
+            return "( " + repr(self.left_operand) + " R[" + repr(self.sub_operand) + "] " + repr(self.right_operand) + " )"
 
     @property
     def is_bag(self):
