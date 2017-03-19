@@ -14,16 +14,51 @@ class rsLTL_Encoder(object):
         self.loop_position = smt_checker.loop_position
         
         self.init_ncalls()
+    
+    def get_encoding(self, formula, bound):
+        self.cache_init(bound)
+        return self.encode(formula, 0, bound)
         
     def init_ncalls(self):
         self.ncalls_encode = 0
         self.ncalls_encode_approx = 0
+    
+    def cache_init(self, bound):
+        """
+        Cache for formulae encodings
+        """
+        self.cache_hits = 0
+        self.enc_fcache = [{} for level in range(0,bound+1)]
+        self.enc_fcache_approx = [{} for level in range(0,bound+1)]
+    
+    def cache_save(self, formula, level, formula_encoding):
+        self.enc_fcache[level][formula] = formula_encoding
+        
+    def cache_approx_save(self, formula, level, formula_encoding):
+        self.enc_fcache_approx[level][formula] = formula_encoding
+        
+    def cache_query(self, formula, level):
+        if formula in self.enc_fcache[level]:
+            self.cache_hits += 1
+            return self.enc_fcache[level][formula]
+        else:
+            return None
+
+    def cache_query_approx(self, formula, level):
+        if formula in self.enc_fcache_approx[level]:
+            self.cache_hits += 1
+            return self.enc_fcache_approx[level][formula]
+        else:
+            return None
+
+    def get_cache_hits(self):
+        return self.cache_hits
         
     def get_ncalls(self):
         return (self.ncalls_encode, self.ncalls_encode_approx)
         
     def encode_bag(self, bag_formula, level, context=False):
-
+        
         if not bag_formula:
             raise RuntimeError("bag_formula is None")
 
@@ -73,6 +108,12 @@ class rsLTL_Encoder(object):
         
         self.ncalls_encode += 1
         
+        from_cache = self.cache_query(formula, level)
+        if from_cache is not None:
+            return from_cache
+        
+        enc = None
+        
         if not isinstance(formula, Formula_rsLTL):
             raise NotImplementedError("Unsupported formula type: " + str(type(formula)))
         
@@ -80,29 +121,29 @@ class rsLTL_Encoder(object):
             raise RuntimeError("level > bound. Unexpected behaviour. The encoding does not support levels higher than a bound.")
     
         if formula.f_type == rsLTL_form_type.bag:
-            return self.encode_bag_state(formula.bag_descr, level)
+            enc = self.encode_bag_state(formula.bag_descr, level)
 
         elif formula.f_type == rsLTL_form_type.l_not:
             subform = formula.left_operand
             if subform.is_bag:
-                return Not(self.encode_bag_state(subform, level))
+                enc = Not(self.encode_bag_state(subform, level))
             else:
                 raise RuntimeError("Negation can be applied to bags only")
         
         elif formula.f_type == rsLTL_form_type.l_and:
-            return And(
+            enc = And(
                     self.encode(formula.left_operand, level, bound), 
                     self.encode(formula.right_operand, level, bound)
             )
 
         elif formula.f_type == rsLTL_form_type.l_or:
-            return Or(
+            enc = Or(
                     self.encode(formula.left_operand, level, bound), 
                     self.encode(formula.right_operand, level, bound)
             )
 
         elif formula.f_type == rsLTL_form_type.l_implies:
-            return Implies(
+            enc = Implies(
                     self.encode(formula.left_operand, level, bound), 
                     self.encode(formula.right_operand, level, bound)
             )
@@ -122,8 +163,6 @@ class rsLTL_Encoder(object):
                 enc = And(enc, self.encode_bag_ctx(formula.sub_operand, level))
                 enc = simplify(enc)
                 
-            return enc 
-
         elif formula.f_type == rsLTL_form_type.t_globally:
             if level < bound:
                 enc = And(
@@ -147,8 +186,6 @@ class rsLTL_Encoder(object):
                     self.encode_bag_ctx(formula.sub_operand, level)
                 )
                 enc = simplify(enc)  
-
-            return enc
 
         elif formula.f_type == rsLTL_form_type.t_finally:
             if level < bound:
@@ -179,8 +216,6 @@ class rsLTL_Encoder(object):
                 
                 enc = simplify(enc)
 
-            return enc
-
         elif formula.f_type == rsLTL_form_type.t_until:
             if level < bound:
                 inner_enc = self.encode(formula, level + 1, bound)
@@ -203,8 +238,6 @@ class rsLTL_Encoder(object):
                         self.encode_bag_ctx(formula.sub_operand, level)
                     )
                 )
-                                
-            return enc
             
         elif formula.f_type == rsLTL_form_type.t_release:
             if level < bound:
@@ -231,10 +264,15 @@ class rsLTL_Encoder(object):
                     )
                 )
 
-            return enc
-        
         else:
             raise NotImplementedError("Unsupported operator")
+
+        if enc is None:
+            raise RuntimeError("Encoding is NONE. Should never happen")
+
+        self.cache_save(formula, level, enc)
+
+        return enc
 
     def encode_approx(self, formula, level, bound):
         """Provides the approximation-encoding
@@ -244,6 +282,12 @@ class rsLTL_Encoder(object):
         
         self.ncalls_encode_approx += 1
         
+        enc = None
+        
+        from_cache = self.cache_query_approx(formula, level)
+        if from_cache is not None:
+            return from_cache
+                
         if formula.f_type == rsLTL_form_type.t_until:
             if level < bound:
                 enc = Or(
@@ -258,8 +302,6 @@ class rsLTL_Encoder(object):
                 # level == bound
                 enc = self.encode(formula.right_operand, bound, bound)
         
-            return enc
-    
         elif formula.f_type == rsLTL_form_type.t_release:
             if level < bound:
                 enc = And(
@@ -275,8 +317,6 @@ class rsLTL_Encoder(object):
             else: 
                 # level == bound
                 enc = self.encode(formula.right_operand, bound, bound)
-        
-            return enc
 
         elif formula.f_type == rsLTL_form_type.t_globally:
             if level < bound:
@@ -288,8 +328,6 @@ class rsLTL_Encoder(object):
             else:
                 # level == bound
                 enc = self.encode(formula.left_operand, bound, bound)
-
-            return enc
 
         elif formula.f_type == rsLTL_form_type.t_finally:
             if level < bound:
@@ -304,9 +342,12 @@ class rsLTL_Encoder(object):
                 # level == bound
                 enc = self.encode(formula.left_operand, bound, bound)
 
-            return enc        
-        
-
         else:
             raise NotImplementedError("Unsupported operator in approximation encoding")
 
+        if enc is None:
+            raise RuntimeError("Encoding is NONE. Should never happen")
+
+        self.cache_approx_save(formula, level, enc)
+        
+        return enc

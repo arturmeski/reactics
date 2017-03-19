@@ -410,14 +410,9 @@ class SmtCheckerRSC(object):
             self.solver.push()
             print("[" + colour_str(C_BOLD, "i") + "] Generating the formula encoding...")
             encoder.init_ncalls()
-            f = encoder.encode(formula, 0, self.current_level)
+            f = encoder.get_encoding(formula, self.current_level)
             ncalls = encoder.get_ncalls()
-            print("[" + colour_str(C_BOLD, "i") + "] Encode calls: " + str(ncalls[0]) + " " + str(ncalls[1]), end="")
-            if ncalls[0] > 9999:
-                print(" I bet it is rather slow now... :(")
-                printed = True
-            else:
-                print()
+            print("[" + colour_str(C_BOLD, "i") + "] Cache hits: " + str(encoder.get_cache_hits()) + ", encode calls: " + str(ncalls[0]) + " (approx: " + str(ncalls[1]) + ")")
             print("[" + colour_str(C_BOLD, "i") + "] Adding the formula to the solver...")
             self.solver.add(f)
             
