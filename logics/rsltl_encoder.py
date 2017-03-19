@@ -17,6 +17,7 @@ class rsLTL_Encoder(object):
     
     def get_encoding(self, formula, bound):
         self.cache_init(bound)
+        self.init_ncalls()
         return self.encode(formula, 0, bound)
         
     def init_ncalls(self):
@@ -53,7 +54,11 @@ class rsLTL_Encoder(object):
 
     def get_cache_hits(self):
         return self.cache_hits
-        
+    
+    def flush_cache(self):
+        self.enc_fcache = None
+        self.enc_fcache_approx = None
+    
     def get_ncalls(self):
         return (self.ncalls_encode, self.ncalls_encode_approx)
         

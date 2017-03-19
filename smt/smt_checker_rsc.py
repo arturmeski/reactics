@@ -408,12 +408,16 @@ class SmtCheckerRSC(object):
 
             # reachability test:
             self.solver.push()
+            
             print("[" + colour_str(C_BOLD, "i") + "] Generating the formula encoding...")
-            encoder.init_ncalls()
+            
             f = encoder.get_encoding(formula, self.current_level)
             ncalls = encoder.get_ncalls()
+            
             print("[" + colour_str(C_BOLD, "i") + "] Cache hits: " + str(encoder.get_cache_hits()) + ", encode calls: " + str(ncalls[0]) + " (approx: " + str(ncalls[1]) + ")")
             print("[" + colour_str(C_BOLD, "i") + "] Adding the formula to the solver...")
+            
+            encoder.flush_cache()
             self.solver.add(f)
             
             print("[" + colour_str(C_BOLD, "i") + "] Adding the loops encoding...")
