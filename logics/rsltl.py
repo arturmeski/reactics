@@ -50,6 +50,18 @@ class Formula_rsLTL(object):
         return cls(rsLTL_form_type.bag, bag = bag_descr)
 
     @classmethod
+    def f_And(cls, arg_L, arg_R):
+        return cls(rsLTL_form_type.l_and, L_oper = arg_L, R_oper = arg_R)
+    
+    @classmethod
+    def f_Or(cls, arg_L, arg_R):
+        return cls(rsLTL_form_type.l_or, L_oper = arg_L, R_oper = arg_R)
+        
+    @classmethod
+    def f_Implies(cls, arg_L, arg_R):
+        return cls(rsLTL_form_type.l_implies, L_oper = arg_L, R_oper = arg_R)
+        
+    @classmethod
     def f_X(cls, sub, arg):
         return cls(rsLTL_form_type.t_next, L_oper = arg, sub_oper = sub)
 
@@ -68,10 +80,6 @@ class Formula_rsLTL(object):
     @classmethod
     def f_R(cls, sub, arg_L, arg_R):
         return cls(rsLTL_form_type.t_release, L_oper = arg_L, R_oper = arg_R, sub_oper = sub)
-        
-    @classmethod
-    def f_Implies(cls, arg_L, arg_R):
-        return cls(rsLTL_form_type.l_implies, L_oper = arg_L, R_oper = arg_R)
         
     def __and__(self, other):
         return Formula_rsLTL(rsLTL_form_type.l_and, L_oper = self, R_oper = other)
