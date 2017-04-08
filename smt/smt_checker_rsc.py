@@ -472,6 +472,9 @@ class SmtCheckerRSC(object):
             e_i_equality = self.v[level_A][e_i] == self.v[level_B][e_i]
             eq_enc = simplify(And(eq_enc, e_i_equality))
 
+        eq_enc_ctxaut = self.ca_state[level_A] == self.ca_state[level_B]
+        eq_enc = simplify(And(eq_enc, eq_enc_ctxaut))
+
         return eq_enc
     
     def get_loop_encodings(self):
