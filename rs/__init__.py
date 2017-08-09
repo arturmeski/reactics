@@ -2,6 +2,7 @@ from rs.reaction_system import ReactionSystem
 from rs.context_automaton import ContextAutomaton
 
 from rs.reaction_system_with_concentrations import ReactionSystemWithConcentrations
+from rs.reaction_system_with_concentrations_param import ReactionSystemWithConcentrationsParam
 from rs.context_automaton_with_concentrations import ContextAutomatonWithConcentrations
 
 from rs.extended_context_automaton import ExtendedContextAutomaton
