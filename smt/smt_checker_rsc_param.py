@@ -14,14 +14,14 @@ from logics import rsLTL_Encoder
 # def simplify(x):
 #     return x
 
-class SmtCheckerRSC(object):
+class SmtCheckerRSCParam(object):
 
     def __init__(self, rsca):
-
+    
         rsca.sanity_check()
 
-        if not rsca.is_with_concentrations():
-            raise RuntimeError("RS and CA with concentrations expected")
+        if not rsca.is_concentr_and_param_compatible():
+            raise RuntimeError("RS and CA with concentrations (and parameters) expected")
         
         self.rs = rsca.rs
         self.ca = rsca.ca

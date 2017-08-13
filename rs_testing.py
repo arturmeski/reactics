@@ -11,7 +11,86 @@ def run_tests():
     # process()
     # heat_shock_response()
     # scalable_chain(print_system=True)
-    example44()
+    # example44()
+    example44_param()
+
+def example44_param():
+    
+    r = ReactionSystemWithConcentrationsParam()
+    r.add_bg_set_entity(("x",2))
+    r.add_bg_set_entity(("y",4))
+    r.add_bg_set_entity(("h",2))
+    r.add_bg_set_entity(("m",1))
+    
+    r.add_reaction([("y",1),("x",1)], [("y",2),("h",1)], [("y",2)])
+    r.add_reaction([("y",2),("x",2)], [("y",3),("h",1)], [("y",3)])
+    r.add_reaction([("y",3),("h",1)], [("y",4),("h",2)], [("y",4)])
+    r.add_reaction([("y",4),("h",1)], [("h",2)], [("y",3)])
+    r.add_reaction([("y",4),("x",2)], [("h",1)], [("y",2)])
+    r.add_reaction([("m",1)], [("y",3)], [("m",1)])
+    
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("0")
+    c.add_state("1")
+    c.add_transition("0", [("y",1),("m",1),("x",1)], "1")
+    c.add_transition("1", [("x",1)], "1")
+    c.add_transition("1", [("x",1),("h",1)], "1")
+    c.add_transition("1", [("x",2)], "1")
+    c.add_transition("1", [("x",2),("h",1)], "1")
+    c.add_transition("1", [("h",1)], "1")
+
+
+    rc = ReactionSystemWithAutomaton(r,c)
+    rc.show()
+    smt_rsc = SmtCheckerRSCParam(rc)
+    
+    # Universal property which seems to be true: (holds also existentially)
+    f1 = Formula_rsLTL.f_G(BagDescription.f_entity("x") > 0, 
+        Formula_rsLTL.f_Implies(
+            (BagDescription.f_entity('y') == 2),            
+            Formula_rsLTL.f_X(
+                (BagDescription.f_entity("x") > 1), 
+                BagDescription.f_entity("y") >= 3
+            )
+        )
+    )
+    
+    # lets see if we can find a counterexample to this property:
+    neg_f1 = Formula_rsLTL.f_F(BagDescription.f_entity("x") > 0, 
+        Formula_rsLTL.f_And(
+            (BagDescription.f_entity('y') == 2),            
+            Formula_rsLTL.f_X(
+                (BagDescription.f_entity("x") > 1), 
+                BagDescription.f_entity("y") < 3
+            )
+        )
+    )
+    
+    # we fix the property f1
+    # this one holds:
+    f2 = Formula_rsLTL.f_G(BagDescription.f_entity("x") > 0, 
+        Formula_rsLTL.f_Implies(
+            (BagDescription.f_entity('y') == 2),            
+            Formula_rsLTL.f_X(
+                (BagDescription.f_entity("x") > 1) & (BagDescription.f_entity("h") < 1), 
+                BagDescription.f_entity("y") >= 3
+            )
+        )
+    )
+    
+    # neg_f1 = Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_F(BagDescription.f_entity("x") > 0,
+    #     Formula_rsLTL.f_And(
+    #         (BagDescription.f_entity('y') > 0),
+    #         Formula_rsLTL.f_X(
+    #             BagDescription.f_entity("x") > 0,
+    #             Formula_rsLTL.f_X(
+    #                 BagDescription.f_entity("x") > 1,
+    #                 BagDescription.f_entity("y") < 3
+    #             )
+    #         )
+    #     )
+    # ))
+    # smt_rsc.check_rsltl(formula=neg_f1)
     
 def example44():
     

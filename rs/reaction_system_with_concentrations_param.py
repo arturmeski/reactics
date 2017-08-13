@@ -102,7 +102,10 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
         return reactants,inhibitors,products
 
     def add_reaction(self, R, I, P):
-        """Adds a reaction"""
+        """Adds a reaction
+        
+        R, I, and P are sets of entities (not their IDs)
+        """
         
         if P == []:
             raise RuntimeError("No products defined")
@@ -201,6 +204,8 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
     def get_reactions_by_product(self):
         """Sorts reactions by their products and returns a dictionary of products"""
 
+        assert False
+
         if self.reactions_by_prod != None:
             return self.reactions_by_prod
 
@@ -247,6 +252,9 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
         return reactions_by_prod
 
     def get_reaction_system(self):
+        """
+        Translates RSC into RS
+        """
         
         rs = ReactionSystem()
                 
@@ -372,36 +380,51 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
         return rs
     
 
-class ReactionSystemWithAutomaton(object):
-    
-    def __init__(self, reaction_system, context_automaton):
-        self.rs = reaction_system
-        self.ca = context_automaton
-
-    def show(self, soft=False):
-        self.rs.show(soft)
-        self.ca.show()
-        
-    def is_with_concentrations(self):
-        if not isinstance(self.rs, ReactionSystemWithConcentrations):
-            return False
-        if not isinstance(self.ca, ContextAutomatonWithConcentrations):
-            return False
-        return True
-
-    def sanity_check(self):
-        pass
-        
-    def get_ordinary_reaction_system_with_automaton(self):
-        
-        if not self.is_with_concentrations():
-            raise RuntimeError("Not RS/CA with concentrations")
-        
-        ors = self.rs.get_reaction_system()
-        oca = self.ca.get_automaton_with_flat_contexts(ors)
-        
-        return ReactionSystemWithAutomaton(ors, oca)
-        
+# class ReactionSystemWithAutomaton(object):
+#
+#     def __init__(self, reaction_system, context_automaton):
+#         self.rs = reaction_system
+#         self.ca = context_automaton
+#
+#     def show(self, soft=False):
+#         self.rs.show(soft)
+#         self.ca.show()
+#
+#     def is_concentr_and_param_compatible(self):
+#         """
+#         Checks if the underlying RS/CA are compatible
+#         with parameters and concentrations
+#         """
+#         if not isinstance(self.rs, ReactionSystemWithConcentrationsParam):
+#             return False
+#         if not isinstance(self.ca, ContextAutomatonWithConcentrations):
+#             return False
+#         return True
+#
+#     def is_with_concentrations(self):
+#         """
+#         Checks if the underlying RS and CA provide
+#         concentration levels
+#         """
+#         if not isinstance(self.rs, ReactionSystemWithConcentrations):
+#             return False
+#         if not isinstance(self.ca, ContextAutomatonWithConcentrations):
+#             return False
+#         return True
+#
+#     def sanity_check(self):
+#         pass
+#
+#     def get_ordinary_reaction_system_with_automaton(self):
+#
+#         if not self.is_with_concentrations():
+#             raise RuntimeError("Not RS/CA with concentrations")
+#
+#         ors = self.rs.get_reaction_system()
+#         oca = self.ca.get_automaton_with_flat_contexts(ors)
+#
+#         return ReactionSystemWithAutomaton(ors, oca)
+#
 
 # class ReactionSystemWithConcentrationWithAutomaton(ReactionSystemWithAutomaton):
 #
