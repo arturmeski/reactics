@@ -28,6 +28,7 @@ class SmtCheckerRSCParam(object):
 
         self.initialise()
     
+    
     def initialise(self):
         """Initialises all the variables used by the checker"""
         
@@ -48,10 +49,12 @@ class SmtCheckerRSCParam(object):
         
         self.verification_time = None        
 
+
     def reset(self):
         """Reinitialises the state of the checker"""
         
         self.initialise()
+        
         
     def prepare_all_variables(self):
         """Prepares all the variables"""
@@ -60,6 +63,7 @@ class SmtCheckerRSCParam(object):
         self.prepare_context_variables()
         self.prepare_intermediate_product_variables()
         self.next_level_to_encode += 1
+        
         
     def prepare_context_variables(self):
         """Prepares all the context variables"""
@@ -72,6 +76,7 @@ class SmtCheckerRSCParam(object):
 
         self.v_ctx.append(variables)
 
+
     def prepare_state_variables(self):
         """Prepares all the state variables"""
 
@@ -83,6 +88,7 @@ class SmtCheckerRSCParam(object):
         self.v.append(variables)
         
         self.ca_state.append(Int("CA"+str(level)+"_state"))
+
 
     def prepare_intermediate_product_variables(self):
         """
@@ -135,6 +141,7 @@ class SmtCheckerRSCParam(object):
             enc_nz = simplify(And(enc_nz, v >= 0, v_ctx >= 0, v <= e_max, v_ctx <= e_max))
         
         return enc_nz
+        
 
     def enc_init_state(self, level):
         """Encodes the initial state at the given level"""
@@ -149,6 +156,7 @@ class SmtCheckerRSCParam(object):
         init_state_enc = simplify(And(rs_init_state_enc, ca_init_state_enc))
 
         return init_state_enc
+        
 
     def enc_produced_concentration(self, level, prod_entity):
         """Encodes the produced concentrations for the given level and entity"""
@@ -290,6 +298,7 @@ class SmtCheckerRSCParam(object):
     def enc_transition_relation(self, level):
         return simplify(And(self.enc_rs_trans(level), self.enc_automaton_trans(level)))
 
+
     def enc_rs_trans(self, level):
         """Encodes the transition relation"""
 
@@ -308,6 +317,7 @@ class SmtCheckerRSCParam(object):
             enc_trans = simplify(And(enc_trans, self.v[level+1][prod_entity] == 0))
 
         return enc_trans
+    
     
     def enc_automaton_trans(self, level):
         """Encodes the transition relation for the context automaton"""
@@ -336,6 +346,7 @@ class SmtCheckerRSCParam(object):
         
         return enc_trans
 
+
     def enc_exact_state(self, level, state):
         """Encodes the state at the given level with the exact concentration values"""
 
@@ -355,6 +366,7 @@ class SmtCheckerRSCParam(object):
         #     enc = And(enc, self.v[level][entity] == 0)
         #
         # return simplify(enc)
+        
 
     def enc_min_state(self, level, state):
         """Encodes the state at the given level with the minimal required concentration levels"""
@@ -370,6 +382,7 @@ class SmtCheckerRSCParam(object):
         #     enc = And(enc, self.v[level][entity])
 
         return simplify(enc)
+        
 
     def enc_state_with_blocking(self, level, prop):
         """Encodes the state at the given level with blocking certain concentrations"""
@@ -386,6 +399,7 @@ class SmtCheckerRSCParam(object):
                 enc = And(enc, self.v[level][e_id] < conc)
 
         return simplify(enc)
+        
 
     def decode_witness(self, max_level, print_model=False):
 
@@ -418,6 +432,7 @@ class SmtCheckerRSCParam(object):
                     if int(var_rep) > 0:
                         print(" " + self.rs.get_entity_name(var_id) + "=" + var_rep, end="")
                 print(" }")
+                
                 
     def check_rsltl(self, formula, print_witness=True, print_time=True, print_mem=True, max_level=None):
         """Bounded Model Checking for rsLTL properties"""
@@ -495,6 +510,7 @@ class SmtCheckerRSCParam(object):
         if print_mem:
             print("[i] {: >60}".format(" Memory: " + repr(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)) + " MB"))
         
+        
     def dummy_unroll(self, levels):
         """Unrolls the variables for testing purposes"""
 
@@ -504,6 +520,7 @@ class SmtCheckerRSCParam(object):
             self.current_level += 1
 
         print(C_MARK_INFO + " Dummy Unrolling done.")
+        
     
     def state_equality(self, level_A, level_B):
         """Encodes equality of two states at two different levels"""
@@ -518,6 +535,7 @@ class SmtCheckerRSCParam(object):
         eq_enc = simplify(And(eq_enc, eq_enc_ctxaut))
 
         return eq_enc
+        
     
     def get_loop_encodings(self):
         
@@ -536,6 +554,7 @@ class SmtCheckerRSCParam(object):
             loop_enc = simplify(And(loop_enc, Implies( loop_var == i, self.state_equality(i-1, k) )))
         
         return loop_enc
+        
         
     def check_reachability(self, state, print_witness=True, 
             print_time=True, print_mem=True, max_level=1000):
@@ -598,8 +617,10 @@ class SmtCheckerRSCParam(object):
         if print_mem:
             print("[i] {: >60}".format(" Memory: " + repr(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)) + " MB"))
     
+    
     def get_verification_time(self):
         return self.verification_time
+    
     
     def show_encoding(self, state, print_witness=True, 
             print_time=False, print_mem=False, max_level=100):
@@ -656,3 +677,5 @@ class SmtCheckerRSCParam(object):
                 if not (x == "y" or x == "yes"):
                     break
 
+
+# EOF
