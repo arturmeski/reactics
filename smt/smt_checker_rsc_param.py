@@ -103,10 +103,15 @@ class SmtCheckerRSCParam(object):
         level = self.next_level_to_encode
 
         if level < 1:
-            self.v_improd.append([])
+            #
+            # If we are at level==0, we add a dummy "level"
+            # to match the indices of of the successors
+            # which are always at level+1.
+            #
+            self.v_improd.append(None)
         else:
 
-            variables = []
+            reactions_dict = dict()
             number_of_reactions = len(self.rs.reactions)
 
             for reaction in self.rs.reactions:
@@ -120,13 +125,15 @@ class SmtCheckerRSCParam(object):
                                   str(reaction_id) + "_e" + str(entity))
                     entities_dict[entity] = varname
 
-                variables.append(entities_dict)
+                reactions_dict[reaction_id] = entities_dict
+            
+            self.v_improd.append(reactions_dict)
 
-            self.v_improd.append(variables)
-
+            print(self.v_improd)
         
     def enc_concentration_levels_assertion(self, level):
-        """Encodes assertions that (some) variables need to be >0
+        """
+        Encodes assertions that (some) variables need to be >0
         
         We do not need to actually control all the variables,
         only those that can possibly go below 0.
@@ -157,144 +164,7 @@ class SmtCheckerRSCParam(object):
 
         return init_state_enc
         
-
-    def enc_produced_concentration(self, level, prod_entity):
-        """Encodes the produced concentrations for the given level and entity"""
-
-        rcts_for_prod_entity = []
-        if prod_entity in self.rs.get_reactions_by_product():
-            rcts_for_prod_entity = self.rs.get_reactions_by_product()[prod_entity]
-
-        meta_reactions = []
-        if prod_entity in self.rs.meta_reactions:
-            meta_reactions = self.rs.meta_reactions[prod_entity]
-
-        permanency_inhibition = None 
-        if prod_entity in self.rs.permanent_entities:
-            permanency_inhibition = self.rs.permanent_entities[prod_entity]
-
-        if rcts_for_prod_entity == [] and meta_reactions == []:
-            return simplify(self.v[level+1][prod_entity] == 0) # this should never happen
-            
-        enc_enabledness = False
-
-        # ----------- ordinary reactions --------------------------------------------
-
-        enc_rct_prod = False
-        
-        enc_ordinary_reactions_enabledness = False
-        
-        for reactants,inhibitors,products in rcts_for_prod_entity:
-
-            enc_reactants   = True
-            for reactant,concentration in reactants:
-                enc_reactants = simplify(And(enc_reactants,
-                                            Or(self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
-
-            enc_inhibitors  = True
-            for inhibitor,concentration in inhibitors:
-                enc_inhibitors = simplify(And(enc_inhibitors,
-                                             And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
-        
-            enc_rct_enabled = And(enc_reactants, enc_inhibitors)
-            enc_products = self.v[level+1][products[0][0]] == products[0][1]
-            enc_rct_prod = simplify(If(enc_rct_enabled, enc_products, enc_rct_prod))
-            enc_enabledness = simplify(Or(enc_enabledness, enc_rct_enabled))
-        
-            enc_ordinary_reactions_enabledness = simplify(Or(enc_ordinary_reactions_enabledness,enc_rct_enabled))
-        
-        # for reactants,inhibitors,products in rcts_for_prod_entity:
-        #     enc_reactants   = True
-        #     enc_inhibitors  = True
-        #     # enc_products -- below
-        #
-        #     for reactant,concentration in reactants:
-        #         enc_reactants = simplify(And(enc_reactants,
-        #                                     Or(self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
-        #     for inhibitor,concentration in inhibitors:
-        #         enc_inhibitors = simplify(And(enc_inhibitors,
-        #                                      And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
-        #
-        #     enc_products = self.v[level+1][products[0][0]] == products[0][1]
-        #
-        #     enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
-        #     enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
-            
-        # -------- meta reactions ---------------------------------------------------
-        
-        for r_type,command_entity,reactants,inhibitors in meta_reactions:
-
-            # command entity is e.g. 'inc' for incrementation operation
-            # (inc,W) gives us the value W by which the given entity's value should be incremented
-
-            enc_reactants   = True
-            enc_inhibitors  = True
-        
-            for reactant,concentration in reactants:
-                enc_reactants = simplify(And(enc_reactants,
-                                            Or(self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
-
-            # command entity needs to be present (with concentration level > 0) in order to perform the operation
-            enc_reactants = simplify(And(enc_reactants,
-                                        Or(self.v[level][command_entity] > 0, self.v_ctx[level][command_entity] > 0)))
-
-            for inhibitor,concentration in inhibitors:
-                enc_inhibitors = simplify(And(enc_inhibitors, 
-                                             And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
-            
-            if r_type == "inc":
-                value_after_inc = If(self.v[level][prod_entity]>self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]) + \
-                    If(self.v[level][command_entity]>self.v_ctx[level][command_entity],self.v[level][command_entity],self.v_ctx[level][command_entity])
-                enc_products = self.v[level+1][prod_entity] == value_after_inc
-
-            elif r_type == "dec":
-                value_after_dec = simplify(If(self.v[level][prod_entity]>self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]) - \
-                    If(self.v[level][command_entity]>self.v_ctx[level][command_entity],self.v[level][command_entity],self.v_ctx[level][command_entity]))
-                enc_products = self.v[level+1][prod_entity] == If(value_after_dec < 0, 0, value_after_dec)
-
-            else:
-                raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
-
-            enc_meta_reaction_enabledness = And(enc_reactants, enc_inhibitors, Not(enc_ordinary_reactions_enabledness))
-            enc_enabledness = simplify(Or(enc_enabledness, enc_meta_reaction_enabledness))
-            enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_meta_reaction_enabledness, enc_products)))
-
-        # -----------------------------------------------------------------------------
-        
-        if not permanency_inhibition == None:
-            
-            enc_reactants = Or(self.v[level][prod_entity] >= concentration, self.v_ctx[level][prod_entity] >= concentration)
-
-            enc_inhibitors = True
-            for inhibitor,concentration in permanency_inhibition:
-                enc_inhibitors = simplify(And(enc_inhibitors, 
-                                             And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
-            enc_products = simplify(self.v[level+1][prod_entity] == \
-                If(self.v[level][prod_entity] > self.v_ctx[level][prod_entity],self.v[level][prod_entity],self.v_ctx[level][prod_entity]))
-
-            enc_permanency_enabledness = And(enc_reactants, enc_inhibitors, Not(enc_ordinary_reactions_enabledness))
-            enc_enabledness = simplify(Or(enc_enabledness, enc_permanency_enabledness))
-            enc_permanency = And(enc_permanency_enabledness, enc_products)
-            enc_rct_prod = simplify(Or(enc_rct_prod, enc_permanency))
-
-        # -----------------------------------------------------------------------------
-            
-        enc_when_to_produce_zero_conc = simplify(And(Not(enc_enabledness), self.v[level+1][prod_entity] == 0))
-
-        enc_rct_prod = Or(enc_rct_prod, enc_when_to_produce_zero_conc)
-        return enc_rct_prod
-
-    # def enc_entity_production(self, level, prod_entity):
-    #     """Encodes the production of a given entity from a given level at level+1"""
-    #
-    #     enc_enab_cond = self.enc_enabledness(level, prod_entity)
-    #
-    #     enc_ent_prod = Or(And(enc_enab_cond, self.v[level+1][prod_entity]),
-    #             And(Not(enc_enab_cond), Not(self.v[level+1][prod_entity])))
-    #
-    #     return simplify(enc_ent_prod)
-    
-        
+                
     def enc_transition_relation(self, level):
         return simplify(And(self.enc_rs_trans(level), self.enc_automaton_trans(level)))
 
@@ -302,19 +172,54 @@ class SmtCheckerRSCParam(object):
     def enc_rs_trans(self, level):
         """Encodes the transition relation"""
 
-        unused_entities = set(range(len(self.rs.background_set)))
+        #
+        # IMPORTANT NOTE
+        #
+        # We need to make sure we do something about the UNUSED ENTITIES
+        # that is, those that are never produced.
+        # 
+        # They should have concentration levels set to 0.
+        #
 
         enc_trans = True
 
-        reactions = self.rs.get_reactions_by_product()
-        meta_reactions = self.rs.meta_reactions
+        for reaction in self.rs.reactions:
+            
+            reactants, inhibitors, products = reaction
+            reaction_id = self.rs.reactions.index(reaction)
+                        
+            enc_reactants = True
+            for entity, conc in reactants:
+                enc_reactants = And(enc_reactants, 
+                    Or(self.v[level][entity] >= conc, self.v_ctx[level][entity] >= conc))
+            
+            enc_inhibitors = True
+            for entity, conc in inhibitors:
+                enc_inhibitors = And(enc_inhibitors,
+                    And(self.v[level][entity] < conc, self.v_ctx[level][entity] < conc))
+                    
+            enc_products = True
+            #
+            #
+            #
+            for entity, conc in products:
+                enc_products = And(enc_products,
+                    self.v_improd[level+1][reaction_id][entity] == conc)
+            
+            #
+            # (R and I) iff P
+            #
+            enc_reaction = simplify(And(enc_reactants, enc_inhibitors) == enc_products)
+            
+            enc_trans = simplify(And(enc_trans, enc_reaction))
+            
+        print(enc_trans)
 
-        for prod_entity in chain(reactions, meta_reactions):
-            unused_entities.discard(prod_entity)
-            enc_trans = simplify(And(enc_trans, self.enc_produced_concentration(level, prod_entity)))
-
-        for prod_entity in unused_entities:
-            enc_trans = simplify(And(enc_trans, self.v[level+1][prod_entity] == 0))
+        #
+        # TODO:
+        #
+        # Max of all the produced concentrations for each entity/product...
+        
 
         return enc_trans
     
