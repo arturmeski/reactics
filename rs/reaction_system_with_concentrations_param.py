@@ -201,19 +201,29 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
         self.show_meta_reactions()
         self.show_max_concentrations()
         
+    def get_producible_entities(self):
+        """
+        Returns the set of entities that appear as products of 
+        reactions.
+        """
+        
+        producible_entities = set()
+
+        for reaction in self.reactions:
+            product_entities = [e for e,c in reaction[2] if c > 0]
+            producible_entities = producible_entities.union(set(product_entities))
+            
+        return producible_entities
+        
     def get_reactions_by_product(self):
         """Sorts reactions by their products and returns a dictionary of products"""
 
-        assert False
+        # assert False
 
         if self.reactions_by_prod != None:
             return self.reactions_by_prod
 
-        producible_entities = set()
-
-        for reaction in self.reactions:
-            product_entities = [e for e,c in reaction[2]]
-            producible_entities = producible_entities.union(set(product_entities))
+        producible_entities = self.get_producible_entities()
 
         reactions_by_prod = {}
 

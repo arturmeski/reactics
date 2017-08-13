@@ -34,7 +34,13 @@ class SmtCheckerRSCParam(object):
         self.v = []
         self.v_ctx = []
         self.ca_state = []
+        
+        # intermediate products:
+        self.v_improd = []
+
         self.next_level_to_encode = 0
+
+        self.producible_entities = self.rs.get_producible_entities()
         
         self.loop_position = Int("loop_position")
         
@@ -48,14 +54,15 @@ class SmtCheckerRSCParam(object):
         self.initialise()
         
     def prepare_all_variables(self):
-        """Encodes all the variables"""
+        """Prepares all the variables"""
 
         self.prepare_state_variables()
         self.prepare_context_variables()
+        self.prepare_intermediate_product_variables()
         self.next_level_to_encode += 1
         
     def prepare_context_variables(self):
-        """Encodes all the context variables"""
+        """Prepares all the context variables"""
 
         level = self.next_level_to_encode
 
@@ -66,7 +73,7 @@ class SmtCheckerRSCParam(object):
         self.v_ctx.append(variables)
 
     def prepare_state_variables(self):
-        """Encodes all the state variables"""
+        """Prepares all the state variables"""
 
         level = self.next_level_to_encode
 
@@ -77,6 +84,41 @@ class SmtCheckerRSCParam(object):
         
         self.ca_state.append(Int("CA"+str(level)+"_state"))
 
+    def prepare_intermediate_product_variables(self):
+        """
+        Prepares the intermediate product variables
+        carrying the individual concentration levels produced
+        the reactions.
+
+        These variables are used later on to encode the final
+        concentration levels for all the entities
+        """
+
+        level = self.next_level_to_encode
+
+        if level < 1:
+            self.v_improd.append([])
+        else:
+
+            variables = []
+            number_of_reactions = len(self.rs.reactions)
+
+            for reaction in self.rs.reactions:
+                *_, products = reaction
+
+                reaction_id = self.rs.reactions.index(reaction)
+
+                entities_dict = dict()
+                for entity, _ in products:
+                    varname = Int("IP" + str(level) + "_R" +
+                                  str(reaction_id) + "_e" + str(entity))
+                    entities_dict[entity] = varname
+
+                variables.append(entities_dict)
+
+            self.v_improd.append(variables)
+
+        
     def enc_concentration_levels_assertion(self, level):
         """Encodes assertions that (some) variables need to be >0
         

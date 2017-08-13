@@ -90,7 +90,7 @@ def example44_param():
     #         )
     #     )
     # ))
-    # smt_rsc.check_rsltl(formula=neg_f1)
+    smt_rsc.check_rsltl(formula=neg_f1)
     
 def example44():
     
