@@ -39,6 +39,8 @@ class SmtCheckerRSCParam(object):
         # intermediate products:
         self.v_improd = []
 
+        self.v_improd_for_entities = []
+
         self.next_level_to_encode = 0
 
         self.producible_entities = self.rs.get_producible_entities()
@@ -109,10 +111,13 @@ class SmtCheckerRSCParam(object):
             # which are always at level+1.
             #
             self.v_improd.append(None)
+            self.v_improd_for_entities.append(None)
         else:
 
             reactions_dict = dict()
             number_of_reactions = len(self.rs.reactions)
+
+            all_entities_dict = dict()
 
             for reaction in self.rs.reactions:
                 *_, products = reaction
@@ -120,16 +125,22 @@ class SmtCheckerRSCParam(object):
                 reaction_id = self.rs.reactions.index(reaction)
 
                 entities_dict = dict()
-                for entity, _ in products:
+                for entity, conc in products:
                     varname = Int("IP" + str(level) + "_R" +
                                   str(reaction_id) + "_e" + str(entity))
                     entities_dict[entity] = varname
 
+                    all_entities_dict.setdefault(entity, [])
+                    all_entities_dict[entity].append((conc,varname))
+
                 reactions_dict[reaction_id] = entities_dict
             
             self.v_improd.append(reactions_dict)
+            self.v_improd_for_entities.append(all_entities_dict)
 
             print(self.v_improd)
+
+            print(self.v_improd_for_entities)
         
     def enc_concentration_levels_assertion(self, level):
         """
@@ -166,7 +177,7 @@ class SmtCheckerRSCParam(object):
         
                 
     def enc_transition_relation(self, level):
-        return simplify(And(self.enc_rs_trans(level), self.enc_automaton_trans(level)))
+        return simplify(And(self.enc_rs_trans(level), self.enc_automaton_trans(level)))            
 
 
     def enc_rs_trans(self, level):
@@ -220,8 +231,37 @@ class SmtCheckerRSCParam(object):
         #
         # Max of all the produced concentrations for each entity/product...
         
+        enc_max_prod = True
+
+        current_v_improd_for_entities = self.v_improd_for_entities[level+1]
+        for entity, per_reaction_vars in current_v_improd_for_entities.items():
+
+                # enc_max_single_ent = True
+
+                sorted_vars_by_conc = sorted(per_reaction_vars, key=lambda conc_var: conc_var[0])
+                list_of_vars = [v for c,v in sorted_vars_by_conc]
+
+                print(list_of_vars)
 
         return enc_trans
+    
+    # def enc_max(self, elements):
+    #
+    #     if len(elements) == 1:
+    #         return elements[0]
+    #
+    #     elif len(elements) > 1:
+    #
+    #         # If(a > b, a, b)
+    #         def MAX(a, b):
+    #             return If(a > b, a, b)
+    #
+    #         for i in range(1,len(elements)):
+    #             MAX(elements[])
+    #
+    #     else:
+    #         return None
+    #
     
     
     def enc_automaton_trans(self, level):
