@@ -14,6 +14,9 @@ from logics import rsLTL_Encoder
 # def simplify(x):
 #     return x
 
+def MAX(a, b):
+    return If(a > b, a, b)
+
 class SmtCheckerRSCParam(object):
 
     def __init__(self, rsca):
@@ -131,7 +134,7 @@ class SmtCheckerRSCParam(object):
                     entities_dict[entity] = varname
 
                     all_entities_dict.setdefault(entity, [])
-                    all_entities_dict[entity].append((conc,varname))
+                    all_entities_dict[entity].append(varname)
 
                 reactions_dict[reaction_id] = entities_dict
             
@@ -238,31 +241,30 @@ class SmtCheckerRSCParam(object):
 
                 # enc_max_single_ent = True
 
-                sorted_vars_by_conc = sorted(per_reaction_vars, key=lambda conc_var: conc_var[0])
-                list_of_vars = [v for c,v in sorted_vars_by_conc]
+                #sorted_vars_by_conc = sorted(per_reaction_vars, key=lambda conc_var: conc_var[0])
+                #list_of_vars = [v for c,v in sorted_vars_by_conc]
 
-                print(list_of_vars)
+                print(per_reaction_vars, "--->", self.enc_max(per_reaction_vars))
 
         return enc_trans
     
-    # def enc_max(self, elements):
-    #
-    #     if len(elements) == 1:
-    #         return elements[0]
-    #
-    #     elif len(elements) > 1:
-    #
-    #         # If(a > b, a, b)
-    #         def MAX(a, b):
-    #             return If(a > b, a, b)
-    #
-    #         for i in range(1,len(elements)):
-    #             MAX(elements[])
-    #
-    #     else:
-    #         return None
-    #
     
+    def enc_max(self, elements):
+
+        if len(elements) == 1:
+            return MAX(0, elements[0])
+
+        elif len(elements) > 1:
+
+            enc = 0
+            for i in range(len(elements) - 1):
+                enc = MAX(enc, MAX(elements[i], elements[i + 1]))
+
+            return enc
+
+        else:
+            return None
+            
     
     def enc_automaton_trans(self, level):
         """Encodes the transition relation for the context automaton"""
