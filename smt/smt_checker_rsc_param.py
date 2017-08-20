@@ -47,6 +47,7 @@ class SmtCheckerRSCParam(object):
         self.next_level_to_encode = 0
 
         self.producible_entities = self.rs.get_producible_entities()
+        self.improducible_entities = set(self.rs.get_state_ids(self.rs.background_set)) - self.producible_entities
         
         self.loop_position = Int("loop_position")
         
@@ -141,9 +142,9 @@ class SmtCheckerRSCParam(object):
             self.v_improd.append(reactions_dict)
             self.v_improd_for_entities.append(all_entities_dict)
 
-            print(self.v_improd)
+            # print(self.v_improd)
 
-            print(self.v_improd_for_entities)
+            # print(self.v_improd_for_entities)
         
     def enc_concentration_levels_assertion(self, level):
         """
@@ -162,26 +163,26 @@ class SmtCheckerRSCParam(object):
             enc_nz = simplify(And(enc_nz, v >= 0, v_ctx >= 0, v <= e_max, v_ctx <= e_max))
         
         return enc_nz
-        
-
+ 
     def enc_init_state(self, level):
         """Encodes the initial state at the given level"""
 
         rs_init_state_enc = True
 
         for v in self.v[level]:
-            rs_init_state_enc = simplify(And(rs_init_state_enc, v == 0)) # the initial concentration levels are zeroed
+            # the initial concentration levels are zeroed
+            rs_init_state_enc = simplify(And(rs_init_state_enc, v == 0))
 
         ca_init_state_enc = self.ca_state[level] == self.ca.get_init_state_id()
-        
+
         init_state_enc = simplify(And(rs_init_state_enc, ca_init_state_enc))
 
         return init_state_enc
-        
-                
-    def enc_transition_relation(self, level):
-        return simplify(And(self.enc_rs_trans(level), self.enc_automaton_trans(level)))            
 
+    def enc_transition_relation(self, level):
+        return simplify(
+            And(self.enc_rs_trans(level),
+                self.enc_automaton_trans(level)))
 
     def enc_rs_trans(self, level):
         """Encodes the transition relation"""
@@ -191,68 +192,76 @@ class SmtCheckerRSCParam(object):
         #
         # We need to make sure we do something about the UNUSED ENTITIES
         # that is, those that are never produced.
-        # 
+        #
         # They should have concentration levels set to 0.
         #
 
         enc_trans = True
 
         for reaction in self.rs.reactions:
-            
+
             reactants, inhibitors, products = reaction
             reaction_id = self.rs.reactions.index(reaction)
-                        
+
             enc_reactants = True
             for entity, conc in reactants:
-                enc_reactants = And(enc_reactants, 
-                    Or(self.v[level][entity] >= conc, self.v_ctx[level][entity] >= conc))
-            
+                enc_reactants = And(enc_reactants, Or(
+                    self.v[level][entity] >= conc, self.v_ctx[level][entity] >= conc))
+
             enc_inhibitors = True
             for entity, conc in inhibitors:
-                enc_inhibitors = And(enc_inhibitors,
-                    And(self.v[level][entity] < conc, self.v_ctx[level][entity] < conc))
-                    
+                enc_inhibitors = And(enc_inhibitors, And(
+                    self.v[level][entity] < conc, self.v_ctx[level][entity] < conc))
+
             enc_products = True
-            #
-            #
-            #
             for entity, conc in products:
-                enc_products = And(enc_products,
-                    self.v_improd[level+1][reaction_id][entity] == conc)
-            
+                enc_products = And(enc_products, self.v_improd[
+                                   level + 1][reaction_id][entity] == conc)
+
             #
             # (R and I) iff P
             #
-            enc_reaction = simplify(And(enc_reactants, enc_inhibitors) == enc_products)
-            
+            enc_reaction = simplify(
+                And(enc_reactants, enc_inhibitors) == enc_products)
+
             enc_trans = simplify(And(enc_trans, enc_reaction))
-            
-        print(enc_trans)
+
+        # print(enc_trans)
 
         #
         # TODO:
         #
         # Max of all the produced concentrations for each entity/product...
-        
+
         enc_max_prod = True
 
-        current_v_improd_for_entities = self.v_improd_for_entities[level+1]
+        current_v_improd_for_entities = self.v_improd_for_entities[level + 1]
         for entity, per_reaction_vars in current_v_improd_for_entities.items():
 
                 # enc_max_single_ent = True
 
-                #sorted_vars_by_conc = sorted(per_reaction_vars, key=lambda conc_var: conc_var[0])
-                #list_of_vars = [v for c,v in sorted_vars_by_conc]
+                # sorted_vars_by_conc = sorted(per_reaction_vars, key=lambda conc_var: conc_var[0])
+                # list_of_vars = [v for c,v in sorted_vars_by_conc]
 
-                print(per_reaction_vars, "--->", self.enc_max(per_reaction_vars))
+                # print(per_reaction_vars, "--->", self.enc_max(per_reaction_vars))
 
-        return enc_trans
-    
-    
+            enc_max_prod = simplify(
+                And(enc_max_prod, self.v[level + 1][entity] == self.enc_max(per_reaction_vars)))
+
+        for entity in self.improducible_entities:
+            enc_max_prod = simplify(
+                And(enc_max_prod, self.v[level + 1][entity] == 0))
+
+        enc_trans_with_max = simplify(And(enc_max_prod, enc_trans))
+
+        return enc_trans_with_max
+
     def enc_max(self, elements):
 
+        enc = None
+
         if len(elements) == 1:
-            return MAX(0, elements[0])
+            enc = MAX(0, elements[0])
 
         elif len(elements) > 1:
 
@@ -260,11 +269,8 @@ class SmtCheckerRSCParam(object):
             for i in range(len(elements) - 1):
                 enc = MAX(enc, MAX(elements[i], elements[i + 1]))
 
-            return enc
+        return enc
 
-        else:
-            return None
-            
     
     def enc_automaton_trans(self, level):
         """Encodes the transition relation for the context automaton"""

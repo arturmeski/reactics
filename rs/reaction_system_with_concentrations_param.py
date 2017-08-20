@@ -64,7 +64,8 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
 
     def get_state_ids(self, state):
         """Returns entities of the given state without levels"""
-        return [e for e,c in state]
+        # return [e for e,c in state]
+        return [self.get_entity_id(e) for e in state]
 
     def has_non_zero_concentration(self, elem):
         if elem[1] < 1:
