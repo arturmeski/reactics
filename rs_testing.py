@@ -27,7 +27,7 @@ def trivial_param():
 
     r.add_reaction([("x", 1)], [("c", 1)], [("y", 2)])
     r.add_reaction([("y", 1)], [("c", 1)], [("z", 1)])
-    r.add_reaction([("z", 1)], [("c", 1)], [("final", 1)])
+    r.add_reaction(ParameterObj("P1"), [("c", 1)], [("final", 1)])
 
     c = ContextAutomatonWithConcentrations(r)
     c.add_init_state("0")
@@ -43,7 +43,7 @@ def trivial_param():
         BagDescription.f_TRUE(),
         BagDescription.f_entity("final") >= 1)
 
-    smt_rsc.check_rsltl(formula=f2)
+    smt_rsc.check_rsltl(formula=f2, max_level=5)
 
 
 def example44_param():

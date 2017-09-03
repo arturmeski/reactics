@@ -14,7 +14,7 @@ from logics import rsLTL_Encoder
 # def simplify(x):
 #     return x
 
-def MAX(a, b):
+def z3_max(a, b):
     return If(a > b, a, b)
 
 class SmtCheckerRSCParam(object):
@@ -31,7 +31,6 @@ class SmtCheckerRSCParam(object):
 
         self.initialise()
     
-    
     def initialise(self):
         """Initialises all the variables used by the checker"""
         
@@ -41,7 +40,6 @@ class SmtCheckerRSCParam(object):
         
         # intermediate products:
         self.v_improd = []
-
         self.v_improd_for_entities = []
 
         self.next_level_to_encode = 0
@@ -55,12 +53,10 @@ class SmtCheckerRSCParam(object):
         
         self.verification_time = None        
 
-
     def reset(self):
         """Reinitialises the state of the checker"""
         
-        self.initialise()
-        
+        self.initialise()       
         
     def prepare_all_variables(self):
         """Prepares all the variables"""
@@ -68,8 +64,7 @@ class SmtCheckerRSCParam(object):
         self.prepare_state_variables()
         self.prepare_context_variables()
         self.prepare_intermediate_product_variables()
-        self.next_level_to_encode += 1
-        
+        self.next_level_to_encode += 1 
         
     def prepare_context_variables(self):
         """Prepares all the context variables"""
@@ -82,7 +77,6 @@ class SmtCheckerRSCParam(object):
 
         self.v_ctx.append(variables)
 
-
     def prepare_state_variables(self):
         """Prepares all the state variables"""
 
@@ -94,7 +88,6 @@ class SmtCheckerRSCParam(object):
         self.v.append(variables)
         
         self.ca_state.append(Int("CA"+str(level)+"_state"))
-
 
     def prepare_intermediate_product_variables(self):
         """
@@ -261,16 +254,15 @@ class SmtCheckerRSCParam(object):
         enc = None
 
         if len(elements) == 1:
-            enc = MAX(0, elements[0])
+            enc = z3_max(0, elements[0])
 
         elif len(elements) > 1:
 
             enc = 0
             for i in range(len(elements) - 1):
-                enc = MAX(enc, MAX(elements[i], elements[i + 1]))
+                enc = z3_max(enc, z3_max(elements[i], elements[i + 1]))
 
         return enc
-
     
     def enc_automaton_trans(self, level):
         """Encodes the transition relation for the context automaton"""
@@ -603,7 +595,7 @@ class SmtCheckerRSCParam(object):
             print("Test: ", s)
             
             self.solver.add(s)
-                
+
             result = self.solver.check()
             if result == sat:
                 print("\n[+] " + colour_str(C_RED, "SAT at level=" + str(self.current_level)))

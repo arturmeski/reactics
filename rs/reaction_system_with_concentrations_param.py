@@ -3,10 +3,13 @@ from colour import *
 
 from rs.reaction_system import ReactionSystem
 
-class ParameterSet(object):
+class ParameterObj(object):
 
     def __init__(self, name):
         self.name = name
+        
+    def __repr__(self):
+        return "@{0}".format(self.name)
 
 
 class ReactionSystemWithConcentrationsParam(ReactionSystem):
@@ -14,6 +17,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
     def __init__(self):
 
         self.reactions = []
+        self.parametric_reactions = []
         self.meta_reactions = dict()
         self.permanent_entities = dict()
         self.background_set = []
@@ -85,30 +89,54 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
         if R == [] and not ignore_empty_R:
             raise RuntimeError("No reactants defined")
 
+        #
+        # REACTANTS
+        #
         reactants = []
-        for r in R:
-            self.is_valid_entity_with_concentration(r)
-            self.has_non_zero_concentration(r)
-            entity, level = r
-            reactants.append((self.get_entity_id(entity), level))
-            if self.max_concentration < level:
-                self.max_concentration = level
+        if isinstance(R, ParameterObj):
+            reactants = R
+        else:
+            for r in R:
+                self.is_valid_entity_with_concentration(r)
+                self.has_non_zero_concentration(r)
+                entity, level = r
+                reactants.append((self.get_entity_id(entity), level))
+                if self.max_concentration < level:
+                    self.max_concentration = level
+        
+        #
+        # INHIBITORS
+        #
         inhibitors = []
-        for i in I:
-            self.is_valid_entity_with_concentration(i)
-            self.has_non_zero_concentration(i)
-            entity, level = i
-            inhibitors.append((self.get_entity_id(entity), level))
-            if self.max_concentration < level:
-                self.max_concentration = level
+        if isinstance(I, ParameterObj):
+            inhibitors = I
+        else:
+            for i in I:
+                self.is_valid_entity_with_concentration(i)
+                self.has_non_zero_concentration(i)
+                entity, level = i
+                inhibitors.append((self.get_entity_id(entity), level))
+                if self.max_concentration < level:
+                    self.max_concentration = level
+        
+        #
+        # PRODUCTS
+        #
         products = []
-        for p in P:
-            self.is_valid_entity_with_concentration(p)
-            self.has_non_zero_concentration(p)
-            entity, level = p
-            products.append((self.get_entity_id(entity), level))
+        if isinstance(P, ParameterObj):
+            products = P
+        else:
+            for p in P:
+                self.is_valid_entity_with_concentration(p)
+                self.has_non_zero_concentration(p)
+                entity, level = p
+                products.append((self.get_entity_id(entity), level))
 
         return reactants, inhibitors, products
+
+    def is_parametric_reaction(self, reaction):
+        result = any([isinstance(r_set, ParameterObj) for r_set in reaction])
+        return result
 
     def add_reaction(self, R, I, P):
         """Adds a reaction
@@ -119,7 +147,11 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
         if P == []:
             raise RuntimeError("No products defined")
         reaction = self.process_rip(R,I,P)
-        self.reactions.append(reaction)
+        
+        if self.is_parametric_reaction(reaction):
+            self.parametric_reactions.append(reaction)
+        else:
+            self.reactions.append(reaction)
 
     def add_reaction_without_reactants(self, R, I, P):
         """Adds a reaction"""
@@ -174,10 +206,18 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
         return s
 
     def state_to_str(self, state):
-        s = ""
-        for ent,level in state:
-            s += self.get_entity_name(ent) + "=" + str(level) + ", "
-        s = s[:-2]
+        """
+        If state is a parameter, we return
+        the string representation of the whole state
+        which should be the name of the parameter
+        """
+        if isinstance(state, ParameterObj):
+            return str(state)
+        else:
+            s = ""
+            for ent,level in state:
+                s += self.get_entity_name(ent) + "=" + str(level) + ", "
+            s = s[:-2]
         return s        
 
     def show_background_set(self):
