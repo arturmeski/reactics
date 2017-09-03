@@ -3,6 +3,10 @@ from colour import *
 
 from rs.reaction_system import ReactionSystem
 
+class ParameterSet(object):
+    def __init__(self, name):
+        self.name = name
+
 class ReactionSystemWithConcentrationsParam(ReactionSystem):
 
     def __init__(self):
