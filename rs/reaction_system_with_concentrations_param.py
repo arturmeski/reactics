@@ -17,6 +17,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
     def __init__(self):
 
         self.reactions = []
+        self.parameters = dict()
         self.parametric_reactions = []
         self.meta_reactions = dict()
         self.permanent_entities = dict()
@@ -48,6 +49,24 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
                 self.max_conc_per_ent[ent_id] = def_max_conc
             if self.max_concentration < def_max_conc:
                 self.max_concentration = def_max_conc
+
+    def get_param(self, name):
+        if self.has_param(name):
+            return self.parameters[name]
+        else:
+            param = ParameterObj(name)
+            self.add_param(param)
+            return param
+
+    def has_param(self, name):
+        return name in self.parameters
+
+    def add_param(self, param):
+        if param in self.parameters:
+            raise RuntimeError("Parameter {:s} already exists".format(param))
+        param_key = param.name
+        self.parameters[param_key] = param
+        self.parameters[param_key].idx = len(self.parameters)
 
     def get_max_concentration_level(self, e):
 

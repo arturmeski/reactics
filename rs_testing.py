@@ -24,10 +24,12 @@ def trivial_param():
     r.add_bg_set_entity(("c", 3))
     r.add_bg_set_entity(("z", 3))
     r.add_bg_set_entity(("final", 1))
+    
+    param_p1 = r.get_param("P1")
 
     r.add_reaction([("x", 1)], [("c", 1)], [("y", 2)])
     r.add_reaction([("y", 1)], [("c", 1)], [("z", 1)])
-    r.add_reaction(ParameterObj("P1"), [("c", 1)], [("final", 1)])
+    r.add_reaction(param_p1, [("c", 1)], [("final", 1)])
 
     c = ContextAutomatonWithConcentrations(r)
     c.add_init_state("0")
