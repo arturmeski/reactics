@@ -4,32 +4,35 @@ from colour import *
 from rs.reaction_system import ReactionSystem
 
 class ParameterSet(object):
+
     def __init__(self, name):
         self.name = name
+
 
 class ReactionSystemWithConcentrationsParam(ReactionSystem):
 
     def __init__(self):
 
-        self.reactions              = []
-        self.meta_reactions         = dict()
-        self.permanent_entities     = dict()
-        self.background_set         = []
-        self.context_entities       = [] # legacy. to be removed
-        self.reactions_by_prod      = None
-        self.max_concentration      = 0
-        self.max_conc_per_ent       = dict()
+        self.reactions = []
+        self.meta_reactions = dict()
+        self.permanent_entities = dict()
+        self.background_set = []
+        self.context_entities = []  # legacy. to be removed
+        self.reactions_by_prod = None
+        self.max_concentration = 0
+        self.max_conc_per_ent = dict()
 
     def add_bg_set_entity(self, e):
         name = ""
         def_max_conc = -1
         if type(e) is tuple and len(e) == 2:
-            name,def_max_conc = e
+            name, def_max_conc = e
         elif type(e) is str:
             name = e
             print("\nWARNING: no maximal concentration level specified for:", e, "\n")
         else:
-            raise RuntimeError("Bad entity type when adding background set element")
+            raise RuntimeError(
+                "Bad entity type when adding background set element")
 
         self.assume_not_in_bgset(name)
         self.background_set.append(name)
@@ -43,7 +46,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
                 self.max_concentration = def_max_conc
 
     def get_max_concentration_level(self, e):
-        
+
         if e in self.max_conc_per_ent:
             return self.max_conc_per_ent[e]
         else:
@@ -51,11 +54,11 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
 
     def is_valid_entity_with_concentration(self, e):
         """Sanity check for entities with concentration"""
-        
+
         if type(e) is tuple:
             if len(e) == 2 and type(e[1]) is int:
                 return True
-                
+
         if type(e) is list:
             if len(e) == 2 and type(e[1]) is int:
                 return True
@@ -63,7 +66,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
         print("FATAL. Invalid entity+concentration:")
         print(e)
         exit(1)
-        
+
         return False
 
     def get_state_ids(self, state):
@@ -73,38 +76,39 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
 
     def has_non_zero_concentration(self, elem):
         if elem[1] < 1:
-            raise RuntimeError("Unexpected concentration level in state: " + str(elem))
+            raise RuntimeError(
+                "Unexpected concentration level in state: " + str(elem))
 
     def process_rip(self, R, I, P, ignore_empty_R=False):
         """Chcecks concentration levels and converts entities names into their ids"""
 
         if R == [] and not ignore_empty_R:
             raise RuntimeError("No reactants defined")
-        
+
         reactants = []
         for r in R:
             self.is_valid_entity_with_concentration(r)
             self.has_non_zero_concentration(r)
-            entity,level = r
-            reactants.append((self.get_entity_id(entity),level))
+            entity, level = r
+            reactants.append((self.get_entity_id(entity), level))
             if self.max_concentration < level:
                 self.max_concentration = level
         inhibitors = []
         for i in I:
             self.is_valid_entity_with_concentration(i)
             self.has_non_zero_concentration(i)
-            entity,level = i
-            inhibitors.append((self.get_entity_id(entity),level))
+            entity, level = i
+            inhibitors.append((self.get_entity_id(entity), level))
             if self.max_concentration < level:
                 self.max_concentration = level
         products = []
         for p in P:
             self.is_valid_entity_with_concentration(p)
             self.has_non_zero_concentration(p)
-            entity,level = p
-            products.append((self.get_entity_id(entity),level))
-        
-        return reactants,inhibitors,products
+            entity, level = p
+            products.append((self.get_entity_id(entity), level))
+
+        return reactants, inhibitors, products
 
     def add_reaction(self, R, I, P):
         """Adds a reaction
