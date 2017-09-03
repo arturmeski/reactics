@@ -274,47 +274,47 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
         """
         Translates RSC into RS
         """
-        
+
         rs = ReactionSystem()
-                
-        for reactants,inhibitors,products in self.reactions:
+
+        for reactants, inhibitors, products in self.reactions:
 
             new_reactants = []
             new_inhibitors = []
             new_products = []
 
-            for ent,conc in reactants:
+            for ent, conc in reactants:
                 n = self.get_entity_name(ent) + "#" + str(conc)
                 rs.ensure_bg_set_entity(n)
                 new_reactants.append(n)
-                
-            for ent,conc in inhibitors:
+
+            for ent, conc in inhibitors:
                 n = self.get_entity_name(ent) + "#" + str(conc)
                 rs.ensure_bg_set_entity(n)
                 new_inhibitors.append(n)
 
-            for ent,conc in products:
-                for i in range(1,conc+1):
+            for ent, conc in products:
+                for i in range(1, conc + 1):
                     n = self.get_entity_name(ent) + "#" + str(i)
                     rs.ensure_bg_set_entity(n)
                     new_products.append(n)
-                            
-            rs.add_reaction(new_reactants,new_inhibitors,new_products)
-        
-        for param_ent,reactions in self.meta_reactions.items():
-            for r_type,command,reactants,inhibitors in reactions:
-                
+
+            rs.add_reaction(new_reactants, new_inhibitors, new_products)
+
+        for param_ent, reactions in self.meta_reactions.items():
+            for r_type, command, reactants, inhibitors in reactions:
+
                 param_ent_name = self.get_entity_name(param_ent)
-                                    
+
                 new_reactants = []
                 new_inhibitors = []
-                                                    
-                for ent,conc in reactants:
+
+                for ent, conc in reactants:
                     n = self.get_entity_name(ent) + "#" + str(conc)
                     rs.ensure_bg_set_entity(n)
                     new_reactants.append(n)
-                
-                for ent,conc in inhibitors:
+
+                for ent, conc in inhibitors:
                     n = self.get_entity_name(ent) + "#" + str(conc)
                     rs.ensure_bg_set_entity(n)
                     new_inhibitors.append(n)
@@ -323,81 +323,94 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
                 if command in self.max_conc_per_ent:
                     max_cmd_c = self.max_conc_per_ent[command]
                 else:
-                    print("WARNING:\n\tThere is no maximal concentration level defined for " + self.get_entity_name(command))
+                    print(
+                        "WARNING:\n\tThere is no maximal concentration level defined for "
+                        + self.get_entity_name(command))
                     print("\tThis is a very bad idea -- expect degraded performance\n")
-                    
-                for l in range(1,max_cmd_c+1):
+
+                for l in range(1, max_cmd_c + 1):
 
                     cmd_ent = self.get_entity_name(command) + "#" + str(l)
                     rs.ensure_bg_set_entity(cmd_ent)
-                
+
                     if r_type == "inc":
-                    
+
                         # pre_conc  -- predecessor concentration
                         # succ_conc -- successor concentration concentration
-                                        
-                        for i in range(1,self.max_concentration):
+
+                        for i in range(1, self.max_concentration):
                             pre_conc = param_ent_name + "#" + str(i)
                             rs.ensure_bg_set_entity(pre_conc)
                             new_products = []
-                            succ_value = i+l
-                            for j in range(1,succ_value+1):
-                                if j > self.max_concentration: break
+                            succ_value = i + l
+                            for j in range(1, succ_value + 1):
+                                if j > self.max_concentration:
+                                    break
                                 new_p = param_ent_name + "#" + str(j)
                                 rs.ensure_bg_set_entity(new_p)
                                 new_products.append(new_p)
                             if new_products != []:
-                                rs.add_reaction(set(new_reactants + [pre_conc,cmd_ent]), set(new_inhibitors), set(new_products))
+                                rs.add_reaction(
+                                    set(new_reactants + [pre_conc, cmd_ent]),
+                                    set(new_inhibitors),
+                                    set(new_products))
 
                     elif r_type == "dec":
-                        for i in range(1,self.max_concentration+1):
+                        for i in range(1, self.max_concentration + 1):
                             pre_conc = param_ent_name + "#" + str(i)
                             rs.ensure_bg_set_entity(pre_conc)
                             new_products = []
-                            succ_value = i-l
-                            for j in range(1,succ_value+1):
-                                if j > self.max_concentration: break
+                            succ_value = i - l
+                            for j in range(1, succ_value + 1):
+                                if j > self.max_concentration:
+                                    break
                                 new_p = param_ent_name + "#" + str(j)
                                 rs.ensure_bg_set_entity(new_p)
                                 new_products.append(new_p)
                             if new_products != []:
-                                rs.add_reaction(set(new_reactants + [pre_conc,cmd_ent]), set(new_inhibitors), set(new_products))
-                    
+                                rs.add_reaction(
+                                    set(new_reactants + [pre_conc, cmd_ent]),
+                                    set(new_inhibitors),
+                                    set(new_products))
+
                     else:
-                        raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
-        
-        for ent,inhibitors in self.permanent_entities.items():
-            
+                        raise RuntimeError(
+                            "Unknown meta-reaction type: " + repr(r_type))
+
+        for ent, inhibitors in self.permanent_entities.items():
+
             max_c = self.max_concentration
             if ent in self.max_conc_per_ent:
                 max_c = self.max_conc_per_ent[ent]
             else:
-                print("WARNING:\n\tThere is no maximal concentration level defined for " + self.get_entity_name(ent))
+                print(
+                    "WARNING:\n\tThere is no maximal concentration level defined for "
+                    + self.get_entity_name(ent))
                 print("\tThis is a very bad idea -- expect degraded performance\n")
-            
+
             def e_value(i):
                 return self.get_entity_name(ent) + "#" + str(i)
-            
-            for value in range(1,max_c+1):
-                
+
+            for value in range(1, max_c + 1):
+
                 new_reactants = []
                 new_inhibitors = []
                 new_products = []
-                
+
                 new_reactants = [e_value(value)]
-                
-                for e_inh,conc in inhibitors:
+
+                for e_inh, conc in inhibitors:
                     n = self.get_entity_name(e_inh) + "#" + str(conc)
                     rs.ensure_bg_set_entity(n)
-                    new_inhibitors.append(n)        
+                    new_inhibitors.append(n)
 
-                for i in range(1,value+1):
+                for i in range(1, value + 1):
                     new_products.append(e_value(i))
-                
-                rs.add_reaction(new_reactants,new_inhibitors,new_products)
-            
+
+                rs.add_reaction(new_reactants, new_inhibitors, new_products)
+
         return rs
-    
+
 
 # class ReactionSystemWithAutomaton(object):
 #
