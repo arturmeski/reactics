@@ -41,11 +41,14 @@ def trivial_param():
     rc.show()
     smt_rsc = SmtCheckerRSCParam(rc)
 
-    f2 = Formula_rsLTL.f_F(
+    f1 = Formula_rsLTL.f_F(
         BagDescription.f_TRUE(),
         BagDescription.f_entity("final") >= 1)
-
-    smt_rsc.check_rsltl(formula=f2, max_level=5)
+    
+    #
+    # WARNING: depth limit is set
+    #
+    smt_rsc.check_rsltl(formula=f1, max_level=5)
 
 
 def example44_param():
