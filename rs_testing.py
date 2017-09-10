@@ -48,7 +48,7 @@ def trivial_param():
     #
     # WARNING: depth limit is set
     #
-    smt_rsc.check_rsltl(formula=f1, max_level=5)
+    smt_rsc.check_rsltl(formula=f1, max_level=10, print_witness=True)
 
 
 def example44_param():

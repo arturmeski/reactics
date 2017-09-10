@@ -41,17 +41,25 @@ class SmtCheckerRSCParam(object):
         # intermediate products:
         self.v_improd = []
         self.v_improd_for_entities = []
+        
+        self.v_param = []
 
         self.next_level_to_encode = 0
 
+        # this is probably not needed anymore
         self.producible_entities = self.rs.get_producible_entities()
-        self.improducible_entities = set(self.rs.get_state_ids(self.rs.background_set)) - self.producible_entities
+        # self.improducible_entities = set(self.rs.get_state_ids(self.rs.background_set)) - self.producible_entities
+        
+        # WARNING: improd vs. improducible
+        # there is some confusion related to the variables naming:
+        # improd - intermediate products
+        # improducible - entities that are never produces (there is no reaction that produces that entity)
         
         self.loop_position = Int("loop_position")
         
         self.solver = Solver() #For("QF_FD")
         
-        self.verification_time = None        
+        self.verification_time = None
 
     def reset(self):
         """Reinitialises the state of the checker"""
@@ -64,6 +72,7 @@ class SmtCheckerRSCParam(object):
         self.prepare_state_variables()
         self.prepare_context_variables()
         self.prepare_intermediate_product_variables()
+        self.prepare_param_variables()
         self.next_level_to_encode += 1 
         
     def prepare_context_variables(self):
@@ -93,7 +102,7 @@ class SmtCheckerRSCParam(object):
         """
         Prepares the intermediate product variables
         carrying the individual concentration levels produced
-        the reactions.
+        by the reactions.
 
         These variables are used later on to encode the final
         concentration levels for all the entities
@@ -123,12 +132,12 @@ class SmtCheckerRSCParam(object):
 
                 entities_dict = dict()
                 for entity, conc in products:
-                    varname = Int("IP" + str(level) + "_R" +
+                    new_var = Int("IP" + str(level) + "_R" +
                                   str(reaction_id) + "_e" + str(entity))
-                    entities_dict[entity] = varname
+                    entities_dict[entity] = new_var
 
                     all_entities_dict.setdefault(entity, [])
-                    all_entities_dict[entity].append(varname)
+                    all_entities_dict[entity].append(new_var)
 
                 reactions_dict[reaction_id] = entities_dict
             
@@ -138,6 +147,25 @@ class SmtCheckerRSCParam(object):
             # print(self.v_improd)
 
             # print(self.v_improd_for_entities)
+        
+    def prepare_param_variables(self):
+        """
+        Prepares variables for parameters
+        
+        A parameter (it's valuation) is a subset of the background set,
+        therefore we need separate variables for each element of the
+        background set.
+        """
+           
+        level = self.next_level_to_encode  
+            
+        params = []    
+        for entity in self.rs.background_set:
+            new_var = Int("L{:d}_Pm_{:s}".format(level, entity))
+            params.append(new_var)
+        self.v_param.append(params)
+        
+        print(self.v_param)
         
     def enc_concentration_levels_assertion(self, level):
         """
@@ -177,6 +205,46 @@ class SmtCheckerRSCParam(object):
             And(self.enc_rs_trans(level),
                 self.enc_automaton_trans(level)))
 
+    def enc_single_reaction(self, level, reaction):
+        """
+        Encodes a single reaction
+        
+        For encoding the products we use intermediate variables:
+
+            * each reaction has its own product variables,
+
+            * those are meant to be used to compute the MAX concentration
+
+        """
+
+        reactants, inhibitors, products = reaction
+
+        # we need reaction_id to find the intermediate product variable
+        reaction_id = self.rs.reactions.index(reaction)
+
+        enc_reactants = True
+        for entity, conc in reactants:
+            enc_reactants = And(enc_reactants, Or(
+                self.v[level][entity] >= conc, self.v_ctx[level][entity] >= conc))
+
+        enc_inhibitors = True
+        for entity, conc in inhibitors:
+            enc_inhibitors = And(enc_inhibitors, And(
+                self.v[level][entity] < conc, self.v_ctx[level][entity] < conc))
+
+        enc_products = True
+        for entity, conc in products:
+            enc_products = And(enc_products, self.v_improd[
+                               level + 1][reaction_id][entity] == conc)
+
+        #
+        # (R and I) iff P
+        #
+        enc_reaction = simplify(
+            And(enc_reactants, enc_inhibitors) == enc_products)
+
+        return enc_reaction
+
     def enc_rs_trans(self, level):
         """Encodes the transition relation"""
 
@@ -188,62 +256,43 @@ class SmtCheckerRSCParam(object):
         #
         # They should have concentration levels set to 0.
         #
+        # That needs to happen automatically (in the MAX encoding) -- for the parametric 
+        # case it makes no sense to identify the entities that are never produced, unless 
+        # we have no parameters as products (special case, so that could be an 
+        # optimisation)
+        #
 
         enc_trans = True
 
         for reaction in self.rs.reactions:
-
-            reactants, inhibitors, products = reaction
-            reaction_id = self.rs.reactions.index(reaction)
-
-            enc_reactants = True
-            for entity, conc in reactants:
-                enc_reactants = And(enc_reactants, Or(
-                    self.v[level][entity] >= conc, self.v_ctx[level][entity] >= conc))
-
-            enc_inhibitors = True
-            for entity, conc in inhibitors:
-                enc_inhibitors = And(enc_inhibitors, And(
-                    self.v[level][entity] < conc, self.v_ctx[level][entity] < conc))
-
-            enc_products = True
-            for entity, conc in products:
-                enc_products = And(enc_products, self.v_improd[
-                                   level + 1][reaction_id][entity] == conc)
-
-            #
-            # (R and I) iff P
-            #
-            enc_reaction = simplify(
-                And(enc_reactants, enc_inhibitors) == enc_products)
-
+            enc_reaction = self.enc_single_reaction(level, reaction)
             enc_trans = simplify(And(enc_trans, enc_reaction))
 
-        # print(enc_trans)
-
-        #
-        # TODO:
-        #
-        # Max of all the produced concentrations for each entity/product...
+        # Next we encode the MAX concentration values: 
+        # we collect those from the intermediate product variables
 
         enc_max_prod = True
 
+        # Save all the intermediate product variables for a given level:
+        #
+        # - Intermediate products of (level+1) correspond to the next level
+        #
+        #   {reactants & inhibitors}[level] 
+        #       => 
+        #   {improd}[level+1] 
+        #       => 
+        #   {products}[level+1]
+        #
         current_v_improd_for_entities = self.v_improd_for_entities[level + 1]
+        
         for entity, per_reaction_vars in current_v_improd_for_entities.items():
-
-                # enc_max_single_ent = True
-
-                # sorted_vars_by_conc = sorted(per_reaction_vars, key=lambda conc_var: conc_var[0])
-                # list_of_vars = [v for c,v in sorted_vars_by_conc]
-
-                # print(per_reaction_vars, "--->", self.enc_max(per_reaction_vars))
 
             enc_max_prod = simplify(
                 And(enc_max_prod, self.v[level + 1][entity] == self.enc_max(per_reaction_vars)))
 
-        for entity in self.improducible_entities:
-            enc_max_prod = simplify(
-                And(enc_max_prod, self.v[level + 1][entity] == 0))
+        # for entity in self.improducible_entities:
+        #     enc_max_prod = simplify(
+        #         And(enc_max_prod, self.v[level + 1][entity] == 0))
 
         enc_trans_with_max = simplify(And(enc_max_prod, enc_trans))
 
@@ -428,6 +477,7 @@ class SmtCheckerRSCParam(object):
             result = self.solver.check()
             if result == sat:
                 print("[" + colour_str(C_BOLD, "+") + "] " + colour_str(C_GREEN, "SAT at level=" + str(self.current_level)))
+                print(self.solver.model())
                 if print_witness:
                     print("\n{:=^70}".format("[ WITNESS ]"))
                     self.decode_witness(self.current_level)

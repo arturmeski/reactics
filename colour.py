@@ -15,3 +15,5 @@ def colour_str(col, s):
     
 def print_error(s):
     print(C_MARK_ERROR + " " + C_RED + s + C_ENDC)
+    
+# EOF
