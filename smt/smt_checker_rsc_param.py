@@ -402,7 +402,7 @@ class SmtCheckerRSCParam(object):
         if print_model:
             print(m)
 
-        for level in range(max_level+1):
+        for level in range(max_level + 1):
 
             print("\n{: >70}".format("[ level=" + repr(level) + " ]"))
 
@@ -410,9 +410,12 @@ class SmtCheckerRSCParam(object):
             for var_id in range(len(self.v[level])):
                 var_rep = repr(m[self.v[level][var_id]])
                 if not var_rep.isdigit():
-                    raise RuntimeError("unexpected: representation is not a positive integer")
+                    raise RuntimeError(
+                        "unexpected: representation is not a positive integer")
                 if int(var_rep) > 0:
-                    print(" " + self.rs.get_entity_name(var_id) + "=" + var_rep, end="")
+                    print(
+                        " " + self.rs.get_entity_name(var_id) + "=" + var_rep,
+                        end="")
                 # print(" " + repr(m[self.v[level][var_id]]), end="")
             print(" }")
 
@@ -422,20 +425,26 @@ class SmtCheckerRSCParam(object):
                 for var_id in range(len(self.v[level])):
                     var_rep = repr(m[self.v_ctx[level][var_id]])
                     if not var_rep.isdigit():
-                        raise RuntimeError("unexpected: representation is not a positive integer")
+                        raise RuntimeError(
+                            "unexpected: representation is not a positive integer")
                     if int(var_rep) > 0:
-                        print(" " + self.rs.get_entity_name(var_id) + "=" + var_rep, end="")
+                        print(
+                            " " + self.rs.get_entity_name(var_id) + "=" + var_rep,
+                            end="")
                 print(" }")
                 
                 
-    def check_rsltl(self, formula, print_witness=True, print_time=True, print_mem=True, max_level=None):
+    def check_rsltl(
+            self, formula, print_witness=True, print_time=True, print_mem=True,
+            max_level=None):
         """Bounded Model Checking for rsLTL properties"""
-        
+
         self.reset()
-        
-        print("[" + colour_str(C_BOLD, "i") + "] Running rsLTL bounded model checking")
+
+        print("[" + colour_str(C_BOLD, "i") +
+              "] Running rsLTL bounded model checking")
         print("[" + colour_str(C_BOLD, "i") + "] Formula: " + str(formula))
-        
+
         if print_time:
             # start = time()
             start = resource.getrusage(resource.RUSAGE_SELF).ru_utime
@@ -445,38 +454,49 @@ class SmtCheckerRSCParam(object):
         self.current_level = 0
 
         self.prepare_all_variables()
-    
+
         self.solver.add(self.enc_concentration_levels_assertion(0))
-    
+
         encoder = rsLTL_Encoder(self)
-    
+
         while True:
             self.prepare_all_variables()
-            self.solver.add(self.enc_concentration_levels_assertion(self.current_level+1))
-        
-            print("\n{:-^70}".format("[ Working at level=" + str(self.current_level) + " ]"))
+            self.solver.add(
+                self.enc_concentration_levels_assertion(
+                    self.current_level + 1))
+
+            print(
+                "\n{:-^70}".format("[ Working at level=" + str(self.current_level) + " ]"))
             stdout.flush()
 
             # reachability test:
             self.solver.push()
-            
-            print("[" + colour_str(C_BOLD, "i") + "] Generating the formula encoding...")
-            
+
+            print("[" + colour_str(C_BOLD, "i") +
+                  "] Generating the formula encoding...")
+
             f = encoder.get_encoding(formula, self.current_level)
             ncalls = encoder.get_ncalls()
-            
-            print("[" + colour_str(C_BOLD, "i") + "] Cache hits: " + str(encoder.get_cache_hits()) + ", encode calls: " + str(ncalls[0]) + " (approx: " + str(ncalls[1]) + ")")
-            print("[" + colour_str(C_BOLD, "i") + "] Adding the formula to the solver...")
-            
+
+            print("[" + colour_str(C_BOLD, "i") + "] Cache hits: " +
+                  str(encoder.get_cache_hits()) + ", encode calls: " +
+                  str(ncalls[0]) + " (approx: " + str(ncalls[1]) + ")")
+            print("[" + colour_str(C_BOLD, "i") +
+                  "] Adding the formula to the solver...")
+
             encoder.flush_cache()
             self.solver.add(f)
-            
-            print("[" + colour_str(C_BOLD, "i") + "] Adding the loops encoding...")
+
+            print("[" + colour_str(C_BOLD, "i") +
+                  "] Adding the loops encoding...")
             self.solver.add(self.get_loop_encodings())
-            
+
             result = self.solver.check()
             if result == sat:
-                print("[" + colour_str(C_BOLD, "+") + "] " + colour_str(C_GREEN, "SAT at level=" + str(self.current_level)))
+                print(
+                    "[" + colour_str(C_BOLD, "+") + "] " +
+                    colour_str(
+                        C_GREEN, "SAT at level=" + str(self.current_level)))
                 print(self.solver.model())
                 if print_witness:
                     print("\n{:=^70}".format("[ WITNESS ]"))
@@ -485,10 +505,12 @@ class SmtCheckerRSCParam(object):
             else:
                 self.solver.pop()
 
-            print("[" + colour_str(C_BOLD, "i") + "] Unrolling the transition relation")
+            print("[" + colour_str(C_BOLD, "i") +
+                  "] Unrolling the transition relation")
             self.solver.add(self.enc_transition_relation(self.current_level))
 
-            print("{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
+            print(
+                "{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
             self.current_level += 1
 
             if not max_level is None and self.current_level > max_level:
@@ -498,13 +520,20 @@ class SmtCheckerRSCParam(object):
         if print_time:
             # stop = time()
             stop = resource.getrusage(resource.RUSAGE_SELF).ru_utime
-            self.verification_time = stop-start
+            self.verification_time = stop - start
             print()
-            print("\n[i] {: >60}".format(" Time: " + repr(self.verification_time) + " s"))
-        
+            print(
+                "\n[i] {: >60}".format(
+                    " Time: " + repr(self.verification_time) + " s"))
+
         if print_mem:
-            print("[i] {: >60}".format(" Memory: " + repr(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)) + " MB"))
-        
+            print(
+                "[i] {: >60}".format(
+                    " Memory: " +
+                    repr(
+                        resource.getrusage(resource.RUSAGE_SELF).ru_maxrss /
+                        (1024 * 1024)) + " MB"))
+
         
     def dummy_unroll(self, levels):
         """Unrolls the variables for testing purposes"""
