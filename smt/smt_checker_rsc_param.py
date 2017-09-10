@@ -46,8 +46,8 @@ class SmtCheckerRSCParam(object):
 
         self.next_level_to_encode = 0
 
-        # this is probably not needed anymore
-        self.producible_entities = self.rs.get_producible_entities()
+        # this is probably not needed anymore:
+        # self.producible_entities = self.rs.get_producible_entities()
         # self.improducible_entities = set(self.rs.get_state_ids(self.rs.background_set)) - self.producible_entities
         
         # WARNING: improd vs. improducible
@@ -156,7 +156,13 @@ class SmtCheckerRSCParam(object):
         therefore we need separate variables for each element of the
         background set.
         """
-           
+        
+        # TODO:
+        #
+        # We should be checking here if we acutally need 
+        # any variables for parameters, because there might
+        # be no parameters in RS
+        
         level = self.next_level_to_encode  
             
         params = []    
@@ -208,7 +214,7 @@ class SmtCheckerRSCParam(object):
     def enc_single_reaction(self, level, reaction):
         """
         Encodes a single reaction
-        
+
         For encoding the products we use intermediate variables:
 
             * each reaction has its own product variables,
@@ -222,20 +228,39 @@ class SmtCheckerRSCParam(object):
         # we need reaction_id to find the intermediate product variable
         reaction_id = self.rs.reactions.index(reaction)
 
+        # ** REACTANTS **
+
         enc_reactants = True
         for entity, conc in reactants:
             enc_reactants = And(enc_reactants, Or(
                 self.v[level][entity] >= conc, self.v_ctx[level][entity] >= conc))
+
+        # ** INHIBITORS **
 
         enc_inhibitors = True
         for entity, conc in inhibitors:
             enc_inhibitors = And(enc_inhibitors, And(
                 self.v[level][entity] < conc, self.v_ctx[level][entity] < conc))
 
+        # ** PRODUCTS **
+
+        # entities that were produced
+        produced = []
         enc_products = True
         for entity, conc in products:
             enc_products = And(enc_products, self.v_improd[
                                level + 1][reaction_id][entity] == conc)
+            produced.append(entity)
+
+        print("----", str(produced))
+
+        # encoding of the zeros (for the products)
+        # we iterate through all the entities' indices
+        
+        # for entity in range(len(self.rs.background_set)):
+        #     if entity not in produced:
+        #         enc_products = And(enc_products, self.v_improd[
+        #                            level + 1][reaction_id][entity] == 0)
 
         #
         # (R and I) iff P
