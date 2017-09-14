@@ -11,6 +11,8 @@ from colour import *
 
 from logics import rsLTL_Encoder
 
+from rs.reaction_system_with_concentrations_param import ParameterObj, is_param
+
 # def simplify(x):
 #     return x
 
@@ -157,19 +159,22 @@ class SmtCheckerRSCParam(object):
         background set.
         """
         
-        # TODO:
-        #
-        # We should be checking here if we acutally need 
-        # any variables for parameters, because there might
-        # be no parameters in RS
-        
         level = self.next_level_to_encode  
-            
-        params = []    
-        for entity in self.rs.background_set:
-            new_var = Int("L{:d}_Pm_{:s}".format(level, entity))
-            params.append(new_var)
-        self.v_param.append(params)
+ 
+        param_vars_for_cur_level = dict()
+
+        for param_name in self.rs.parameters.keys():
+
+            # we start collecting bg-related vars for the given param
+            vars_for_param = []
+
+            for entity in self.rs.background_set:
+                new_var = Int("L{:d}_Pm_{:s}".format(level, entity))
+                vars_for_param.append(new_var)
+
+            param_vars_for_cur_level[param_name] = vars_for_param
+        
+        self.v_param.append(param_vars_for_cur_level)
         
         print(self.v_param)
         
@@ -270,6 +275,21 @@ class SmtCheckerRSCParam(object):
 
         return enc_reaction
 
+    def enc_single_param_reaction(self, level, p_reaction):
+        
+        reactants, inhibitors, products = p_reaction
+        
+        if is_param(reactants):
+            print("PARAM")
+        
+        if is_param(inhibitors):
+            print("PARAM")
+            
+        if is_param(products):
+            print("PARAM")
+        
+        return True
+
     def enc_rs_trans(self, level):
         """Encodes the transition relation"""
 
@@ -292,6 +312,11 @@ class SmtCheckerRSCParam(object):
         for reaction in self.rs.reactions:
             enc_reaction = self.enc_single_reaction(level, reaction)
             enc_trans = simplify(And(enc_trans, enc_reaction))
+
+        for p_reaction in self.rs.parametric_reactions:
+            print(p_reaction)
+            enc_p_reaction = self.enc_single_param_reaction(level, p_reaction)
+            enc_trans = simplify(And(enc_trans, enc_p_reaction))
 
         # Next we encode the MAX concentration values: 
         # we collect those from the intermediate product variables

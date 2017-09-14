@@ -11,6 +11,9 @@ class ParameterObj(object):
     def __repr__(self):
         return "@{0}".format(self.name)
 
+def is_param(some_object):
+    if isinstance(some_object, ParameterObj):
+        return True
 
 class ReactionSystemWithConcentrationsParam(ReactionSystem):
 
@@ -251,9 +254,21 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
                         " ) Command=( " + self.get_entity_name(command) + " ) ] -- ( R={" + self.state_to_str(reactants) + "}, I={" + self.state_to_str(inhibitors) + "} )")
                 else:
                     raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
+                    
+    def show_param_reactions(self, soft=False):
+        print(C_MARK_INFO + " Parametric reactions:")
+        if soft and len(self.parametric_reactions) > 50:
+            print(" -> there are more than 50 reactions (" + str(len(self.parametric_reactions)) + ")")
+        else:
+            print(" "*4 + "{0: ^35}{1: ^25}{2: ^15}".format("reactants"," inhibitors"," products"))
+            for reactants,inhibitors,products in self.parametric_reactions:
+                print(" " + "- {0: ^35}{1: ^25}{2: ^15}".format(
+                    "{ " + self.state_to_str(reactants) + " }",
+                    " { " + self.state_to_str(inhibitors) + " }",
+                    " { " + self.state_to_str(products) + " }"))
 
     def show_max_concentrations(self):
-        print(C_MARK_INFO + " Maximal allowed concentration levels (for optimized translation to RS):")
+        print(C_MARK_INFO + " Maximal allowed concentration levels:")
         for e,max_conc in self.max_conc_per_ent.items():
             print(" - {0:^20} = {1:<6}".format(self.get_entity_name(e),max_conc))
 
@@ -265,6 +280,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
     def show(self, soft=False):
         self.show_background_set()
         self.show_reactions(soft)
+        self.show_param_reactions(soft)
         self.show_permanent_entities()
         self.show_meta_reactions()
         self.show_max_concentrations()
