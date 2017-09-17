@@ -13,8 +13,8 @@ from logics import rsLTL_Encoder
 
 from rs.reaction_system_with_concentrations_param import ParameterObj, is_param
 
-def simplify(x):
-    return x
+# def simplify(x):
+#     return x
 
 def z3_max(a, b):
     return If(a > b, a, b)
@@ -263,6 +263,7 @@ class SmtCheckerRSCParam(object):
             param_name = reactants.name
             for entity in self.rs.set_of_bgset_ids:
                 enc_reactants = And(enc_reactants, Or(
+                    self.v_param[param_name][entity] == 0,
                     self.v[level][entity] >= self.v_param[param_name][entity], 
                     self.v_ctx[level][entity] >= self.v_param[param_name][entity]))
         else:
@@ -277,8 +278,10 @@ class SmtCheckerRSCParam(object):
             param_name = inhibitors.name
             for entity in self.rs.set_of_bgset_ids:
                 enc_inhibitors = And(enc_inhibitors, Or(
-                    self.v[level][entity] < self.v_param[param_name][entity], 
-                    self.v_ctx[level][entity] < self.v_param[param_name][entity]))
+                    self.v_param[param_name][entity] == 0,
+                    And(
+                        self.v[level][entity] < self.v_param[param_name][entity], 
+                        self.v_ctx[level][entity] < self.v_param[param_name][entity])))
         else:
             for entity, conc in inhibitors:
                 enc_inhibitors = And(enc_inhibitors, And(
@@ -290,18 +293,35 @@ class SmtCheckerRSCParam(object):
         if is_param(products):
             param_name = products.name
             for entity in self.rs.set_of_bgset_ids:
-                enc_products = And(enc_products,
-                    self.v_improd[level + 1][reaction_id][entity] == self.v_param[param_name][entity])
+                enc_products = simplify(And(enc_products, Or(
+                    self.v_param[param_name][entity] == 0,
+                    self.v_improd[level + 1][reaction_id][entity] == self.v_param[param_name][entity])))
         else:
             for entity, conc in products:
-                enc_products = And(enc_products, 
-                    self.v_improd[level + 1][reaction_id][entity] == conc)
+                enc_products = simplify(And(enc_products, 
+                    self.v_improd[level + 1][reaction_id][entity] == conc))
 
+        enc_no_prod = True
+        if is_param(products):
+            for entity in self.rs.set_of_bgset_ids:
+                enc_products = And(enc_products,
+                    self.v_improd[level + 1][reaction_id][entity] == 0)
+        else:
+            for entity, _ in products:
+                enc_no_prod = simplify(And(enc_no_prod, 
+                    self.v_improd[level + 1][reaction_id][entity] == 0))
+        
         #
         # (R and I) iff P
         #
-        enc_reaction = simplify(
-            And(enc_reactants, enc_inhibitors) == enc_products)
+        enc_enabled = And(enc_reactants, enc_inhibitors) == enc_products
+        
+        #
+        # ~(R and I) iff P_zero
+        #
+        enc_not_enabled = Not(And(enc_reactants, enc_inhibitors)) == enc_no_prod
+        
+        enc_reaction = And(enc_enabled, enc_not_enabled)
 
         return enc_reaction
 
@@ -364,7 +384,8 @@ class SmtCheckerRSCParam(object):
         #   {products}[level+1]
         #
         current_v_improd_for_entities = self.v_improd_for_entities[level + 1]
-        for entity, per_reaction_vars in current_v_improd_for_entities.items():
+        for entity in self.rs.set_of_bgset_ids:
+            per_reaction_vars = current_v_improd_for_entities.get(entity, [])
             enc_max_prod = simplify(
                 And(enc_max_prod, self.v[level + 1][entity] == self.enc_max(per_reaction_vars)))
         
@@ -373,15 +394,18 @@ class SmtCheckerRSCParam(object):
 
         enc_trans_with_max = simplify(And(enc_general_cond, enc_max_prod, enc_trans))
 
-        print(enc_trans_with_max)
+        # print(enc_trans_with_max)
 
         return enc_trans_with_max
 
     def enc_max(self, elements):
 
         enc = None
+        
+        if elements == []:
+            enc = 0
 
-        if len(elements) == 1:
+        elif len(elements) == 1:
             enc = z3_max(0, elements[0])
 
         elif len(elements) > 1:
@@ -425,22 +449,6 @@ class SmtCheckerRSCParam(object):
 
         raise RuntimeError("Should not be used with RSC")
 
-        # enc = True
-        # used_entities_ids = self.rs.get_state_ids(state)
-        #
-        # for ent,conc in state:
-        #     e_id = self.rs.get_entity_id(ent)
-        #     enc = And(enc, self.v[level][e_id] == conc)
-        #
-        # not_in_state = set(range(len(self.rs.background_set)))
-        # not_in_state = not_in_state.difference(set(used_entities_ids))
-        #
-        # for entity in not_in_state:
-        #     enc = And(enc, self.v[level][entity] == 0)
-        #
-        # return simplify(enc)
-        
-
     def enc_min_state(self, level, state):
         """Encodes the state at the given level with the minimal required concentration levels"""
 
@@ -454,8 +462,7 @@ class SmtCheckerRSCParam(object):
         # for entity in state_ids:
         #     enc = And(enc, self.v[level][entity])
 
-        return simplify(enc)
-        
+        return simplify(enc)    
 
     def enc_state_with_blocking(self, level, prop):
         """Encodes the state at the given level with blocking certain concentrations"""
@@ -472,7 +479,6 @@ class SmtCheckerRSCParam(object):
                 enc = And(enc, self.v[level][e_id] < conc)
 
         return simplify(enc)
-        
 
     def decode_witness(self, max_level, print_model=False):
 
@@ -597,7 +603,7 @@ class SmtCheckerRSCParam(object):
                     "[" + colour_str(C_BOLD, "+") + "] " +
                     colour_str(
                         C_GREEN, "SAT at level=" + str(self.current_level)))
-                print(self.solver.model())
+                # print(self.solver.model())
                 if print_witness:
                     print("\n{:=^70}".format("[ WITNESS ]"))
                     self.decode_witness(self.current_level)
