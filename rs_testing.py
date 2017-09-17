@@ -13,10 +13,41 @@ def run_tests():
     # scalable_chain(print_system=True)
     # example44()
     # example44_param()
-    trivial_param()
-
+    simple_param()
 
 def trivial_param():
+
+    r = ReactionSystemWithConcentrationsParam()
+    r.add_bg_set_entity(("x", 3))
+    r.add_bg_set_entity(("c", 3))
+    r.add_bg_set_entity(("final", 1))
+    
+    param_p1 = r.get_param("P1")
+
+    r.add_reaction(param_p1, [("c", 1)], [("final", 1)])
+    # r.add_reaction([("x", 1)], [("c", 1)], [("final", 1)])
+    
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("0")
+    c.add_state("1")
+    c.add_transition("0", [("x", 1)], "1")
+    c.add_transition("1", [], "1")
+
+    rc = ReactionSystemWithAutomaton(r, c)
+    rc.show()
+    smt_rsc = SmtCheckerRSCParam(rc)
+
+    f1 = Formula_rsLTL.f_F(
+        BagDescription.f_TRUE(),
+        BagDescription.f_entity("final") >= 1)
+    
+    #
+    # WARNING: depth limit is set
+    #
+    smt_rsc.check_rsltl(formula=f1, max_level=10, print_witness=True)
+
+
+def simple_param():
 
     r = ReactionSystemWithConcentrationsParam()
     r.add_bg_set_entity(("x", 3))
@@ -29,7 +60,8 @@ def trivial_param():
 
     r.add_reaction([("x", 1)], [("c", 1)], [("y", 2)])
     r.add_reaction([("y", 1)], [("c", 1)], [("z", 1)])
-    r.add_reaction(param_p1, [("c", 1)], [("final", 1)])
+    # r.add_reaction([("y", 1)], [("c", 1)], r.get_param("P2"))
+    r.add_reaction(param_p1, [("x", 1)], [("final", 1)])
 
     c = ContextAutomatonWithConcentrations(r)
     c.add_init_state("0")

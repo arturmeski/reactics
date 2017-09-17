@@ -14,6 +14,8 @@ class ParameterObj(object):
 def is_param(some_object):
     if isinstance(some_object, ParameterObj):
         return True
+    else:
+        return False
 
 class ReactionSystemWithConcentrationsParam(ReactionSystem):
 
@@ -21,7 +23,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
 
         self.reactions = []
         self.parameters = dict()
-        self.parametric_reactions = []
+        # self.parametric_reactions = []
         self.meta_reactions = dict()
         self.permanent_entities = dict()
         self.background_set = []
@@ -170,10 +172,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
             raise RuntimeError("No products defined")
         reaction = self.process_rip(R,I,P)
         
-        if self.is_parametric_reaction(reaction):
-            self.parametric_reactions.append(reaction)
-        else:
-            self.reactions.append(reaction)
+        self.reactions.append(reaction)
 
     def add_reaction_without_reactants(self, R, I, P):
         """Adds a reaction"""
@@ -254,18 +253,6 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
                         " ) Command=( " + self.get_entity_name(command) + " ) ] -- ( R={" + self.state_to_str(reactants) + "}, I={" + self.state_to_str(inhibitors) + "} )")
                 else:
                     raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
-                    
-    def show_param_reactions(self, soft=False):
-        print(C_MARK_INFO + " Parametric reactions:")
-        if soft and len(self.parametric_reactions) > 50:
-            print(" -> there are more than 50 reactions (" + str(len(self.parametric_reactions)) + ")")
-        else:
-            print(" "*4 + "{0: ^35}{1: ^25}{2: ^15}".format("reactants"," inhibitors"," products"))
-            for reactants,inhibitors,products in self.parametric_reactions:
-                print(" " + "- {0: ^35}{1: ^25}{2: ^15}".format(
-                    "{ " + self.state_to_str(reactants) + " }",
-                    " { " + self.state_to_str(inhibitors) + " }",
-                    " { " + self.state_to_str(products) + " }"))
 
     def show_max_concentrations(self):
         print(C_MARK_INFO + " Maximal allowed concentration levels:")
@@ -280,7 +267,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
     def show(self, soft=False):
         self.show_background_set()
         self.show_reactions(soft)
-        self.show_param_reactions(soft)
+        # self.show_param_reactions(soft)
         self.show_permanent_entities()
         self.show_meta_reactions()
         self.show_max_concentrations()

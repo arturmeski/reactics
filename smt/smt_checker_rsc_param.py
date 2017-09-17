@@ -13,8 +13,8 @@ from logics import rsLTL_Encoder
 
 from rs.reaction_system_with_concentrations_param import ParameterObj, is_param
 
-# def simplify(x):
-#     return x
+def simplify(x):
+    return x
 
 def z3_max(a, b):
     return If(a > b, a, b)
@@ -44,7 +44,8 @@ class SmtCheckerRSCParam(object):
         self.v_improd = []
         self.v_improd_for_entities = []
         
-        self.v_param = []
+        # parameters:
+        self.v_param = dict()
 
         self.next_level_to_encode = 0
 
@@ -58,10 +59,10 @@ class SmtCheckerRSCParam(object):
         # improducible - entities that are never produces (there is no reaction that produces that entity)
         
         self.loop_position = Int("loop_position")
-        
         self.solver = Solver() #For("QF_FD")
-        
         self.verification_time = None
+                
+        self.prepare_param_variables()
 
     def reset(self):
         """Reinitialises the state of the checker"""
@@ -74,7 +75,6 @@ class SmtCheckerRSCParam(object):
         self.prepare_state_variables()
         self.prepare_context_variables()
         self.prepare_intermediate_product_variables()
-        self.prepare_param_variables()
         self.next_level_to_encode += 1 
         
     def prepare_context_variables(self):
@@ -133,22 +133,33 @@ class SmtCheckerRSCParam(object):
                 reaction_id = self.rs.reactions.index(reaction)
 
                 entities_dict = dict()
-                for entity, conc in products:
-                    new_var = Int("IP" + str(level) + "_R" +
-                                  str(reaction_id) + "_e" + str(entity))
-                    entities_dict[entity] = new_var
+                
+                if is_param(products):
 
-                    all_entities_dict.setdefault(entity, [])
-                    all_entities_dict[entity].append(new_var)
+                    for entity in self.rs.set_of_bgset_ids:
+                        entity_name = self.rs.get_entity_name(entity)
+                        new_var = Int("L"+ str(level) + "_ImProd" + "_r" +
+                                      str(reaction_id) + "_" + entity_name)
+                        entities_dict[entity] = new_var
+
+                        all_entities_dict.setdefault(entity, [])
+                        all_entities_dict[entity].append(new_var)
+                                            
+                else:
+                
+                    for entity, conc in products:
+                        entity_name = self.rs.get_entity_name(entity)
+                        new_var = Int("L"+ str(level) + "_ImProd" + "_r" +
+                                      str(reaction_id) + "_" + entity_name)
+                        entities_dict[entity] = new_var
+
+                        all_entities_dict.setdefault(entity, [])
+                        all_entities_dict[entity].append(new_var)
 
                 reactions_dict[reaction_id] = entities_dict
             
             self.v_improd.append(reactions_dict)
             self.v_improd_for_entities.append(all_entities_dict)
-
-            # print(self.v_improd)
-
-            # print(self.v_improd_for_entities)
         
     def prepare_param_variables(self):
         """
@@ -159,42 +170,55 @@ class SmtCheckerRSCParam(object):
         background set.
         """
         
-        level = self.next_level_to_encode  
- 
-        param_vars_for_cur_level = dict()
-
         for param_name in self.rs.parameters.keys():
 
             # we start collecting bg-related vars for the given param
             vars_for_param = []
 
-            for entity in self.rs.background_set:
-                new_var = Int("L{:d}_Pm_{:s}".format(level, entity))
+            for entity in self.rs.set_of_bgset_ids:
+                new_var = Int("Pm{:s}_{:s}".format(param_name, self.rs.get_entity_name(entity)))
                 vars_for_param.append(new_var)
 
-            param_vars_for_cur_level[param_name] = vars_for_param
-        
-        self.v_param.append(param_vars_for_cur_level)
-        
-        print(self.v_param)
-        
+            self.v_param[param_name] = vars_for_param
+
+    def enc_param_concentration_levels_assertion(self):
+        """
+        Assertions for the parameter variables
+        """
+        enc_param_gz = True
+        enc_param_at_least_one = False
+        for param_vars in self.v_param.values():
+            for pvar in param_vars:
+                #
+                # TODO: fixed upper limit: 100
+                #
+                enc_param_gz = simplify(And(enc_param_gz, pvar >= 0, pvar < 100))
+                enc_param_at_least_one = simplify(Or(enc_param_at_least_one, pvar > 0))
+                
+        return simplify(And(enc_param_gz, enc_param_at_least_one))
+                
     def enc_concentration_levels_assertion(self, level):
         """
-        Encodes assertions that (some) variables need to be >0
+        Encodes assertions that (some) variables need to be >=0
         
         We do not need to actually control all the variables,
         only those that can possibly go below 0.
         """
         
-        enc_nz = True
-        
-        for e_i in range(len(self.rs.background_set)):
-            v = self.v[level][e_i]
-            v_ctx = self.v_ctx[level][e_i]
+        enc_gz = True
+
+        for e_i in self.rs.set_of_bgset_ids:
+            var = self.v[level][e_i]
+            var_ctx = self.v_ctx[level][e_i]
             e_max = self.rs.get_max_concentration_level(e_i)
-            enc_nz = simplify(And(enc_nz, v >= 0, v_ctx >= 0, v <= e_max, v_ctx <= e_max))
+            enc_gz = simplify(And(enc_gz, var >= 0, var_ctx >= 0, var <= e_max, var_ctx <= e_max))
+            
+            vars_per_reaction = self.v_improd_for_entities[level + 1]
+            if e_i in vars_per_reaction:
+                for var_improd in vars_per_reaction[e_i]:
+                    enc_gz = simplify(And(enc_gz, var_improd >= 0, var_improd <= e_max))
         
-        return enc_nz
+        return enc_gz
  
     def enc_init_state(self, level):
         """Encodes the initial state at the given level"""
@@ -233,39 +257,45 @@ class SmtCheckerRSCParam(object):
         # we need reaction_id to find the intermediate product variable
         reaction_id = self.rs.reactions.index(reaction)
 
-        # ** REACTANTS **
-
+        # ** REACTANTS *******************************************
         enc_reactants = True
-        for entity, conc in reactants:
-            enc_reactants = And(enc_reactants, Or(
-                self.v[level][entity] >= conc, self.v_ctx[level][entity] >= conc))
+        if is_param(reactants):
+            param_name = reactants.name
+            for entity in self.rs.set_of_bgset_ids:
+                enc_reactants = And(enc_reactants, Or(
+                    self.v[level][entity] >= self.v_param[param_name][entity], 
+                    self.v_ctx[level][entity] >= self.v_param[param_name][entity]))
+        else:
+            for entity, conc in reactants:
+                enc_reactants = And(enc_reactants, Or(
+                    self.v[level][entity] >= conc, 
+                    self.v_ctx[level][entity] >= conc))
 
-        # ** INHIBITORS **
-
+        # ** INHIBITORS ******************************************
         enc_inhibitors = True
-        for entity, conc in inhibitors:
-            enc_inhibitors = And(enc_inhibitors, And(
-                self.v[level][entity] < conc, self.v_ctx[level][entity] < conc))
+        if is_param(inhibitors):
+            param_name = inhibitors.name
+            for entity in self.rs.set_of_bgset_ids:
+                enc_inhibitors = And(enc_inhibitors, Or(
+                    self.v[level][entity] < self.v_param[param_name][entity], 
+                    self.v_ctx[level][entity] < self.v_param[param_name][entity]))
+        else:
+            for entity, conc in inhibitors:
+                enc_inhibitors = And(enc_inhibitors, And(
+                    self.v[level][entity] < conc, 
+                    self.v_ctx[level][entity] < conc))
 
-        # ** PRODUCTS **
-
-        # entities that were produced
-        produced = []
+        # ** PRODUCTS *******************************************
         enc_products = True
-        for entity, conc in products:
-            enc_products = And(enc_products, self.v_improd[
-                               level + 1][reaction_id][entity] == conc)
-            produced.append(entity)
-
-        print("----", str(produced))
-
-        # encoding of the zeros (for the products)
-        # we iterate through all the entities' indices
-        
-        # for entity in range(len(self.rs.background_set)):
-        #     if entity not in produced:
-        #         enc_products = And(enc_products, self.v_improd[
-        #                            level + 1][reaction_id][entity] == 0)
+        if is_param(products):
+            param_name = products.name
+            for entity in self.rs.set_of_bgset_ids:
+                enc_products = And(enc_products,
+                    self.v_improd[level + 1][reaction_id][entity] == self.v_param[param_name][entity])
+        else:
+            for entity, conc in products:
+                enc_products = And(enc_products, 
+                    self.v_improd[level + 1][reaction_id][entity] == conc)
 
         #
         # (R and I) iff P
@@ -275,20 +305,25 @@ class SmtCheckerRSCParam(object):
 
         return enc_reaction
 
-    def enc_single_param_reaction(self, level, p_reaction):
+    def enc_general_reaction_enabledness(self, level):
+        """
+        General enabledness condition for reactions
         
-        reactants, inhibitors, products = p_reaction
+        The necessary condition for a reaction to be enabled is
+        that the state is not empty, i.e., at least one entity
+        is present in the current state.
         
-        if is_param(reactants):
-            print("PARAM")
+        This condition must be used when there are parametric reactions
+        because parameters could have all the entities set to zero and
+        that immediately allows for all the conditions on the reactants
+        to be fulfilled: (entity <= param) -> (0 <= 0)
+        """
         
-        if is_param(inhibitors):
-            print("PARAM")
-            
-        if is_param(products):
-            print("PARAM")
-        
-        return True
+        enc_cond = False
+        for entity in self.rs.set_of_bgset_ids:
+            enc_cond = simplify(Or(enc_cond, self.v[level][entity] > 0, self.v_ctx[level][entity] > 0))
+
+        return enc_cond
 
     def enc_rs_trans(self, level):
         """Encodes the transition relation"""
@@ -313,11 +348,6 @@ class SmtCheckerRSCParam(object):
             enc_reaction = self.enc_single_reaction(level, reaction)
             enc_trans = simplify(And(enc_trans, enc_reaction))
 
-        for p_reaction in self.rs.parametric_reactions:
-            print(p_reaction)
-            enc_p_reaction = self.enc_single_param_reaction(level, p_reaction)
-            enc_trans = simplify(And(enc_trans, enc_p_reaction))
-
         # Next we encode the MAX concentration values: 
         # we collect those from the intermediate product variables
 
@@ -334,17 +364,16 @@ class SmtCheckerRSCParam(object):
         #   {products}[level+1]
         #
         current_v_improd_for_entities = self.v_improd_for_entities[level + 1]
-        
         for entity, per_reaction_vars in current_v_improd_for_entities.items():
-
             enc_max_prod = simplify(
                 And(enc_max_prod, self.v[level + 1][entity] == self.enc_max(per_reaction_vars)))
+        
+        # make sure at least one entity is >0
+        enc_general_cond = self.enc_general_reaction_enabledness(level)
 
-        # for entity in self.improducible_entities:
-        #     enc_max_prod = simplify(
-        #         And(enc_max_prod, self.v[level + 1][entity] == 0))
+        enc_trans_with_max = simplify(And(enc_general_cond, enc_max_prod, enc_trans))
 
-        enc_trans_with_max = simplify(And(enc_max_prod, enc_trans))
+        print(enc_trans_with_max)
 
         return enc_trans_with_max
 
@@ -482,10 +511,30 @@ class SmtCheckerRSCParam(object):
                             " " + self.rs.get_entity_name(var_id) + "=" + var_rep,
                             end="")
                 print(" }")
-                
-                
+        
+        # Parameters    
+        
+        print("\n\n  Parameters:\n")
+        for param_name in self.rs.parameters.keys():
+            print("{: >6}: ".format(param_name), end="")
+            print("{", end="")
+            
+            params = self.v_param[param_name]
+            
+            for entity in self.rs.set_of_bgset_ids:
+                var_rep = repr(m[params[entity]])
+                if not var_rep.isdigit():
+                    raise RuntimeError(
+                        "unexpected: representation is not a positive integer")
+                if int(var_rep) > 0:
+                    print(
+                        " " + str(self.rs.get_entity_name(entity)) + "=" + str(var_rep),
+                        end="")
+            print(" }")
+            
     def check_rsltl(
-            self, formula, print_witness=True, print_time=True, print_mem=True,
+            self, formula, 
+            print_witness=True, print_time=True, print_mem=True,
             max_level=None):
         """Bounded Model Checking for rsLTL properties"""
 
@@ -506,6 +555,7 @@ class SmtCheckerRSCParam(object):
         self.prepare_all_variables()
 
         self.solver.add(self.enc_concentration_levels_assertion(0))
+        self.solver.add(self.enc_param_concentration_levels_assertion())
 
         encoder = rsLTL_Encoder(self)
 
