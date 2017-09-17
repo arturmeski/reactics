@@ -59,9 +59,10 @@ def simple_param():
     param_p1 = r.get_param("P1")
 
     r.add_reaction([("x", 1)], [("c", 1)], [("y", 2)])
-    r.add_reaction([("y", 1)], [("c", 1)], [("z", 1)])
-    # r.add_reaction([("y", 1)], [("c", 1)], r.get_param("P2"))
+    # r.add_reaction([("y", 1)], [("c", 1)], [("z", 1)])
+    r.add_reaction([("y", 1)], [("c", 1)], r.get_param("P2"))
     r.add_reaction(param_p1, [("x", 1)], [("final", 1)])
+    # r.add_reaction([("z", 1)], [("x", 1)], [("final", 1)])
 
     c = ContextAutomatonWithConcentrations(r)
     c.add_init_state("0")
@@ -80,7 +81,7 @@ def simple_param():
     #
     # WARNING: depth limit is set
     #
-    smt_rsc.check_rsltl(formula=f1, max_level=10, print_witness=True)
+    smt_rsc.check_rsltl(formula=f1, max_level=10, print_witness=True, cont_if_sat=False)
 
 
 def example44_param():
