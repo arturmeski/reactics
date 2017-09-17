@@ -60,6 +60,7 @@ class SmtCheckerRSCParam(object):
         
         self.loop_position = Int("loop_position")
         self.solver = Solver() #For("QF_FD")
+
         self.verification_time = None
                 
         self.prepare_param_variables()
@@ -185,18 +186,26 @@ class SmtCheckerRSCParam(object):
         """
         Assertions for the parameter variables
         """
+        
+        if len(self.v_param) == 0:
+            return True
+        
         enc_param_gz = True
-        enc_param_at_least_one = False
+        enc_non_empty = True
+        
         for param_vars in self.v_param.values():
+            
+            enc_param_at_least_one = False
             for pvar in param_vars:
-                #
-                # TODO: fixed upper limit: 100
-                #
+            
+                # TODO: fixed upper limit: 100 (have a per-param setting for that)
                 enc_param_gz = simplify(And(enc_param_gz, pvar >= 0, pvar < 100))
                 enc_param_at_least_one = simplify(Or(enc_param_at_least_one, pvar > 0))
-                
-        return simplify(And(enc_param_gz, enc_param_at_least_one))
-                
+            
+            enc_non_empty = simplify(And(enc_non_empty, enc_param_at_least_one))
+            
+        return simplify(And(enc_param_gz, enc_non_empty))
+                                        
     def enc_concentration_levels_assertion(self, level):
         """
         Encodes assertions that (some) variables need to be >=0
@@ -293,18 +302,18 @@ class SmtCheckerRSCParam(object):
         if is_param(products):
             param_name = products.name
             for entity in self.rs.set_of_bgset_ids:
-                enc_products = simplify(And(enc_products, Or(
-                    self.v_param[param_name][entity] == 0,
-                    self.v_improd[level + 1][reaction_id][entity] == self.v_param[param_name][entity])))
+                enc_products = simplify(And(enc_products,
+                    self.v_improd[level + 1][reaction_id][entity] == self.v_param[param_name][entity]))
         else:
             for entity, conc in products:
                 enc_products = simplify(And(enc_products, 
                     self.v_improd[level + 1][reaction_id][entity] == conc))
 
+        # Nothing is produced (when the reaction is disabled)
         enc_no_prod = True
         if is_param(products):
             for entity in self.rs.set_of_bgset_ids:
-                enc_products = And(enc_products,
+                enc_no_prod = And(enc_no_prod,
                     self.v_improd[level + 1][reaction_id][entity] == 0)
         else:
             for entity, _ in products:
@@ -481,6 +490,11 @@ class SmtCheckerRSCParam(object):
         return simplify(enc)
 
     def decode_witness(self, max_level, print_model=False):
+        """
+        Decodes the witness
+        
+        Also decodes the parameters
+        """
 
         m = self.solver.model()
 
@@ -537,12 +551,26 @@ class SmtCheckerRSCParam(object):
                         " " + str(self.rs.get_entity_name(entity)) + "=" + str(var_rep),
                         end="")
             print(" }")
+        
+        print("\n")
             
     def check_rsltl(
             self, formula, 
-            print_witness=True, print_time=True, print_mem=True,
-            max_level=None):
-        """Bounded Model Checking for rsLTL properties"""
+            print_witness=True, 
+            print_time=True, print_mem=True,
+            max_level=None, cont_if_sat=False):
+        """
+        Bounded Model Checking for rsLTL properties
+            
+            * print_witness   -- prints the decoded witness
+            * print_time      -- prints the time consumed
+            * print_mem       -- prints the memory consumed
+            * max_level       -- if not None, the methods 
+                                 stops at the specified level
+            * cont_if_sat     -- if True, then the method
+                                 continues up until max_level is
+                                 reached (even if sat found)
+        """
 
         self.reset()
 
@@ -603,11 +631,12 @@ class SmtCheckerRSCParam(object):
                     "[" + colour_str(C_BOLD, "+") + "] " +
                     colour_str(
                         C_GREEN, "SAT at level=" + str(self.current_level)))
-                # print(self.solver.model())
+                print(self.solver.model())
                 if print_witness:
                     print("\n{:=^70}".format("[ WITNESS ]"))
                     self.decode_witness(self.current_level)
-                break
+                if not cont_if_sat:
+                    break
             else:
                 self.solver.pop()
 
