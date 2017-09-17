@@ -21,7 +21,7 @@ def z3_max(a, b):
 
 class SmtCheckerRSCParam(object):
 
-    def __init__(self, rsca):
+    def __init__(self, rsca, optimise=False):
     
         rsca.sanity_check()
 
@@ -30,6 +30,8 @@ class SmtCheckerRSCParam(object):
         
         self.rs = rsca.rs
         self.ca = rsca.ca
+        
+        self.optimise = optimise
 
         self.initialise()
     
@@ -59,7 +61,11 @@ class SmtCheckerRSCParam(object):
         # improducible - entities that are never produces (there is no reaction that produces that entity)
         
         self.loop_position = Int("loop_position")
-        self.solver = Solver() #For("QF_FD")
+        
+        if self.optimise:        
+            self.solver = Optimize()
+        else:
+            self.solver = Solver() #For("QF_FD")
 
         self.verification_time = None
                 
@@ -205,6 +211,12 @@ class SmtCheckerRSCParam(object):
             enc_non_empty = simplify(And(enc_non_empty, enc_param_at_least_one))
             
         return simplify(And(enc_param_gz, enc_non_empty))
+    
+    def assert_param_optimisation(self):
+
+        for param_vars in self.v_param.values():
+            for pvar in param_vars:
+                self.solver.add_soft(pvar < 1)
                                         
     def enc_concentration_levels_assertion(self, level):
         """
@@ -452,7 +464,6 @@ class SmtCheckerRSCParam(object):
         
         return enc_trans
 
-
     def enc_exact_state(self, level, state):
         """Encodes the state at the given level with the exact concentration values"""
 
@@ -583,19 +594,22 @@ class SmtCheckerRSCParam(object):
             start = resource.getrusage(resource.RUSAGE_SELF).ru_utime
 
         self.prepare_all_variables()
-        self.solver.add(self.enc_init_state(0))
+        self.solver_add(self.enc_init_state(0))
         self.current_level = 0
 
         self.prepare_all_variables()
 
-        self.solver.add(self.enc_concentration_levels_assertion(0))
-        self.solver.add(self.enc_param_concentration_levels_assertion())
+        self.solver_add(self.enc_concentration_levels_assertion(0))
+        self.solver_add(self.enc_param_concentration_levels_assertion())
+
+        if self.optimise:
+            self.assert_param_optimisation()
 
         encoder = rsLTL_Encoder(self)
 
         while True:
             self.prepare_all_variables()
-            self.solver.add(
+            self.solver_add(
                 self.enc_concentration_levels_assertion(
                     self.current_level + 1))
 
@@ -619,11 +633,11 @@ class SmtCheckerRSCParam(object):
                   "] Adding the formula to the solver...")
 
             encoder.flush_cache()
-            self.solver.add(f)
+            self.solver_add(f)
 
             print("[" + colour_str(C_BOLD, "i") +
                   "] Adding the loops encoding...")
-            self.solver.add(self.get_loop_encodings())
+            self.solver_add(self.get_loop_encodings())
 
             result = self.solver.check()
             if result == sat:
@@ -642,7 +656,7 @@ class SmtCheckerRSCParam(object):
 
             print("[" + colour_str(C_BOLD, "i") +
                   "] Unrolling the transition relation")
-            self.solver.add(self.enc_transition_relation(self.current_level))
+            self.solver_add(self.enc_transition_relation(self.current_level))
 
             print(
                 "{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
@@ -668,7 +682,6 @@ class SmtCheckerRSCParam(object):
                     repr(
                         resource.getrusage(resource.RUSAGE_SELF).ru_maxrss /
                         (1024 * 1024)) + " MB"))
-
         
     def dummy_unroll(self, levels):
         """Unrolls the variables for testing purposes"""
@@ -680,7 +693,6 @@ class SmtCheckerRSCParam(object):
 
         print(C_MARK_INFO + " Dummy Unrolling done.")
         
-    
     def state_equality(self, level_A, level_B):
         """Encodes equality of two states at two different levels"""
         
@@ -693,8 +705,7 @@ class SmtCheckerRSCParam(object):
         eq_enc_ctxaut = self.ca_state[level_A] == self.ca_state[level_B]
         eq_enc = simplify(And(eq_enc, eq_enc_ctxaut))
 
-        return eq_enc
-        
+        return eq_enc   
     
     def get_loop_encodings(self):
         
@@ -713,8 +724,15 @@ class SmtCheckerRSCParam(object):
             loop_enc = simplify(And(loop_enc, Implies( loop_var == i, self.state_equality(i-1, k) )))
         
         return loop_enc
+    
+    def solver_add(self, expression):
+    
+        if expression == False:
+            raise RuntimeError("Trying to assert False.")
         
-        
+        if not (expression == True):
+            self.solver.add(expression)
+
     def check_reachability(self, state, print_witness=True, 
             print_time=True, print_mem=True, max_level=1000):
         """Main testing function"""
@@ -726,16 +744,16 @@ class SmtCheckerRSCParam(object):
             start = resource.getrusage(resource.RUSAGE_SELF).ru_utime
 
         self.prepare_all_variables()
-        self.solver.add(self.enc_init_state(0))
+        self.solver_add(self.enc_init_state(0))
         self.current_level = 0
 
         self.prepare_all_variables()
         
-        self.solver.add(self.enc_concentration_levels_assertion(0))
+        self.solver_add(self.enc_concentration_levels_assertion(0))
         
         while True:
             self.prepare_all_variables()
-            self.solver.add(self.enc_concentration_levels_assertion(self.current_level+1))
+            self.solver_add(self.enc_concentration_levels_assertion(self.current_level+1))
             
             print("\n{:-^70}".format("[ Working at level=" + str(self.current_level) + " ]"))
             stdout.flush()
@@ -744,7 +762,7 @@ class SmtCheckerRSCParam(object):
             print("[" + colour_str(C_BOLD, "i") + "] Adding the reachability test...")       
             self.solver.push()
 
-            self.solver.add(self.enc_state_with_blocking(self.current_level,state))
+            self.solver_add(self.enc_state_with_blocking(self.current_level,state))
                 
             result = self.solver.check()
             if result == sat:
@@ -757,7 +775,7 @@ class SmtCheckerRSCParam(object):
                 self.solver.pop()
 
             print("[" + colour_str(C_BOLD, "i") + "] Unrolling the transition relation")
-            self.solver.add(self.enc_transition_relation(self.current_level))
+            self.solver_add(self.enc_transition_relation(self.current_level))
 
             print("{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
             self.current_level += 1
@@ -790,7 +808,7 @@ class SmtCheckerRSCParam(object):
         self.prepare_all_variables()
         init_s = self.enc_init_state(0)
         print(init_s)
-        self.solver.add(init_s)
+        self.solver_add(init_s)
         self.current_level = 0
 
         self.prepare_all_variables()
@@ -808,7 +826,7 @@ class SmtCheckerRSCParam(object):
             s = self.enc_min_state(self.current_level,state)
             print("Test: ", s)
             
-            self.solver.add(s)
+            self.solver_add(s)
 
             result = self.solver.check()
             if result == sat:
@@ -822,7 +840,7 @@ class SmtCheckerRSCParam(object):
             print("[i] Unrolling the transition relation")
             t = self.enc_transition_relation(self.current_level)
             print(t)
-            self.solver.add(t)
+            self.solver_add(t)
 
             print("-----[ level=" + str(self.current_level) + " done ]")
             self.current_level += 1

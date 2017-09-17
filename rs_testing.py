@@ -72,7 +72,7 @@ def simple_param():
 
     rc = ReactionSystemWithAutomaton(r, c)
     rc.show()
-    smt_rsc = SmtCheckerRSCParam(rc)
+    smt_rsc = SmtCheckerRSCParam(rc, optimise=True)
 
     f1 = Formula_rsLTL.f_F(
         BagDescription.f_TRUE(),
