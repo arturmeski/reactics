@@ -726,12 +726,17 @@ class SmtCheckerRSCParam(object):
         return loop_enc
     
     def solver_add(self, expression):
+        """
+        This is a solver.add() wrapper
+        """
+    
+        if expression == True:
+            return
     
         if expression == False:
             raise RuntimeError("Trying to assert False.")
         
-        if not (expression == True):
-            self.solver.add(expression)
+        self.solver.add(expression)
 
     def check_reachability(self, state, print_witness=True, 
             print_time=True, print_mem=True, max_level=1000):

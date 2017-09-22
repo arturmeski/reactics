@@ -6,6 +6,8 @@
 
 """
 
+import argparse
+
 from rs import *
 from smt import *
 import sys
@@ -14,9 +16,10 @@ import rs_testing
 
 from colour import *
 
-import resource
-
 profiling = False
+
+if profiling:
+    import resource
 
 ##################################################################
 
@@ -43,8 +46,17 @@ def print_banner():
 def main():
     """Main function"""
 
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-v", "--verbose", 
+        help="turn verbosity on", action="store_true")
+    parser.add_argument("-o", "--optimise", 
+        help="minimise the parametric computation result", action="store_true")
+
+    args = parser.parse_args()
+
     print_banner()
-    rs_testing.run_tests()
+    rs_testing.run_tests(args)
 
 ##################################################################
 

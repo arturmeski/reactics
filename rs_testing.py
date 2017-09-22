@@ -5,7 +5,7 @@ from logics import *
 import sys
 import resource
 
-def run_tests():
+def run_tests(cmd_args):
     
     # test_extended_automaton()
     # process()
@@ -13,7 +13,7 @@ def run_tests():
     # scalable_chain(print_system=True)
     # example44()
     # example44_param()
-    simple_param()
+    simple_param(cmd_args)
 
 def trivial_param():
 
@@ -47,7 +47,7 @@ def trivial_param():
     smt_rsc.check_rsltl(formula=f1, max_level=10, print_witness=True)
 
 
-def simple_param():
+def simple_param(cmd_args):
 
     r = ReactionSystemWithConcentrationsParam()
     r.add_bg_set_entity(("x", 3))
@@ -72,7 +72,8 @@ def simple_param():
 
     rc = ReactionSystemWithAutomaton(r, c)
     rc.show()
-    smt_rsc = SmtCheckerRSCParam(rc, optimise=True)
+    
+    smt_rsc = SmtCheckerRSCParam(rc, optimise=cmd_args.optimise)
 
     f1 = Formula_rsLTL.f_F(
         BagDescription.f_TRUE(),
