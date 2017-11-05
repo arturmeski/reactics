@@ -8,16 +8,34 @@ class rsLTL_Encoder(object):
         
     def __init__(self, smt_checker):
         self.smt_checker = smt_checker
-        self.v = smt_checker.v
-        self.v_ctx = smt_checker.v_ctx
         self.rs = smt_checker.rs
-        self.loop_position = smt_checker.loop_position
+
+        self.v = None
+        self.v_ctx = None
+        self.loop_position = None
+        
+        # self.load_variables(
+        #     var_rs=smt_checker.v,
+        #     var_ctx=smt_checker.v_ctx,
+        #     var_loop_pos=smt_checker.loop_position)
         
         self.init_ncalls()
+        
+    def load_variables(self, var_rs, var_ctx, var_loop_pos):
+        
+        self.v = var_rs
+        self.v_ctx = var_ctx
+        self.loop_position = var_loop_pos
     
     def get_encoding(self, formula, bound):
+
+        assert self.v is not None
+        assert self.v_ctx is not None
+        assert self.loop_position is not None
+
         self.cache_init(bound)
         self.init_ncalls()
+        
         return self.encode(formula, 0, bound)
         
     def init_ncalls(self):
