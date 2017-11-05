@@ -37,14 +37,24 @@ class SmtCheckerRSCParam(object):
     
     def initialise(self):
         """Initialises all the variables used by the checker"""
-        
-        self.v = []
-        self.v_ctx = []
-        self.ca_state = []
+
+        ### "Currently" used variables (loaded from self.path_v...)
+        self.v = None
+        self.v_ctx = None
+        self.ca_state = None
         
         # intermediate products:
-        self.v_improd = []
-        self.v_improd_for_entities = []
+        self.v_improd = None
+        self.v_improd_for_entities = None
+        
+        ### Per-path variables
+        self.path_v = dict()
+        self.path_v_ctx = dict()
+        self.path_ca_state = dict()
+        
+        # intermediate products:
+        self.path_v_improd = dict()
+        self.path_v_improd_for_entities = dict()
         
         # parameters:
         self.v_param = dict()
@@ -60,9 +70,11 @@ class SmtCheckerRSCParam(object):
         # improd - intermediate products
         # improducible - entities that are never produces (there is no reaction that produces that entity)
         
-        self.loop_position = Int("loop_position")
+        # TODO: number of loops == number of paths
+        self.loop_position = None
+        self.path_loop_position = dict()
         
-        if self.optimise:        
+        if self.optimise:
             self.solver = Optimize()
         else:
             self.solver = Solver() #For("QF_FD")
@@ -74,40 +86,67 @@ class SmtCheckerRSCParam(object):
     def reset(self):
         """Reinitialises the state of the checker"""
         
-        self.initialise()       
+        self.initialise()
         
-    def prepare_all_variables(self):
-        """Prepares all the variables"""
+    def prepare_all_variables(self, num_of_paths):
 
-        self.prepare_state_variables()
-        self.prepare_context_variables()
-        self.prepare_intermediate_product_variables()
-        self.next_level_to_encode += 1 
+        for path_idx in range(num_of_paths):
+            self.prepare_all_path_variables(path_idx)
+        self.next_level_to_encode += 1
         
-    def prepare_context_variables(self):
+    def prepare_all_path_variables(self, path_idx):
+        """Prepares the variables for a given path index"""
+
+        print_info("Preparing variables for path={:d} (level={:d})".format(path_idx, self.next_level_to_encode))
+        
+        self.prepare_state_variables(path_idx)
+        self.prepare_context_variables(path_idx)
+        self.prepare_intermediate_product_variables(path_idx)
+        self.prepare_loop_position_variables(path_idx)
+            
+    def prepare_loop_position_variables(self, path_idx):
+        """Prepares the variables for loop positions"""
+        
+        self.path_loop_position[path_idx] = Int("p{:d}_loop_pos".format(path_idx))
+        
+    def prepare_context_variables(self, path_idx):
         """Prepares all the context variables"""
 
         level = self.next_level_to_encode
 
+        self.path_v_ctx.setdefault(path_idx, [])
+        assert len(self.path_v_ctx[path_idx]) == level
+        
         variables = []
         for entity in self.rs.background_set:
-            variables.append(Int("C"+str(level)+"_"+entity))
+            new_var = Int("p{:d}C{:d}_{:s}".format(path_idx, level, entity))
+            variables.append(new_var)
 
-        self.v_ctx.append(variables)
+        self.path_v_ctx[path_idx].append(variables)
 
-    def prepare_state_variables(self):
+    def prepare_state_variables(self, path_idx):
         """Prepares all the state variables"""
 
         level = self.next_level_to_encode
+        
+        # RS vars
+        self.path_v.setdefault(path_idx, [])
+        assert len(self.path_v[path_idx]) == level
 
         variables = []
         for entity in self.rs.background_set:
-            variables.append(Int("L"+str(level)+"_"+entity))
-        self.v.append(variables)
+            new_var = Int("p{:d}L{:d}_{:s}".format(path_idx, level, entity))
+            variables.append(new_var)
+        self.path_v[path_idx].append(variables)
         
-        self.ca_state.append(Int("CA"+str(level)+"_state"))
+        # Context automaton states:
+        self.path_ca_state.setdefault(path_idx, [])
+        assert len(self.path_ca_state[path_idx]) == level
+        
+        ca_state_var = Int("p{:d}CA{:d}_state".format(path_idx, level))
+        self.path_ca_state[path_idx].append(ca_state_var)
 
-    def prepare_intermediate_product_variables(self):
+    def prepare_intermediate_product_variables(self, path_idx):
         """
         Prepares the intermediate product variables
         carrying the individual concentration levels produced
@@ -119,14 +158,20 @@ class SmtCheckerRSCParam(object):
 
         level = self.next_level_to_encode
 
+        self.path_v_improd.setdefault(path_idx, [])
+        self.path_v_improd_for_entities.setdefault(path_idx, [])
+        
+        assert len(self.path_v_improd[path_idx]) == level
+        assert len(self.path_v_improd_for_entities[path_idx]) == level
+
         if level < 1:
             #
             # If we are at level==0, we add a dummy "level"
             # to match the indices of of the successors
             # which are always at level+1.
             #
-            self.v_improd.append(None)
-            self.v_improd_for_entities.append(None)
+            self.path_v_improd[path_idx].append(None)
+            self.path_v_improd_for_entities[path_idx].append(None)
         else:
 
             reactions_dict = dict()
@@ -145,8 +190,7 @@ class SmtCheckerRSCParam(object):
 
                     for entity in self.rs.set_of_bgset_ids:
                         entity_name = self.rs.get_entity_name(entity)
-                        new_var = Int("L"+ str(level) + "_ImProd" + "_r" +
-                                      str(reaction_id) + "_" + entity_name)
+                        new_var = Int("p{:d}L{:d}_ImProd_r{:d}_{:s}".format(path_idx, level, reaction_id, entity_name))
                         entities_dict[entity] = new_var
 
                         all_entities_dict.setdefault(entity, [])
@@ -156,8 +200,7 @@ class SmtCheckerRSCParam(object):
                 
                     for entity, conc in products:
                         entity_name = self.rs.get_entity_name(entity)
-                        new_var = Int("L"+ str(level) + "_ImProd" + "_r" +
-                                      str(reaction_id) + "_" + entity_name)
+                        new_var = Int("p{:d}L{:d}_ImProd_r{:d}_{:s}".format(path_idx, level, reaction_id, entity_name))
                         entities_dict[entity] = new_var
 
                         all_entities_dict.setdefault(entity, [])
@@ -165,8 +208,8 @@ class SmtCheckerRSCParam(object):
 
                 reactions_dict[reaction_id] = entities_dict
             
-            self.v_improd.append(reactions_dict)
-            self.v_improd_for_entities.append(all_entities_dict)
+            self.path_v_improd[path_idx].append(reactions_dict)
+            self.path_v_improd_for_entities[path_idx].append(all_entities_dict)
         
     def prepare_param_variables(self):
         """
@@ -187,6 +230,17 @@ class SmtCheckerRSCParam(object):
                 vars_for_param.append(new_var)
 
             self.v_param[param_name] = vars_for_param
+            
+    def load_varset_for_path(self, path_idx):
+        """
+        Loads the the variables for the path with path_idx
+        """
+        self.v = self.path_v[path_idx]
+        self.v_ctx = self.path_v_ctx[path_idx]
+        self.ca_state = self.path_ca_state[path_idx]        
+        self.v_improd = self.path_v_improd[path_idx]
+        self.v_improd_for_entities = self.path_v_improd_for_entities[path_idx]
+        self.loop_position = self.path_loop_position[path_idx]
 
     def enc_param_concentration_levels_assertion(self):
         """
@@ -218,50 +272,52 @@ class SmtCheckerRSCParam(object):
             for pvar in param_vars:
                 self.solver.add_soft(pvar < 1)
                                         
-    def enc_concentration_levels_assertion(self, level):
+    def enc_concentration_levels_assertion(self, level, path_idx):
         """
         Encodes assertions that (some) variables need to be >=0
         
         We do not need to actually control all the variables,
         only those that can possibly go below 0.
         """
+
+        print_info("Concentration level assertions for path={:d} (level={:d})".format(path_idx, level))
         
         enc_gz = True
 
         for e_i in self.rs.set_of_bgset_ids:
-            var = self.v[level][e_i]
-            var_ctx = self.v_ctx[level][e_i]
+            var = self.path_v[path_idx][level][e_i]
+            var_ctx = self.path_v_ctx[path_idx][level][e_i]
             e_max = self.rs.get_max_concentration_level(e_i)
             enc_gz = simplify(And(enc_gz, var >= 0, var_ctx >= 0, var <= e_max, var_ctx <= e_max))
             
-            vars_per_reaction = self.v_improd_for_entities[level + 1]
+            vars_per_reaction = self.path_v_improd_for_entities[path_idx][level + 1]
             if e_i in vars_per_reaction:
                 for var_improd in vars_per_reaction[e_i]:
                     enc_gz = simplify(And(enc_gz, var_improd >= 0, var_improd <= e_max))
         
         return enc_gz
  
-    def enc_init_state(self, level):
+    def enc_init_state(self, level, path_idx):
         """Encodes the initial state at the given level"""
 
         rs_init_state_enc = True
 
-        for v in self.v[level]:
+        for v in self.path_v[path_idx][level]:
             # the initial concentration levels are zeroed
             rs_init_state_enc = simplify(And(rs_init_state_enc, v == 0))
 
-        ca_init_state_enc = self.ca_state[level] == self.ca.get_init_state_id()
+        ca_init_state_enc = self.path_ca_state[path_idx][level] == self.ca.get_init_state_id()
 
         init_state_enc = simplify(And(rs_init_state_enc, ca_init_state_enc))
 
         return init_state_enc
 
-    def enc_transition_relation(self, level):
+    def enc_transition_relation(self, level, path_idx):
         return simplify(
-            And(self.enc_rs_trans(level),
-                self.enc_automaton_trans(level)))
+            And(self.enc_rs_trans(level, path_idx),
+                self.enc_automaton_trans(level, path_idx)))
 
-    def enc_single_reaction(self, level, reaction):
+    def enc_single_reaction(self, level, path_idx, reaction):
         """
         Encodes a single reaction
 
@@ -285,13 +341,13 @@ class SmtCheckerRSCParam(object):
             for entity in self.rs.set_of_bgset_ids:
                 enc_reactants = And(enc_reactants, Or(
                     self.v_param[param_name][entity] == 0,
-                    self.v[level][entity] >= self.v_param[param_name][entity], 
-                    self.v_ctx[level][entity] >= self.v_param[param_name][entity]))
+                    self.path_v[path_idx][level][entity] >= self.v_param[param_name][entity], 
+                    self.path_v_ctx[path_idx][level][entity] >= self.v_param[param_name][entity]))
         else:
             for entity, conc in reactants:
                 enc_reactants = And(enc_reactants, Or(
-                    self.v[level][entity] >= conc, 
-                    self.v_ctx[level][entity] >= conc))
+                    self.path_v[path_idx][level][entity] >= conc, 
+                    self.path_v_ctx[path_idx][level][entity] >= conc))
 
         # ** INHIBITORS ******************************************
         enc_inhibitors = True
@@ -301,13 +357,13 @@ class SmtCheckerRSCParam(object):
                 enc_inhibitors = And(enc_inhibitors, Or(
                     self.v_param[param_name][entity] == 0,
                     And(
-                        self.v[level][entity] < self.v_param[param_name][entity], 
-                        self.v_ctx[level][entity] < self.v_param[param_name][entity])))
+                        self.path_v[path_idx][level][entity] < self.v_param[param_name][entity], 
+                        self.path_v_ctx[path_idx][level][entity] < self.v_param[param_name][entity])))
         else:
             for entity, conc in inhibitors:
                 enc_inhibitors = And(enc_inhibitors, And(
-                    self.v[level][entity] < conc, 
-                    self.v_ctx[level][entity] < conc))
+                    self.path_v[path_idx][level][entity] < conc, 
+                    self.path_v_ctx[path_idx][level][entity] < conc))
 
         # ** PRODUCTS *******************************************
         enc_products = True
@@ -315,22 +371,22 @@ class SmtCheckerRSCParam(object):
             param_name = products.name
             for entity in self.rs.set_of_bgset_ids:
                 enc_products = simplify(And(enc_products,
-                    self.v_improd[level + 1][reaction_id][entity] == self.v_param[param_name][entity]))
+                    self.path_v_improd[path_idx][level + 1][reaction_id][entity] == self.v_param[param_name][entity]))
         else:
             for entity, conc in products:
                 enc_products = simplify(And(enc_products, 
-                    self.v_improd[level + 1][reaction_id][entity] == conc))
+                    self.path_v_improd[path_idx][level + 1][reaction_id][entity] == conc))
 
         # Nothing is produced (when the reaction is disabled)
         enc_no_prod = True
         if is_param(products):
             for entity in self.rs.set_of_bgset_ids:
                 enc_no_prod = And(enc_no_prod,
-                    self.v_improd[level + 1][reaction_id][entity] == 0)
+                    self.path_v_improd[path_idx][level + 1][reaction_id][entity] == 0)
         else:
             for entity, _ in products:
                 enc_no_prod = simplify(And(enc_no_prod, 
-                    self.v_improd[level + 1][reaction_id][entity] == 0))
+                    self.path_v_improd[path_idx][level + 1][reaction_id][entity] == 0))
         
         #
         # (R and I) iff P
@@ -346,7 +402,7 @@ class SmtCheckerRSCParam(object):
 
         return enc_reaction
 
-    def enc_general_reaction_enabledness(self, level):
+    def enc_general_reaction_enabledness(self, level, path_idx):
         """
         General enabledness condition for reactions
         
@@ -362,11 +418,11 @@ class SmtCheckerRSCParam(object):
         
         enc_cond = False
         for entity in self.rs.set_of_bgset_ids:
-            enc_cond = simplify(Or(enc_cond, self.v[level][entity] > 0, self.v_ctx[level][entity] > 0))
+            enc_cond = simplify(Or(enc_cond, self.path_v[path_idx][level][entity] > 0, self.path_v_ctx[path_idx][level][entity] > 0))
 
         return enc_cond
 
-    def enc_rs_trans(self, level):
+    def enc_rs_trans(self, level, path_idx):
         """Encodes the transition relation"""
 
         #
@@ -386,7 +442,7 @@ class SmtCheckerRSCParam(object):
         enc_trans = True
 
         for reaction in self.rs.reactions:
-            enc_reaction = self.enc_single_reaction(level, reaction)
+            enc_reaction = self.enc_single_reaction(level, path_idx, reaction)
             enc_trans = simplify(And(enc_trans, enc_reaction))
 
         # Next we encode the MAX concentration values: 
@@ -404,14 +460,14 @@ class SmtCheckerRSCParam(object):
         #       => 
         #   {products}[level+1]
         #
-        current_v_improd_for_entities = self.v_improd_for_entities[level + 1]
+        current_v_improd_for_entities = self.path_v_improd_for_entities[path_idx][level + 1]
         for entity in self.rs.set_of_bgset_ids:
             per_reaction_vars = current_v_improd_for_entities.get(entity, [])
             enc_max_prod = simplify(
-                And(enc_max_prod, self.v[level + 1][entity] == self.enc_max(per_reaction_vars)))
+                And(enc_max_prod, self.path_v[path_idx][level + 1][entity] == self.enc_max(per_reaction_vars)))
         
         # make sure at least one entity is >0
-        enc_general_cond = self.enc_general_reaction_enabledness(level)
+        enc_general_cond = self.enc_general_reaction_enabledness(level, path_idx)
 
         enc_trans_with_max = simplify(And(enc_general_cond, enc_max_prod, enc_trans))
 
@@ -437,14 +493,14 @@ class SmtCheckerRSCParam(object):
 
         return enc
     
-    def enc_automaton_trans(self, level):
+    def enc_automaton_trans(self, level, path_idx):
         """Encodes the transition relation for the context automaton"""
         
         enc_trans = False
     
         for src,ctx,dst in self.ca.transitions:
-                src_enc = self.ca_state[level] == src
-                dst_enc = self.ca_state[level+1] == dst
+                src_enc = self.path_ca_state[path_idx][level] == src
+                dst_enc = self.path_ca_state[path_idx][level+1] == dst
                 
                 all_ent = set(range(len(self.rs.background_set)))
                 
@@ -454,10 +510,10 @@ class SmtCheckerRSCParam(object):
                 ctx_enc = True
                 
                 for e,c in ctx:
-                    ctx_enc = simplify(And(ctx_enc, self.v_ctx[level][e] == c))
+                    ctx_enc = simplify(And(ctx_enc, self.path_v_ctx[path_idx][level][e] == c))
                 
                 for e in excl_ctx:
-                    ctx_enc = simplify(And(ctx_enc, self.v_ctx[level][e] == 0))
+                    ctx_enc = simplify(And(ctx_enc, self.path_v_ctx[path_idx][level][e] == 0))
                 
                 cur_trans = simplify(And(src_enc, ctx_enc, dst_enc))
                 enc_trans = simplify(Or(enc_trans, cur_trans))
@@ -500,7 +556,7 @@ class SmtCheckerRSCParam(object):
 
         return simplify(enc)
 
-    def decode_witness(self, max_level, print_model=False):
+    def decode_witness(self, max_level, path_idx, print_model=False):
         """
         Decodes the witness
         
@@ -517,8 +573,8 @@ class SmtCheckerRSCParam(object):
             print("\n{: >70}".format("[ level=" + repr(level) + " ]"))
 
             print("  State: {", end=""),
-            for var_id in range(len(self.v[level])):
-                var_rep = repr(m[self.v[level][var_id]])
+            for var_id in range(len(self.path_v[path_idx][level])):
+                var_rep = repr(m[self.path_v[path_idx][level][var_id]])
                 if not var_rep.isdigit():
                     raise RuntimeError(
                         "unexpected: representation is not a positive integer")
@@ -532,8 +588,8 @@ class SmtCheckerRSCParam(object):
             if level != max_level:
                 print("  Context set: ", end="")
                 print("{", end="")
-                for var_id in range(len(self.v[level])):
-                    var_rep = repr(m[self.v_ctx[level][var_id]])
+                for var_id in range(len(self.path_v[path_idx][level])):
+                    var_rep = repr(m[self.path_v_ctx[path_idx][level][var_id]])
                     if not var_rep.isdigit():
                         raise RuntimeError(
                             "unexpected: representation is not a positive integer")
@@ -566,7 +622,7 @@ class SmtCheckerRSCParam(object):
         print("\n")
             
     def check_rsltl(
-            self, formula, 
+            self, formulae_list, 
             print_witness=True, 
             print_time=True, print_mem=True,
             max_level=None, cont_if_sat=False):
@@ -582,81 +638,123 @@ class SmtCheckerRSCParam(object):
                                  continues up until max_level is
                                  reached (even if sat found)
         """
+            
+        if not isinstance(formulae_list, (list, tuple)):
+            print_error("Expected a list of formulae")
 
         self.reset()
 
-        print("[" + colour_str(C_BOLD, "i") +
-              "] Running rsLTL bounded model checking")
-        print("[" + colour_str(C_BOLD, "i") + "] Formula: " + str(formula))
+        num_of_paths = len(formulae_list)
+        
+        # formula = formulae[0]
+
+        print_info("Running rsLTL bounded model checking")
+        print_info("Tested formulae:")
+        for form in formulae_list:
+            print_info(" "*4 + str(form))
 
         if print_time:
-            # start = time()
             start = resource.getrusage(resource.RUSAGE_SELF).ru_utime
 
-        self.prepare_all_variables()
-        self.solver_add(self.enc_init_state(0))
+        self.prepare_all_variables(num_of_paths)        
+        
+        self.load_varset_for_path(0)
+        
+        # initial states for all the paths
+        initial_states = []
+        for path_idx in range(num_of_paths):
+            initial_states.append(self.enc_init_state(0, path_idx))
+        self.solver_add(initial_states)
+        
         self.current_level = 0
 
-        self.prepare_all_variables()
+        self.prepare_all_variables(num_of_paths)
 
-        self.solver_add(self.enc_concentration_levels_assertion(0))
-        self.solver_add(self.enc_param_concentration_levels_assertion())
+        # assertions for all the paths and parameters
+        additional_assertions = []
+        for path_idx in range(num_of_paths):
+            additional_assertions.append(self.enc_concentration_levels_assertion(0, path_idx))
+        additional_assertions.append(self.enc_param_concentration_levels_assertion())
+        self.solver_add(additional_assertions)
 
         if self.optimise:
             self.assert_param_optimisation()
 
         encoder = rsLTL_Encoder(self)
 
+        print_info("Iterating...")
+        
         while True:
-            self.prepare_all_variables()
-            self.solver_add(
-                self.enc_concentration_levels_assertion(
-                    self.current_level + 1))
+            
 
+            
             print(
                 "\n{:-^70}".format("[ Working at level=" + str(self.current_level) + " ]"))
-            stdout.flush()
+            # stdout.flush()
 
             # reachability test:
             self.solver.push()
 
-            print("[" + colour_str(C_BOLD, "i") +
-                  "] Generating the formula encoding...")
+            enc_form = []
+            for formula in formulae_list:
+                
+                path_idx = formulae_list.index(formula)
+                
+                print_info("Generating the encoding for {:s} ({:d} of {:d})".format(
+                    str(formula), path_idx+1, len(formulae_list)))
 
-            f = encoder.get_encoding(formula, self.current_level)
-            ncalls = encoder.get_ncalls()
+                encoder.load_variables(
+                    var_rs=self.path_v[path_idx],
+                    var_ctx=self.path_v_ctx[path_idx],
+                    var_loop_pos=self.path_loop_position[path_idx])
+                    
+                enc_form.append(encoder.get_encoding(formula, self.current_level))
+                ncalls = encoder.get_ncalls()
 
-            print("[" + colour_str(C_BOLD, "i") + "] Cache hits: " +
-                  str(encoder.get_cache_hits()) + ", encode calls: " +
-                  str(ncalls[0]) + " (approx: " + str(ncalls[1]) + ")")
-            print("[" + colour_str(C_BOLD, "i") +
-                  "] Adding the formula to the solver...")
+                print_info("Cache hits: {:d}, encode calls: {:d} (approx: {:d})".format(
+                        encoder.get_cache_hits(), ncalls[0], ncalls[1]))
 
-            encoder.flush_cache()
-            self.solver_add(f)
+                encoder.flush_cache()
+                
+            print_info("Adding the formulae to the solver...")
+            
+            # print (enc_form)
+            
+            self.solver_add(enc_form)
 
-            print("[" + colour_str(C_BOLD, "i") +
-                  "] Adding the loops encoding...")
+            print_info("Adding the loops encoding...")
             self.solver_add(self.get_loop_encodings())
 
+            print_info("Testing satisfiability...")
             result = self.solver.check()
             if result == sat:
-                print(
-                    "[" + colour_str(C_BOLD, "+") + "] " +
-                    colour_str(
-                        C_GREEN, "SAT at level=" + str(self.current_level)))
-                print(self.solver.model())
+                print_positive(green_str(
+                        "SAT at level={:d}".format(self.current_level)))
+                # print(self.solver.model())
                 if print_witness:
-                    print("\n{:=^70}".format("[ WITNESS ]"))
-                    self.decode_witness(self.current_level)
+                    for formula in formulae_list:
+                        path_idx = formulae_list.index(formula)
+                        print("\n{:=^70}".format("[ WITNESS ]"))
+                        print("\n  Witness for: {:s}".format(str(formula)))
+                        self.decode_witness(self.current_level, path_idx)
                 if not cont_if_sat:
                     break
             else:
+                print_info("Unsat")
                 self.solver.pop()
 
-            print("[" + colour_str(C_BOLD, "i") +
-                  "] Unrolling the transition relation")
-            self.solver_add(self.enc_transition_relation(self.current_level))
+            self.prepare_all_variables(num_of_paths)
+            
+            # assertions for all the paths
+            additional_assertions = []
+            for path_idx in range(num_of_paths):
+                additional_assertions.append(
+                    self.enc_concentration_levels_assertion(self.current_level + 1, path_idx))
+            self.solver_add(additional_assertions)
+
+            print_info("Unrolling the transition relation")
+            for path_idx in range(num_of_paths):
+                self.solver_add(self.enc_transition_relation(self.current_level, path_idx))
 
             print(
                 "{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
