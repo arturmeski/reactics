@@ -13,7 +13,8 @@ def run_tests(cmd_args):
     # scalable_chain(print_system=True)
     # example44()
     # example44_param()
-    simple_param(cmd_args)
+    heat_shock_response_param(cmd_args)
+    # simple_param(cmd_args)
 
 def trivial_param():
 
@@ -84,6 +85,95 @@ def simple_param(cmd_args):
     #
     smt_rsc.check_rsltl(formula=f1, max_level=10, print_witness=True, cont_if_sat=False)
 
+
+def heat_shock_response_param(cmd_args, print_system=True):
+
+    stress_temp = 42
+    max_temp = 50
+    
+    r = ReactionSystemWithConcentrationsParam()
+    r.add_bg_set_entity(("hsp",1))
+    r.add_bg_set_entity(("hsf",1))
+    r.add_bg_set_entity(("hsf2",1))
+    r.add_bg_set_entity(("hsf3",1))
+    r.add_bg_set_entity(("hse",1))
+    r.add_bg_set_entity(("mfp",1))
+    r.add_bg_set_entity(("prot",1))
+    r.add_bg_set_entity(("hsf3:hse",1))
+    r.add_bg_set_entity(("hsp:mfp",1))
+    r.add_bg_set_entity(("hsp:hsf",1))
+    r.add_bg_set_entity(("stress",1))
+    r.add_bg_set_entity(("no_stress",1))
+    
+    param_p1 = r.get_param("P1")
+    
+    r.add_reaction([("hsf",1)],                         [("hsp",1)],        [("hsf3",1)])
+    r.add_reaction([("hsf",1),("hsp",1),("mfp",1)],     [],                 [("hsf3",1)])
+    r.add_reaction([("hsf3",1)],                        [("hse",1),("hsp",1)],[("hsf",1)])
+    r.add_reaction([("hsf3",1),("hsp",1),("mfp",1)],    [("hse",1)],        [("hsf",1)])
+    r.add_reaction([("hsf3",1),("hse",1)],              [("hsp",1)],        [("hsf3:hse",1)])
+    r.add_reaction([("hsp",1),("hsf3",1),("mfp",1),("hse",1)],[],           [("hsf3:hse",1)])
+    r.add_reaction([("hse",1)],                         [("hsf3",1)],       [("hse",1)])
+    r.add_reaction([("hsp",1),("hsf3",1),("hse",1)],    [("mfp",1)],        [("hse",1)])
+    r.add_reaction([("hsf3:hse",1)],                    [("hsp",1)],        [("hsp",1),("hsf3:hse",1)])
+    r.add_reaction([("hsp",1),("mfp",1),("hsf3:hse",1)],[],                 [("hsp",1),("hsf3:hse",1)])
+    r.add_reaction([("hsf",1),("hsp",1)],               [("mfp",1)],        [("hsp:hsf",1)])
+    r.add_reaction([("hsp:hsf",1),("stress",1)],[],                 [("hsf",1),("hsp",1)])
+    r.add_reaction([("hsp:hsf",1)],                     [("stress",1)],[("hsp:hsf",1)])
+    r.add_reaction([("hsp",1),("hsf3:hse",1)],          [("mfp",1)],        [("hse",1),("hsp:hsf",1)])
+    r.add_reaction([("stress",1),("prot",1)],   [],                     [("mfp",1),("prot",1)])
+    r.add_reaction([("prot",1)],                        [("stress",1)], [("prot",1)])
+    r.add_reaction([("hsp",1),("mfp",1)],               [],                 [("hsp:mfp",1)])
+    r.add_reaction([("mfp",1)],                         [("hsp",1)],        [("mfp",1)])
+    r.add_reaction([("hsp:mfp",1)],                     [],                 [("hsp",1),("prot",1)])
+
+    # r.add_reaction_inc("temp", "heat", [("temp",1)],[("temp",max_temp)])
+    # r.add_reaction_dec("temp", "cool", [("temp",1)],[])
+
+    # r.add_permanency("temp",[("heat",1),("cool",1)])
+
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("0")
+    c.add_state("1")
+    c.add_transition("0", [("hsf",1),("prot",1),("hse",1),("no_stress",1)], "1")
+    c.add_transition("1", [("stress",1)], "1")
+    c.add_transition("1", [("no_stress",1)], "1")
+    c.add_transition("1", [], "1")
+
+    rc = ReactionSystemWithAutomaton(r,c)
+    
+    if print_system:
+        rc.show()
+    
+    # prop_req = [("hsp:hsf",1),("hse",1),("prot",1)]
+    # prop_block = [("temp",stress_temp)]
+    # prop_req   = [ ("mfp",1) ]
+    # prop_block = [ ]
+    # prop       = (prop_req,prop_block)
+    # rs_prop    = (state_translate_rsc2rs(prop_req),state_translate_rsc2rs(prop_block))
+    #
+    f_reach_mfp = Formula_rsLTL.f_F(BagDescription.f_TRUE(), (BagDescription.f_entity("mfp") > 0) )
+
+    f_reach_hspmfp = Formula_rsLTL.f_F(BagDescription.f_TRUE(), (BagDescription.f_entity("hsp:mfp") > 0) )
+    
+    smt_rsc = SmtCheckerRSCParam(rc, optimise=cmd_args.optimise)
+    
+    smt_rsc.check_rsltl(formulae_list=[f_reach_mfp, f_reach_hspmfp])
+    
+    
+    # (1) if we keep increasing the temperature the protein will eventually misfold
+    # f_mfp_when_heating = Formula_rsLTL.f_X(BagDescription.f_TRUE(),
+    #         Formula_rsLTL.f_F(BagDescription.f_entity("heat") > 0, (BagDescription.f_entity("mfp") > 0) )
+    #     )
+    # smt_rsc.check_rsltl(formula=f_mfp_when_heating)
+    
+    # (2) when heating, we finally exceed the stress_temp
+    # f_2 = Formula_rsLTL.f_X(BagDescription.f_TRUE(),
+    #         Formula_rsLTL.f_F(BagDescription.f_entity("heat") > 0, (BagDescription.f_entity("temp") > stress_temp))
+    #     )
+    # smt_rsc.check_rsltl(formula=f_2)
+    
+    # smt_rsc.check_reachability(prop,max_level=40)
 
 def example44_param():
 
