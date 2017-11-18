@@ -1,0 +1,10 @@
+
+Verbose level: 1
+Formula E[{act1}]F(in1) holds
+
+Encoding time: 0.02 sec
+Verification time: 1.154 sec
+Encoding memory: 13.65 MB
+Memory (total): 72.21 MB
+TOTAL time: 1.174 sec
+STAT; 0.02 ; 1.154 ; 13.65 ; 72.21 ; 1.174

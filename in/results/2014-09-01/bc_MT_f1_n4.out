@@ -1,0 +1,10 @@
+
+Verbose level: 1
+Formula AG(((((~p0 AND ~p1) AND ~p2) AND ~p3) IMPLIES E[{inc},{dec}]F((((p0 AND p1) AND p2) AND p3)))) holds
+
+Encoding time: 0 sec
+Verification time: 0.001 sec
+Encoding memory: 9.613 MB
+Memory (total): 22.77 MB
+TOTAL time: 0.001 sec
+STAT; 0 ; 0.001 ; 9.613 ; 22.77 ; 0.001

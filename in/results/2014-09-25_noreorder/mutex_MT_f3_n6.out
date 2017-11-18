@@ -1,0 +1,10 @@
+
+Verbose level: 1
+Formula AG(((((((((((((((~(in0 AND in1) AND ~(in0 AND in2)) AND ~(in0 AND in3)) AND ~(in0 AND in4)) AND ~(in0 AND in5)) AND ~(in1 AND in2)) AND ~(in1 AND in3)) AND ~(in1 AND in4)) AND ~(in1 AND in5)) AND ~(in2 AND in3)) AND ~(in2 AND in4)) AND ~(in2 AND in5)) AND ~(in3 AND in4)) AND ~(in3 AND in5)) AND ~(in4 AND in5))) holds
+
+Encoding time: 0.122 sec
+Verification time: 0.062 sec
+Encoding memory: 31.05 MB
+Memory (total): 46.86 MB
+TOTAL time: 0.184 sec
+STAT; 0.122 ; 0.062 ; 31.05 ; 46.86 ; 0.184

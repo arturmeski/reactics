@@ -1,0 +1,10 @@
+
+Verbose level: 1
+Formula AG(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((~(in0 AND in1) AND ~(in0 AND in2)) AND ~(in0 AND in3)) AND ~(in0 AND in4)) AND ~(in0 AND in5)) AND ~(in0 AND in6)) AND ~(in0 AND in7)) AND ~(in0 AND in8)) AND ~(in0 AND in9)) AND ~(in0 AND in10)) AND ~(in0 AND in11)) AND ~(in0 AND in12)) AND ~(in0 AND in13)) AND ~(in1 AND in2)) AND ~(in1 AND in3)) AND ~(in1 AND in4)) AND ~(in1 AND in5)) AND ~(in1 AND in6)) AND ~(in1 AND in7)) AND ~(in1 AND in8)) AND ~(in1 AND in9)) AND ~(in1 AND in10)) AND ~(in1 AND in11)) AND ~(in1 AND in12)) AND ~(in1 AND in13)) AND ~(in2 AND in3)) AND ~(in2 AND in4)) AND ~(in2 AND in5)) AND ~(in2 AND in6)) AND ~(in2 AND in7)) AND ~(in2 AND in8)) AND ~(in2 AND in9)) AND ~(in2 AND in10)) AND ~(in2 AND in11)) AND ~(in2 AND in12)) AND ~(in2 AND in13)) AND ~(in3 AND in4)) AND ~(in3 AND in5)) AND ~(in3 AND in6)) AND ~(in3 AND in7)) AND ~(in3 AND in8)) AND ~(in3 AND in9)) AND ~(in3 AND in10)) AND ~(in3 AND in11)) AND ~(in3 AND in12)) AND ~(in3 AND in13)) AND ~(in4 AND in5)) AND ~(in4 AND in6)) AND ~(in4 AND in7)) AND ~(in4 AND in8)) AND ~(in4 AND in9)) AND ~(in4 AND in10)) AND ~(in4 AND in11)) AND ~(in4 AND in12)) AND ~(in4 AND in13)) AND ~(in5 AND in6)) AND ~(in5 AND in7)) AND ~(in5 AND in8)) AND ~(in5 AND in9)) AND ~(in5 AND in10)) AND ~(in5 AND in11)) AND ~(in5 AND in12)) AND ~(in5 AND in13)) AND ~(in6 AND in7)) AND ~(in6 AND in8)) AND ~(in6 AND in9)) AND ~(in6 AND in10)) AND ~(in6 AND in11)) AND ~(in6 AND in12)) AND ~(in6 AND in13)) AND ~(in7 AND in8)) AND ~(in7 AND in9)) AND ~(in7 AND in10)) AND ~(in7 AND in11)) AND ~(in7 AND in12)) AND ~(in7 AND in13)) AND ~(in8 AND in9)) AND ~(in8 AND in10)) AND ~(in8 AND in11)) AND ~(in8 AND in12)) AND ~(in8 AND in13)) AND ~(in9 AND in10)) AND ~(in9 AND in11)) AND ~(in9 AND in12)) AND ~(in9 AND in13)) AND ~(in10 AND in11)) AND ~(in10 AND in12)) AND ~(in10 AND in13)) AND ~(in11 AND in12)) AND ~(in11 AND in13)) AND ~(in12 AND in13))) holds
+
+Encoding time: 2.889 sec
+Verification time: 0.816 sec
+Encoding memory: 12.99 MB
+Memory (total): 33.73 MB
+TOTAL time: 3.705 sec
+STAT; 2.889 ; 0.816 ; 12.99 ; 33.73 ; 3.705

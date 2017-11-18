@@ -1,0 +1,10 @@
+
+Verbose level: 1
+Formula AG((((((((((((((((((((((((((~p0 AND ~p1) AND ~p2) AND ~p3) AND ~p4) AND ~p5) AND ~p6) AND ~p7) AND ~p8) AND ~p9) AND ~p10) AND ~p11) AND ~p12) AND ~p13) AND ~p14) AND ~p15) AND ~p16) AND ~p17) AND ~p18) AND ~p19) AND ~p20) AND ~p21) AND ~p22) AND ~p23) AND ~p24) IMPLIES E[{inc},{dec}]F(((((((((((((((((((((((((p0 AND p1) AND p2) AND p3) AND p4) AND p5) AND p6) AND p7) AND p8) AND p9) AND p10) AND p11) AND p12) AND p13) AND p14) AND p15) AND p16) AND p17) AND p18) AND p19) AND p20) AND p21) AND p22) AND p23) AND p24)))) holds
+
+Encoding time: 0.006 sec
+Verification time: 3458 sec
+Encoding memory: 10.89 MB
+Memory (total): 26.99 MB
+TOTAL time: 3458 sec
+STAT; 0.006 ; 3458 ; 10.89 ; 26.99 ; 3458

@@ -1,0 +1,10 @@
+
+Verbose level: 1
+Formula AG(((((((p0 AND p1) AND p2) AND p3) AND p4) AND p5) IMPLIES A[{inc}]X((((((~p0 AND ~p1) AND ~p2) AND ~p3) AND ~p4) AND ~p5)))) holds
+
+Encoding time: 0.002 sec
+Verification time: 0.001 sec
+Encoding memory: 9.641 MB
+Memory (total): 22.9 MB
+TOTAL time: 0.003 sec
+STAT; 0.002 ; 0.001 ; 9.641 ; 22.9 ; 0.003
