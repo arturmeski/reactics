@@ -56,8 +56,7 @@ class ReactionSystemWithConcentrations(ReactionSystem):
             if len(e) == 2 and type(e[1]) is int:
                 return True
 
-        print("FATAL. Invalid entity+concentration:")
-        print(e)
+        print("FATAL. Invalid entity+concentration: {:s}".format(e))
         exit(1)
         
         return False

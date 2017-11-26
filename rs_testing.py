@@ -2,6 +2,8 @@ from rs import *
 from smt import *
 import rs_examples 
 from logics import *
+from rsltl_shortcuts import *
+
 import sys
 import resource
 
@@ -13,9 +15,58 @@ def run_tests(cmd_args):
     # scalable_chain(print_system=True)
     # example44()
     # example44_param()
-    heat_shock_response_param(cmd_args)
+    # heat_shock_response_param(cmd_args)
     # simple_param(cmd_args)
 
+    gene_expression(cmd_args)
+
+def gene_expression(cmd_args):
+    """
+    Simple gene expression example
+    """
+    r = ReactionSystemWithConcentrationsParam()
+    
+    r.add_bg_set_entity(("x", 1))
+    r.add_bg_set_entity(("xp", 1))
+    r.add_bg_set_entity(("X", 1))
+
+    r.add_bg_set_entity(("y", 1))
+    r.add_bg_set_entity(("yp", 1))
+    r.add_bg_set_entity(("Y", 1))
+    
+    r.add_bg_set_entity(("z", 1))
+    r.add_bg_set_entity(("zp", 1))
+    r.add_bg_set_entity(("Z", 1))
+    
+    r.add_bg_set_entity(("h", 1))
+    r.add_bg_set_entity(("Q", 1))
+    r.add_bg_set_entity(("U", 1))
+    
+    r.add_reaction([("x",1)],[("h",1)],[("x",1)])
+    r.add_reaction([("x",1)],[("h",1)],[("xp",1)])
+    r.add_reaction([("x",1),("xp",1)],[("h",1)],[("X",1)])
+    r.add_reaction([("y",1)],[("h",1)],[("y",1)])
+    r.add_reaction([("y",1)],[("Q",1)],[("yp",1)])
+    r.add_reaction([("y",1),("yp",1)],[("h",1)],[("Y",1)])
+    r.add_reaction([("z",1)],[("h",1)],[("z",1)])
+    r.add_reaction([("z",1)], [("X",1)], [("zp",1)])
+    r.add_reaction([("z",1),("zp",1)],[("h",1)],[("Z",1)])
+    r.add_reaction([("U",1),("X",1)],[("h",1)],[("Q",1)])
+
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("0")
+    c.add_state("1")
+    
+    # the experiments starts with adding x and y:
+    c.add_transition("0", [("x", 1),("y", 1)], "1")
+    
+    # for all the remaining steps we have empty context sequences
+    c.add_transition("1", [], "1")
+
+    rc = ReactionSystemWithAutomaton(r, c)
+    rc.show()
+    
+    
 def trivial_param():
 
     r = ReactionSystemWithConcentrationsParam()
@@ -38,9 +89,11 @@ def trivial_param():
     rc.show()
     smt_rsc = SmtCheckerRSCParam(rc)
 
-    f1 = Formula_rsLTL.f_F(
-        BagDescription.f_TRUE(),
-        BagDescription.f_entity("final") >= 1)
+    f1 = ltl_F(bag_entity("final") >= 1)
+
+    # f1 = Formula_rsLTL.f_F(
+    #     BagDescription.f_TRUE(),
+    #     BagDescription.f_entity("final") >= 1)
     
     #
     # WARNING: depth limit is set
@@ -152,7 +205,9 @@ def heat_shock_response_param(cmd_args, print_system=True):
     # prop       = (prop_req,prop_block)
     # rs_prop    = (state_translate_rsc2rs(prop_req),state_translate_rsc2rs(prop_block))
     #
-    f_reach_mfp = Formula_rsLTL.f_F(BagDescription.f_TRUE(), (BagDescription.f_entity("mfp") > 0) )
+    
+    # f_reach_mfp = Formula_rsLTL.f_F(BagDescription.f_TRUE(), (BagDescription.f_entity("mfp") > 0) )
+    f_reach_mfp = ltl_F(bag_entity("mfp") > 0)
 
     f_reach_hspmfp = Formula_rsLTL.f_F(BagDescription.f_TRUE(), (BagDescription.f_entity("hsp:mfp") > 0) )
     
