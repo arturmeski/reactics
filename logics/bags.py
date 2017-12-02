@@ -19,11 +19,11 @@ class BagDescription(object):
         if self.f_type == BagDesc_oper.true:
             return "TRUE"
         if self.f_type == BagDesc_oper.l_and:
-            return "( " + repr(self.left_operand) + " & " + repr(self.right_operand) + " )"
+            return "(" + repr(self.left_operand) + " & " + repr(self.right_operand) + ")"
         if self.f_type == BagDesc_oper.l_or:
-            return "( " + repr(self.left_operand) + " | " + repr(self.right_operand) + " )"
+            return "(" + repr(self.left_operand) + " | " + repr(self.right_operand) + ")"
         if self.f_type == BagDesc_oper.l_not:
-            return "~" + repr(self.left_operand)
+            return "~(" + repr(self.left_operand) + ")"
         if self.f_type == BagDesc_oper.lt:
             return repr(self.left_operand) + " < " + repr(self.right_operand)
         if self.f_type == BagDesc_oper.le:
@@ -37,14 +37,14 @@ class BagDescription(object):
 
     def sanity_check(self):
         """Sanity checks"""
-
         for operand in (self.left_operand, self.right_operand):
             if operand:
                 if not(
                         isinstance(operand, BagDescription)
                         or isinstance(operand, int)):
                     raise RuntimeError(
-                        "Unexpected operand type for a bag: " + str(operand))
+                        "Unexpected operand type for a bag: {:s} (type: {:s})".format(
+                            str(operand), str(type(operand))))
 
     @classmethod
     def f_entity(cls, entity_name):
@@ -53,6 +53,14 @@ class BagDescription(object):
     @classmethod
     def f_TRUE(cls):
         return cls(BagDesc_oper.true)
+
+    @classmethod
+    def f_And(cls, arg_L, arg_R):
+        return cls(BagDesc_oper.l_and, L_oper=arg_L, R_oper=arg_R)
+
+    @classmethod
+    def f_Not(cls, arg):
+        return cls(BagDesc_oper.l_not, L_oper=arg)
 
     def __lt__(self, other):
         return BagDescription(BagDesc_oper.lt, L_oper=self, R_oper=other)

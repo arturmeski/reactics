@@ -41,10 +41,21 @@ def gene_expression(cmd_args):
     r.add_bg_set_entity(("h", 1))
     r.add_bg_set_entity(("Q", 1))
     r.add_bg_set_entity(("U", 1))
+
+    all_entities = set(r.background_set)
     
     r.add_reaction([("x",1)],[("h",1)],[("x",1)])
-    r.add_reaction([("x",1)],[("h",1)],[("xp",1)])
-    r.add_reaction([("x",1),("xp",1)],[("h",1)],[("X",1)])
+
+    # r.add_reaction([("x",1)],[("h",1)],[("xp",1)])
+    param_p1 = r.get_param("P1")
+    r.add_reaction(param_p1,[("h",1)],[("xp",1)])
+    
+    # r.add_reaction([("x",1),("xp",1)],[("h",1)],[("X",1)])
+    param_p2_r = r.get_param("P2_r")
+    param_p2_i = r.get_param("P2_i")
+    param_p2_p = r.get_param("P2_p")
+    r.add_reaction(param_p2_r,param_p2_i,param_p2_p)
+
     r.add_reaction([("y",1)],[("h",1)],[("y",1)])
     r.add_reaction([("y",1)],[("Q",1)],[("yp",1)])
     r.add_reaction([("y",1),("yp",1)],[("h",1)],[("Y",1)])
@@ -65,6 +76,22 @@ def gene_expression(cmd_args):
 
     rc = ReactionSystemWithAutomaton(r, c)
     rc.show()
+    
+    f_x1 = ltl_G(True, ltl_Implies(
+        exact_state(["x"], all_entities),
+        ltl_X(bag_And(bag_Not("Y"), bag_Not("Z"), bag_Not("h")), exact_state(["x", "xp"], all_entities))))
+    f_x2 = ltl_G(True, ltl_Implies(
+        exact_state(["x", "xp"], all_entities),
+        ltl_X(bag_Not("h"), exact_state("X", all_entities))))
+    
+    reach_xp = ltl_F(True, "xp")
+    reach_X = ltl_F(True, "X")
+        
+    smt_rsc = SmtCheckerRSCParam(rc, optimise=cmd_args.optimise)
+    
+    smt_rsc.check_rsltl(formulae_list=[f_x1, f_x2, reach_xp, reach_X])
+
+    # smt_rsc.check_rsltl(formula=f_x1, print_witness=True)
     
     
 def trivial_param():
@@ -89,7 +116,7 @@ def trivial_param():
     rc.show()
     smt_rsc = SmtCheckerRSCParam(rc)
 
-    f1 = ltl_F(bag_entity("final") >= 1)
+    f1 = ltl_F(True, bag_entity("final") >= 1)
 
     # f1 = Formula_rsLTL.f_F(
     #     BagDescription.f_TRUE(),
@@ -207,7 +234,7 @@ def heat_shock_response_param(cmd_args, print_system=True):
     #
     
     # f_reach_mfp = Formula_rsLTL.f_F(BagDescription.f_TRUE(), (BagDescription.f_entity("mfp") > 0) )
-    f_reach_mfp = ltl_F(bag_entity("mfp") > 0)
+    f_reach_mfp = ltl_F(True, bag_entity("mfp") > 0)
 
     f_reach_hspmfp = Formula_rsLTL.f_F(BagDescription.f_TRUE(), (BagDescription.f_entity("hsp:mfp") > 0) )
     

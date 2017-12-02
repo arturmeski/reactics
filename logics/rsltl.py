@@ -18,6 +18,7 @@ class Formula_rsLTL(object):
         self.sub_operand = sub_oper
         self.bag_descr = bag
 
+        # it's silly, but it's a frequent mistake
         if callable(sub_oper):
             raise RuntimeError(
                 "sub_oper should not be a function. Missing () for {0}?".format(sub_oper))
@@ -26,34 +27,37 @@ class Formula_rsLTL(object):
             self.left_operand = Formula_rsLTL.f_bag(self.left_operand)
         if isinstance(self.right_operand, BagDescription):
             self.right_operand = Formula_rsLTL.f_bag(self.right_operand)
+            
+        if self.sub_operand is True:
+            self.sub_operand = BagDescription.f_TRUE()
 
     def __repr__(self):
         if self.f_type == rsLTL_form_type.bag:
             return repr(self.bag_descr)
         if self.f_type == rsLTL_form_type.l_not:
-            return "~( " + repr(self.left_operand) + " )"
+            return "~(" + repr(self.left_operand) + ")"
         if self.f_type == rsLTL_form_type.t_globally:
-            return "G[" + repr(self.sub_operand) + "]( " + repr(self.left_operand) + " )"
+            return "G[" + repr(self.sub_operand) + "](" + repr(self.left_operand) + ")"
         if self.f_type == rsLTL_form_type.t_finally:
-            return "F[" + repr(self.sub_operand) + "]( " + repr(self.left_operand) + " )"
+            return "F[" + repr(self.sub_operand) + "](" + repr(self.left_operand) + ")"
         if self.f_type == rsLTL_form_type.t_next:
-            return "X[" + repr(self.sub_operand) + "]( " + repr(self.left_operand) + " )"
+            return "X[" + repr(self.sub_operand) + "](" + repr(self.left_operand) + ")"
         if self.f_type == rsLTL_form_type.l_and:
-            return "( " + repr(self.left_operand) + " & " + repr(self.right_operand) + " )"
+            return "(" + repr(self.left_operand) + " & " + repr(self.right_operand) + ")"
         if self.f_type == rsLTL_form_type.l_or:
-            return "( " + repr(self.left_operand) + " | " + repr(self.right_operand) + " )"
+            return "(" + repr(self.left_operand) + " | " + repr(self.right_operand) + ")"
         if self.f_type == rsLTL_form_type.l_implies:
-            return "( " + repr(self.left_operand) + " => " + repr(self.right_operand) + " )"
+            return "(" + repr(self.left_operand) + " => " + repr(self.right_operand) + ")"
         if self.f_type == rsLTL_form_type.t_until:
-            return "( " + repr(
+            return "(" + repr(
                 self.left_operand) + " U[" + repr(
                 self.sub_operand) + "] " + repr(
-                self.right_operand) + " )"
+                self.right_operand) + ")"
         if self.f_type == rsLTL_form_type.t_release:
-            return "( " + repr(
+            return "(" + repr(
                 self.left_operand) + " R[" + repr(
                 self.sub_operand) + "] " + repr(
-                self.right_operand) + " )"
+                self.right_operand) + ")"
 
     @property
     def is_bag(self):
@@ -62,6 +66,10 @@ class Formula_rsLTL(object):
     @classmethod
     def f_bag(cls, bag_descr):
         return cls(rsLTL_form_type.bag, bag=bag_descr)
+
+    @classmethod
+    def f_Not(cls, arg):
+        return cls(rsLTL_form_type.l_not, L_oper=arg)
 
     @classmethod
     def f_And(cls, arg_L, arg_R):

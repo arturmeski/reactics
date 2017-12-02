@@ -23,7 +23,6 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
 
         self.reactions = []
         self.parameters = dict()
-        # self.parametric_reactions = []
         self.meta_reactions = dict()
         self.permanent_entities = dict()
         self.background_set = []
@@ -91,8 +90,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
             if len(e) == 2 and type(e[1]) is int:
                 return True
 
-        print("FATAL. Invalid entity+concentration:")
-        print(e)
+        print("FATAL. Invalid entity+concentration: {:s}".format(e))
         exit(1)
 
         return False

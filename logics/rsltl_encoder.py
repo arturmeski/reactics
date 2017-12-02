@@ -120,12 +120,18 @@ class rsLTL_Encoder(object):
             
         if bag_formula.f_type == BagDesc_oper.gt:
             return self.encode_bag(bag_formula.left_operand, level, context) > int(bag_formula.right_operand)
+            
+        assert False, "Unsupported case {:s}".format(bag_formula.f_type)
     
     def encode_bag_state(self, bag_formula, level):
-        return self.encode_bag(bag_formula, level)
+        res = self.encode_bag(bag_formula, level)
+        assert res is not None
+        return res
         
     def encode_bag_ctx(self, bag_formula, level):
-        return self.encode_bag(bag_formula, level, context=True)
+        res = self.encode_bag(bag_formula, level, context=True)
+        assert res is not None
+        return res
       
     def encode(self, formula, level, bound):
         
@@ -167,7 +173,7 @@ class rsLTL_Encoder(object):
 
         elif formula.f_type == rsLTL_form_type.l_implies:
             enc = Implies(
-                    self.encode(formula.left_operand, level, bound), 
+                    self.encode(formula.left_operand, level, bound),
                     self.encode(formula.right_operand, level, bound)
             )
             
