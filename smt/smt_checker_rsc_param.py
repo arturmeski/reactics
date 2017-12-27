@@ -775,6 +775,10 @@ class SmtCheckerRSCParam(object):
                 print_info("UNSAT")
                 self.solver.pop()
 
+            if not max_level is None and self.current_level > max_level:
+                print_info("As requested, stopping at level=" + str(max_level))
+                break
+
             self.prepare_all_variables(num_of_paths)
             
             # assertions for all the paths
@@ -786,10 +790,6 @@ class SmtCheckerRSCParam(object):
             self.print_level()
 
             self.current_level += 1
-
-            if not max_level is None and self.current_level > max_level:
-                print_info("Stopping at level=" + str(max_level))
-                break
 
         if print_time:
             self.print_time(start_time)
