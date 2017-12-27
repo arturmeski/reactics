@@ -26,6 +26,80 @@ def gene_expression(cmd_args):
     """
     r = ReactionSystemWithConcentrationsParam()
     
+    r.add_bg_set_entity(("y", 1))
+    r.add_bg_set_entity(("yp", 1))
+    r.add_bg_set_entity(("Y", 1))
+    r.add_bg_set_entity(("h", 1))
+
+    all_entities = set(r.background_set)
+
+    ## y
+    # r.add_reaction([("y",1)],[("h",1)],[("y",1)])
+    # r.add_reaction([("y",1)],[("Q",1)],[("yp",1)])
+    # r.add_reaction([("y",1),("yp",1)],[("h",1)],[("Y",1)])
+    lda1 = r.get_param("lda1")
+    lda2 = r.get_param("lda2")
+    lda3 = r.get_param("lda3")
+
+    r.add_reaction([("y",1)],[("h",1)],lda1)
+    r.add_reaction(lda2,[("h",1)],[("yp",1)])
+    r.add_reaction([("y",1),("yp",1)],[("h",1)],lda3)
+
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("0")
+    c.add_state("1")
+    
+    # the experiments starts with adding x and y:
+    c.add_transition("0", [("y", 1)], "1")
+    
+    # for all the remaining steps we have empty context sequences
+    c.add_transition("1", [], "1")
+
+    rc = ReactionSystemWithAutomaton(r, c)
+    rc.show()
+    
+    # f_x1 = ltl_G(True, ltl_Implies(
+    #     exact_state(["x"], all_entities),
+    #     ltl_X(bag_And(bag_Not("Y"), bag_Not("Z"), bag_Not("h")), exact_state(["x", "xp"], all_entities))))
+    # f_x2 = ltl_G(True, ltl_Implies(
+    #     exact_state(["x", "xp"], all_entities),
+    #     ltl_X(bag_Not("h"), exact_state("X", all_entities))))
+
+    reach_yp = ltl_F(True, "yp")
+    reach_Y = ltl_F(True, "Y")
+    reach_y = ltl_F(True, "y")
+
+    f_y1 = ltl_G(bag_entity("h") == 0, ltl_Implies(
+        bag_entity("y") > 0,
+        ltl_X(True, bag_And(bag_entity("y") > 0, bag_entity("yp") > 0))))
+
+    f_y2 = ltl_G(bag_entity("h") == 0, ltl_Implies(
+        bag_And(bag_entity("y") > 0, bag_entity("yp") > 0),
+        ltl_F(True, bag_entity("Y") > 0)))
+        
+    # delayed_Y = ltl_X(True, ltl_And(bag_entity("Y") == 0, ltl_X(True, bag_entity("Y") == 0)))
+    delayed_Y = ltl_X(True, bag_entity("Y") == 0)
+
+    obs_1 = ltl_And(f_y1, reach_y, delayed_Y)
+    obs_2 = ltl_And(f_y2, reach_y, reach_Y, delayed_Y)
+
+    # f_x2 = ltl_G(True, ltl_Implies(
+    #     exact_state(["x", "xp"], all_entities),
+    #     ltl_X(bag_Not("h"), exact_state("X", all_entities))))
+    #
+        
+    smt_rsc = SmtCheckerRSCParam(rc, optimise=cmd_args.optimise)
+    #
+    smt_rsc.check_rsltl(formulae_list=[obs_1, obs_2], max_level=4, cont_if_sat=True)
+
+    # smt_rsc.check_rsltl(formula=f_x1, print_witness=True)
+
+def gene_expression_full(cmd_args):
+    """
+    Simple gene expression example
+    """
+    r = ReactionSystemWithConcentrationsParam()
+    
     r.add_bg_set_entity(("x", 1))
     r.add_bg_set_entity(("xp", 1))
     r.add_bg_set_entity(("X", 1))
@@ -45,23 +119,24 @@ def gene_expression(cmd_args):
     all_entities = set(r.background_set)
     
     r.add_reaction([("x",1)],[("h",1)],[("x",1)])
+    r.add_reaction([("x",1)],[("h",1)],[("xp",1)])    
+    r.add_reaction([("x",1),("xp",1)],[("h",1)],[("X",1)])
 
-    # r.add_reaction([("x",1)],[("h",1)],[("xp",1)])
-    param_p1 = r.get_param("P1")
-    r.add_reaction(param_p1,[("h",1)],[("xp",1)])
-    
-    # r.add_reaction([("x",1),("xp",1)],[("h",1)],[("X",1)])
-    param_p2_r = r.get_param("P2_r")
-    param_p2_i = r.get_param("P2_i")
-    param_p2_p = r.get_param("P2_p")
-    r.add_reaction(param_p2_r,param_p2_i,param_p2_p)
+    ## y
+    # r.add_reaction([("y",1)],[("h",1)],[("y",1)])
+    # r.add_reaction([("y",1)],[("Q",1)],[("yp",1)])
+    # r.add_reaction([("y",1),("yp",1)],[("h",1)],[("Y",1)])
+    lda1 = r.get_param("lda1")
+    lda2 = r.get_param("lda2")
+    lda3 = r.get_param("lda3")
+    r.add_reaction([("y",1)],[("h",1)],lda1)
+    r.add_reaction(lda2,[("Q",1)],[("yp",1)])
+    r.add_reaction([("y",1),("yp",1)],[("h",1)],lda3)
 
-    r.add_reaction([("y",1)],[("h",1)],[("y",1)])
-    r.add_reaction([("y",1)],[("Q",1)],[("yp",1)])
-    r.add_reaction([("y",1),("yp",1)],[("h",1)],[("Y",1)])
     r.add_reaction([("z",1)],[("h",1)],[("z",1)])
     r.add_reaction([("z",1)], [("X",1)], [("zp",1)])
     r.add_reaction([("z",1),("zp",1)],[("h",1)],[("Z",1)])
+
     r.add_reaction([("U",1),("X",1)],[("h",1)],[("Q",1)])
 
     c = ContextAutomatonWithConcentrations(r)
@@ -77,19 +152,36 @@ def gene_expression(cmd_args):
     rc = ReactionSystemWithAutomaton(r, c)
     rc.show()
     
-    f_x1 = ltl_G(True, ltl_Implies(
-        exact_state(["x"], all_entities),
-        ltl_X(bag_And(bag_Not("Y"), bag_Not("Z"), bag_Not("h")), exact_state(["x", "xp"], all_entities))))
-    f_x2 = ltl_G(True, ltl_Implies(
-        exact_state(["x", "xp"], all_entities),
-        ltl_X(bag_Not("h"), exact_state("X", all_entities))))
-    
-    reach_xp = ltl_F(True, "xp")
-    reach_X = ltl_F(True, "X")
+    # f_x1 = ltl_G(True, ltl_Implies(
+    #     exact_state(["x"], all_entities),
+    #     ltl_X(bag_And(bag_Not("Y"), bag_Not("Z"), bag_Not("h")), exact_state(["x", "xp"], all_entities))))
+    # f_x2 = ltl_G(True, ltl_Implies(
+    #     exact_state(["x", "xp"], all_entities),
+    #     ltl_X(bag_Not("h"), exact_state("X", all_entities))))
+
+    reach_yp = ltl_F(True, "yp")
+    reach_Y = ltl_F(True, "Y")
+    reach_y = ltl_F(True, "y")
+
+    f_y1 = ltl_G(bag_entity("h") == 0, ltl_Implies(
+        bag_And(bag_entity("Q") == 0, bag_entity("y") > 0),
+        ltl_X(True, bag_And(bag_entity("y") > 0, bag_entity("yp") > 0))))
+
+    f_y2 = ltl_G(bag_entity("h") == 0, ltl_Implies(
+        bag_And(bag_entity("y") > 0, bag_entity("yp") > 0),
+        ltl_F(True, bag_entity("Y") > 0)))
+
+    obs_1 = ltl_And(f_y1, reach_y)
+    obs_2 = ltl_And(f_y2, reach_y, reach_Y)
+
+    # f_x2 = ltl_G(True, ltl_Implies(
+    #     exact_state(["x", "xp"], all_entities),
+    #     ltl_X(bag_Not("h"), exact_state("X", all_entities))))
+    #
         
     smt_rsc = SmtCheckerRSCParam(rc, optimise=cmd_args.optimise)
-    
-    smt_rsc.check_rsltl(formulae_list=[f_x1, f_x2, reach_xp, reach_X])
+    #
+    smt_rsc.check_rsltl(formulae_list=[obs_1, obs_2], max_level=3, cont_if_sat=True)
 
     # smt_rsc.check_rsltl(formula=f_x1, print_witness=True)
     

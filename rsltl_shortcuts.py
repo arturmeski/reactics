@@ -27,6 +27,10 @@ def bag_And(*args):
     return last
     
 def exact_state(contained_entities, all_entities):
+    """
+    Assumes 0 concentration level for all the
+    not listed entities but present in all_entities
+    """
     expr = []
     for ent_str in all_entities:
         ent = bag_entity(ent_str)
