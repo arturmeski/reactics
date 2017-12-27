@@ -187,3 +187,4 @@ def heat_shock_response(print_system=True,verify_rsc=True):
 def state_translate_rsc2rs(p):
     return [e[0] + "#" + str(e[1]) for e in p]
         
+# EOF
