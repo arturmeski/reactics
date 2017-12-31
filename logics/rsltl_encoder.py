@@ -1,7 +1,7 @@
 from logics.rsltl import *
 
 def simplify(x):
-    return x
+   return x
 
 class rsLTL_Encoder(object):
     """Class for encoding rsLTL formulae for a given smt_checker instance"""

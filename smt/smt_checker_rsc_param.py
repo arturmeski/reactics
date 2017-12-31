@@ -10,6 +10,7 @@ import resource
 from colour import *
 
 from logics import rsLTL_Encoder
+from logics import ParamConstr_Encoder
 
 from rs.reaction_system_with_concentrations_param import ParameterObj, is_param
 
@@ -224,12 +225,19 @@ class SmtCheckerRSCParam(object):
             # we start collecting bg-related vars for the given param
             vars_for_param = []
 
-            for entity in self.rs.set_of_bgset_ids:
+            for entity in self.rs.ordered_list_of_bgset_ids:
                 new_var = Int("Pm{:s}_{:s}".format(param_name, self.rs.get_entity_name(entity)))
                 vars_for_param.append(new_var)
 
             self.v_param[param_name] = vars_for_param
-            
+
+    def get_enc_param(self, param_name, entity_name):
+        """
+        Returns encoded param[entity_name]
+        """
+        entity_id = self.rs.get_entity_id(entity_name)
+        return self.v_param[param_name][entity_id]
+        
     def load_varset_for_path(self, path_idx):
         """
         Loads the the variables for the path with path_idx
@@ -682,7 +690,8 @@ class SmtCheckerRSCParam(object):
             self, formulae_list, 
             print_witness=True, 
             print_time=True, print_mem=True,
-            max_level=None, cont_if_sat=False):
+            max_level=None, cont_if_sat=False,
+            param_constr=None):
         """
         Bounded Model Checking for rsLTL properties
             
@@ -694,10 +703,14 @@ class SmtCheckerRSCParam(object):
             * cont_if_sat     -- if True, then the method
                                  continues up until max_level is
                                  reached (even if sat found)
+            * param_constr    -- constraints on parameters
         """
             
         if not isinstance(formulae_list, (list, tuple)):
             print_error("Expected a list of formulae")
+        
+        print_info("Parameter constraint: {:s}".format(str(param_constr)))
+
 
         self.reset()
 
@@ -734,6 +747,11 @@ class SmtCheckerRSCParam(object):
         self.solver_add(self.enc_param_concentration_levels_assertion())
 
         encoder = rsLTL_Encoder(self)
+        
+        if param_constr:
+            param_contr_encoder = ParamConstr_Encoder(self)
+            enc_param_constr = param_contr_encoder.encode(param_constr)
+            self.solver_add(enc_param_constr)
 
         if self.optimise:
             self.assert_param_optimisation()

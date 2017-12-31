@@ -61,6 +61,11 @@ def ltl_X(ctx_arg, a0):
     a0 = get_bag_if_str(a0)
     return Formula_rsLTL.f_X(ctx_arg, a0)
 
+def ltl_U(ctx_arg, a0, a1):
+    a0 = get_bag_if_str(a0)
+    a1 = get_bag_if_str(a1)
+    return Formula_rsLTL.f_U(ctx_arg, a0, a1)
+
 def ltl_And(*args):
     assert len(args) > 1
     last = get_bag_if_str(args[0])
@@ -76,4 +81,14 @@ def ltl_Implies(a0, a1):
     a0 = get_bag_if_str(a0)
     a1 = get_bag_if_str(a1)
     return Formula_rsLTL.f_Implies(a0, a1)
+
+def param_entity(param, entity_name):
+    return ParamConstraint.f_param_ent(param, entity_name)
+
+def param_And(*args):
+    assert len(args) > 1
+    last = args[0]
+    for arg in args[1:]:
+        last = ParamConstraint.f_And(last, arg)
+    return last
 

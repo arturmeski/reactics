@@ -49,7 +49,7 @@ class ParamConstraint(object):
 
     @classmethod
     def f_param_ent(cls, param, entity_name):
-        return cls(ParamConstraint_oper.entity, param=param, entity=entity_name)
+        return cls(ParamConstraint_oper.param_entity, param=param, entity=entity_name)
 
     @classmethod
     def f_TRUE(cls):
