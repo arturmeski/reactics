@@ -4,8 +4,14 @@ import rs_examples
 from logics import *
 from rsltl_shortcuts import *
 
+from itertools import chain, combinations
+
 import sys
 import resource
+
+def powerset(iterable):
+    s = list(iterable)
+    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
 
 def run_tests(cmd_args):
     
@@ -18,7 +24,93 @@ def run_tests(cmd_args):
     # heat_shock_response_param(cmd_args)
     # simple_param(cmd_args)
 
-    gene_expression(cmd_args)
+    # gene_expression(cmd_args)
+
+    mutex(cmd_args)
+
+def mutex(cmd_args):
+
+    base_entities = ["out","req","in","act"]
+    singular_entities = ["lock","done","s"]
+    
+    n_proc = int(cmd_args.scaling_parameter)
+    
+    r = ReactionSystemWithConcentrationsParam()
+    
+    def E(a,b):
+        return (a + "_" + str(b), 1)
+
+    for i in range(n_proc):
+        for ent in base_entities:
+            r.add_bg_set_entity(E(ent,i))
+
+    for ent in singular_entities:
+        r.add_bg_set_entity((ent, 1))
+    
+    ###################################################
+    
+    Inhib = [("s",1)]
+    
+    for i in range(n_proc):
+        
+        r.add_reaction([E("out",i),E("act",i)],Inhib,[E("req",i)])
+        r.add_reaction([E("out",i)],[E("act",i)],[E("out",i)])
+        
+        for j in range(n_proc):
+            if i != j:
+                r.add_reaction([E("req",i),E("act",i),E("act",j)],Inhib,[E("req",i)])
+        
+        r.add_reaction([E("req",i)],[E("act",i)],[E("req",i)])
+        
+        enter_inhib = [E("act",j) for j in range(n_proc) if i != j] + [("lock",1)]
+        r.add_reaction([E("req",i),E("act",i)],enter_inhib,[E("in",i), ("lock",1)])
+        
+        r.add_reaction([E("in",i),E("act",i)],Inhib,[E("out",i), ("done",1)])
+        r.add_reaction([E("in",i)],[E("act",i)],[E("in",i)])
+    
+    r.add_reaction([("lock",1)],[("done",1)],[("lock",1)])
+    
+    lda1 = r.get_param("lda1")
+    lda2 = r.get_param("lda2")
+    lda3 = r.get_param("lda3")
+    
+    r.add_reaction(lda1,lda2,lda3)
+    
+    ###################################################
+    
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("0")
+    c.add_state("1")
+    
+    init_ctx = []
+    for i in range(n_proc):
+        init_ctx.append(E("act", i))
+    
+    # the experiments starts with adding x and y:
+    c.add_transition("0", init_ctx, "1")
+    
+    all_act = powerset([E("act",i) for i in range(n_proc)])
+    
+    for actions in all_act:
+        actions = list(actions)
+
+        c.add_transition("1", actions, "1")
+    
+    # for all the remaining steps we have empty context sequences
+    # c.add_transition("1", [], "1")
+    # c.add_transition("1", [("h", 1)], "1")
+    
+    ###################################################
+    
+    rc = ReactionSystemWithAutomaton(r, c)
+    rc.show()
+    
+    f_attack = ltl_F(True, bag_And(bag_entity("in_0") == 1, bag_entity("in_1") == 1))
+    
+    param_constr = param_And(param_entity(lda3, "in_0") == 0, param_entity(lda3, "in_1") == 0)
+    
+    smt_rsc = SmtCheckerRSCParam(rc, optimise=cmd_args.optimise)
+    smt_rsc.check_rsltl(formulae_list=[f_attack], param_constr=param_constr) #, max_level=4, cont_if_sat=True)
 
 def gene_expression(cmd_args):
     """

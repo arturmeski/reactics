@@ -52,6 +52,8 @@ def main():
         help="turn verbosity on", action="store_true")
     parser.add_argument("-o", "--optimise", 
         help="minimise the parametric computation result", action="store_true")
+    parser.add_argument("-n", "--scaling-parameter",
+        help="scaling parameter value (used in some benchmarks)")
 
     args = parser.parse_args()
 
