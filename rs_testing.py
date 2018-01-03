@@ -9,9 +9,11 @@ from itertools import chain, combinations
 import sys
 import resource
 
-def powerset(iterable):
+def powerset(iterable,N=None):
+    if N is None:
+        N = len(s)
     s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
+    return chain.from_iterable(combinations(s, r) for r in range(N+1))
 
 def run_tests(cmd_args):
     
@@ -89,7 +91,7 @@ def mutex(cmd_args):
     # the experiments starts with adding x and y:
     c.add_transition("0", init_ctx, "1")
     
-    all_act = powerset([E("act",i) for i in range(n_proc)])
+    all_act = powerset([E("act",i) for i in range(n_proc)], 2)
     
     for actions in all_act:
         actions = list(actions)
