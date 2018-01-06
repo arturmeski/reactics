@@ -23,12 +23,12 @@ if profiling:
 
 ##################################################################
 
-version = "2017/04/08/00"
+version = "2018/01/06/00"
 rsmc_banner = """
 Reaction Systems SMT-Based Model Checking
 
 Version:  """ + version + """
-Author:   Artur Meski <meski@ipipan.waw.pl> / <artur.meski@ncl.ac.uk>
+Author:   Artur Meski <artur.meski@gmail.com>
 """
 
 ##################################################################
