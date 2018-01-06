@@ -35,6 +35,8 @@ def mutex(cmd_args):
     base_entities = ["out","req","in","act"]
     singular_entities = ["lock","done","s"]
     
+    if not cmd_args.scaling_parameter:
+        raise RuntimeError("Missing scaling parameter")
     n_proc = int(cmd_args.scaling_parameter)
     
     r = ReactionSystemWithConcentrationsParam()
