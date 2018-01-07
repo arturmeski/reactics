@@ -28,12 +28,17 @@ def run_tests(cmd_args):
 
     # gene_expression(cmd_args)
 
-    mutex(cmd_args)
+    mutex_param_bench(cmd_args)
 
-def mutex(cmd_args):
+def mutex_param_bench(cmd_args):
+    """
+    Mutex Benchmark
+    
+    Parametric
+    """
 
     base_entities = ["out","req","in","act"]
-    singular_entities = ["lock","done","s"]
+    shared_entities = ["lock","done","s"]
     
     if not cmd_args.scaling_parameter:
         raise RuntimeError("Missing scaling parameter")
@@ -48,7 +53,7 @@ def mutex(cmd_args):
         for ent in base_entities:
             r.add_bg_set_entity(E(ent,i))
 
-    for ent in singular_entities:
+    for ent in shared_entities:
         r.add_bg_set_entity((ent, 1))
     
     ###################################################
@@ -88,7 +93,7 @@ def mutex(cmd_args):
     
     init_ctx = []
     for i in range(n_proc):
-        init_ctx.append(E("act", i))
+        init_ctx.append(E("out", i))
     
     # the experiments starts with adding x and y:
     c.add_transition("0", init_ctx, "1")
@@ -109,12 +114,41 @@ def mutex(cmd_args):
     rc = ReactionSystemWithAutomaton(r, c)
     rc.show()
     
-    f_attack = ltl_F(True, bag_And(bag_entity("in_0") == 1, bag_entity("in_1") == 1))
+    f_attack = ltl_F(True, bag_And(bag_entity("in_0") == 1, bag_entity("in_" + str(n_proc-1)) == 1))
     
-    param_constr = param_And(param_entity(lda3, "in_0") == 0, param_entity(lda3, "in_1") == 0)
+    ent_of_Nth_proc = [ent + "_" + str(n_proc-1) for ent in base_entities] + shared_entities
+    disallow = ["in_" + str(n_proc-1)]
+    for ent in r.background_set:
+        if ent not in ent_of_Nth_proc:
+            disallow.append(ent)
+    
+    # disallow = ["in_0", "in_" + str(n_proc)] #, "req_0", "req_1"]
+    lda1_disallow = [param_entity(lda1, ent) == 0 for ent in disallow]
+    lda2_disallow = [param_entity(lda2, ent) == 0 for ent in disallow]
+    lda3_disallow = [param_entity(lda3, ent) == 0 for ent in disallow]
+    lda_disallow = lda1_disallow + lda2_disallow + lda3_disallow
+    
+    # for bent in base_entities:
+    #     print(param_entity(lda3, bent + "_0"))
+    
+    param_constr = param_And(*lda_disallow)
     
     smt_rsc = SmtCheckerRSCParam(rc, optimise=cmd_args.optimise)
     smt_rsc.check_rsltl(formulae_list=[f_attack], param_constr=param_constr) #, max_level=4, cont_if_sat=True)
+
+    time=0
+    mem_usage=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)
+    filename_t="bench_mutex_param_time.log"
+    filename_m="bench_mutex_param_mem.log"
+    time=smt_rsc.get_verification_time()
+
+    with open(filename_t, 'a') as f:
+        log_str="{:d} {:f}\n".format(n_proc, time)
+        f.write(log_str)
+    
+    with open(filename_m, 'a') as f:
+        log_str="{:d} {:f}\n".format(n_proc, mem_usage)
+        f.write(log_str)
 
 def gene_expression(cmd_args):
     """
