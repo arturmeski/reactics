@@ -54,6 +54,8 @@ def main():
         help="minimise the parametric computation result", action="store_true")
     parser.add_argument("-n", "--scaling-parameter",
         help="scaling parameter value (used in some benchmarks)")
+    parser.add_argument("-s", "--special_mode",
+        help="special mode (used in some benchmarks)")
 
     args = parser.parse_args()
 
