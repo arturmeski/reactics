@@ -709,7 +709,8 @@ class SmtCheckerRSCParam(object):
         if not isinstance(formulae_list, (list, tuple)):
             print_error("Expected a list of formulae")
         
-        print_info("Parameter constraint: {:s}".format(str(param_constr)))
+        #print_info("Parameter constraint: {:s}".format(str(param_constr)))
+        print_info("Parameter constraint defined")
 
 
         self.reset()
