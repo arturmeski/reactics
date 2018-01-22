@@ -325,6 +325,44 @@ class SmtCheckerRSCParam(object):
             And(self.enc_rs_trans(level, path_idx),
                 self.enc_automaton_trans(level, path_idx)))
 
+    def enc_param_sanity_for_reactions(self):
+        """R < I constraint (R n I = 0)"""
+
+        rct_inh_constr = True
+
+        for reactants, inhibitors, products in self.rs.reactions:
+
+            if is_param(reactants) or is_param(inhibitors):
+            
+                # 1. R and I
+                if is_param(reactants) and is_param(inhibitors):
+                    rct_param_name = reactants.name
+                    inh_param_name = inhibitors.name
+
+                    for entity in self.rs.set_of_bgset_ids:
+                        rct_inh_constr = And(rct_inh_constr, 
+                            Implies(self.v_param[inh_param_name][entity] > 0, 
+                                self.v_param[rct_param_name][entity] < self.v_param[inh_param_name][entity]))
+
+            elif (not is_param(reactants)) and is_param(inhibitors):
+                inh_param_name = inhibitors.name
+                
+                for entity, conc in reactants:
+                    assert conc > 0, "Unexpected concentration level!"
+                    rct_inh_constr = And(rct_inh_constr, 
+                        Implies(self.v_param[inh_param_name][entity] > 0,
+                            conc < self.v_param[inh_param_name][entity]))
+                
+            elif is_param(reactants) and (not is_param(inhibitors)):
+                rct_param_name = reactants.name
+                
+                for entity, conc in inhibitors:
+                    assert conc > 0, "Unexpected concentration level!"
+                    rct_inh_constr = And(rct_inh_constr, self.v_param[rct_param_name][entity] < conc)
+
+        return rct_inh_constr
+                        
+
     def enc_single_reaction(self, level, path_idx, reaction):
         """
         Encodes a single reaction
@@ -395,6 +433,7 @@ class SmtCheckerRSCParam(object):
             for entity, _ in products:
                 enc_no_prod = simplify(And(enc_no_prod, 
                     self.path_v_improd[path_idx][level + 1][reaction_id][entity] == 0))
+
         
         #
         # (R and I) iff P
@@ -746,6 +785,7 @@ class SmtCheckerRSCParam(object):
         # assertions for all the paths and parameters
         self.solver_add(self.enc_concentration_levels_assertions_for_paths(0, num_of_paths))
         self.solver_add(self.enc_param_concentration_levels_assertion())
+        self.solver_add(self.enc_param_sanity_for_reactions())
 
         encoder = rsLTL_Encoder(self)
         
