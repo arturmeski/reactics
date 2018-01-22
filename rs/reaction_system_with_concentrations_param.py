@@ -284,52 +284,6 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
             
         return producible_entities
         
-    def get_reactions_by_product(self):
-        """Sorts reactions by their products and returns a dictionary of products"""
-
-        # assert False
-
-        if self.reactions_by_prod != None:
-            return self.reactions_by_prod
-
-        producible_entities = self.get_producible_entities()
-
-        reactions_by_prod = {}
-
-        for p_e in producible_entities:
-            reactions_by_prod[p_e] = []
-            rcts_for_p_e = reactions_by_prod[p_e]
-
-            for r in self.reactions:
-                product_entities = [e for e,c in r[2]]
- 
-                if p_e in product_entities:
-                    reactants = r[0]
-                    inhibitors = r[1]
-                    products = [(e,c) for e,c in r[2] if e == p_e]
-                    
-                    prod_conc = products[0][1]
-                    insert_place = None
-                    
-                    # we need to order the reactions w.r.t. the concentration levels produced (increasing order)
-                    for i in range(0,len(rcts_for_p_e)):
-                        
-                        checked_conc = rcts_for_p_e[i][2][0][1]
-                        if prod_conc <= checked_conc:
-                            insert_place = i
-                            break
-
-                    if insert_place == None: # empty or the is only one element which is smaller than the element being added
-                        rcts_for_p_e.append((reactants, inhibitors, products)) # we append (to the end)
-                    else:
-                        rcts_for_p_e.insert(insert_place,(reactants, inhibitors, products))
-                    
-
-        # save in cache
-        self.reactions_by_prod = reactions_by_prod
-
-        return reactions_by_prod
-
     def get_reaction_system(self):
         """
         Translates RSC into RS
