@@ -4,9 +4,9 @@
 #sudo systemsetup -setcomputersleep Never
 # sudo systemsetup -setcomputersleep 1
 
-for i in `seq 2 100`
+for i in `seq 2 50`
 do
-    for special_mode in 1 2
+    for special_mode in 1 2 3
     do
         echo "$i (sm=${special_mode})"
         if [[ $special_mode -eq 1 ]]
