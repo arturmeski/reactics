@@ -398,6 +398,10 @@ class SmtCheckerRSC(object):
         self.solver.add(self.enc_concentration_levels_assertion(0))
     
         encoder = rsLTL_Encoder(self)
+        encoder.load_variables(
+            var_rs=self.v,
+            var_ctx=self.v_ctx,
+            var_loop_pos=self.loop_position)
     
         while True:
             self.prepare_all_variables()

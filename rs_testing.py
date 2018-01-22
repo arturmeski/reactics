@@ -36,6 +36,7 @@ def mutex_bench_main(cmd_args):
         print("Missing special mode parameter")
         print("*    1 - parametric")
         print("*    2 - non-parametric (with parametric implementation)")
+        print("*    3 - non-parametric (with non-parametric implementation)")
         return
     
     smode = int(cmd_args.special_mode)
@@ -44,6 +45,8 @@ def mutex_bench_main(cmd_args):
         mutex_param_bench(cmd_args)
     elif smode == 2:
         mutex_nonparam_bench(cmd_args)
+    elif smode == 3:
+        mutex_nonparam_bench_oldimpl(cmd_args)
     else:
         print("Unrecognised mode")
         return
@@ -262,6 +265,105 @@ def mutex_nonparam_bench(cmd_args):
     mem_usage=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)
     filename_t="bench_mutex_nonparam_time.dat"
     filename_m="bench_mutex_nonparam_mem.dat"
+    time=smt_rsc.get_verification_time()
+
+    with open(filename_t, 'a') as f:
+        log_str="{:d} {:f}\n".format(n_proc, time)
+        f.write(log_str)
+    
+    with open(filename_m, 'a') as f:
+        log_str="{:d} {:f}\n".format(n_proc, mem_usage)
+        f.write(log_str)
+
+def mutex_nonparam_bench_oldimpl(cmd_args):
+    """
+    Mutex Benchmark
+    
+    Parametric
+    """
+
+    base_entities = ["out","req","in","act"]
+    shared_entities = ["lock","done","s"]
+    
+    if not cmd_args.scaling_parameter:
+        raise RuntimeError("Missing scaling parameter")
+    n_proc = int(cmd_args.scaling_parameter)
+    
+    r = ReactionSystemWithConcentrations()
+    
+    def E(a,b):
+        return (a + "_" + str(b), 1)
+
+    for i in range(n_proc):
+        for ent in base_entities:
+            r.add_bg_set_entity(E(ent,i))
+
+    for ent in shared_entities:
+        r.add_bg_set_entity((ent, 1))
+    
+    ###################################################
+    
+    Inhib = [("s",1)]
+    
+    for i in range(n_proc):
+        
+        r.add_reaction([E("out",i),E("act",i)],Inhib,[E("req",i)])
+        r.add_reaction([E("out",i)],[E("act",i)],[E("out",i)])
+        
+        for j in range(n_proc):
+            if i != j:
+                r.add_reaction([E("req",i),E("act",i),E("act",j)],Inhib,[E("req",i)])
+        
+        r.add_reaction([E("req",i)],[E("act",i)],[E("req",i)])
+        
+        enter_inhib = [E("act",j) for j in range(n_proc) if i != j] + [("lock",1)]
+        r.add_reaction([E("req",i),E("act",i)],enter_inhib,[E("in",i), ("lock",1)])
+        
+        r.add_reaction([E("in",i),E("act",i)],Inhib,[E("out",i), ("done",1)])
+        r.add_reaction([E("in",i)],[E("act",i)],[E("in",i)])
+    
+    r.add_reaction([("lock",1)],[("done",1)],[("lock",1)])
+    
+    r.add_reaction([E("out",n_proc-1)],[("s",1)],[("done",1),E("req",n_proc-1)])
+    
+    ###################################################
+    
+    c = ContextAutomatonWithConcentrations(r)
+    c.add_init_state("0")
+    c.add_state("1")
+    
+    init_ctx = []
+    for i in range(n_proc):
+        init_ctx.append(E("out", i))
+    
+    # the experiments starts with adding x and y:
+    c.add_transition("0", init_ctx, "1")
+    
+    all_act = powerset([E("act",i) for i in range(n_proc)], 2)
+    
+    for actions in all_act:
+        actions = list(actions)
+
+        c.add_transition("1", actions, "1")
+    
+    # for all the remaining steps we have empty context sequences
+    # c.add_transition("1", [], "1")
+    # c.add_transition("1", [("h", 1)], "1")
+    
+    ###################################################
+    
+    rc = ReactionSystemWithAutomaton(r, c)
+    rc.show()
+    
+    f_attack = ltl_F(True, bag_And(bag_entity("in_0") == 1, bag_entity("in_" + str(n_proc-1)) == 1))
+    
+    smt_rsc = SmtCheckerRSC(rc)
+    smt_rsc.check_rsltl(formula=f_attack)
+
+    time=0
+    mem_usage=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1024*1024)
+    filename_t="bench_mutex_nonparam_oldimpl_time.dat"
+    filename_m="bench_mutex_nonparam_oldimpl_mem.dat"
     time=smt_rsc.get_verification_time()
 
     with open(filename_t, 'a') as f:
