@@ -1,0 +1,11 @@
+cudd
+*.a
+*.o
+location.hh
+main
+makefile.dep
+position.hh
+rsin_parser.cc
+rsin_parser.hh
+rsin_parser.lex.cc
+stack.hh
