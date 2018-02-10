@@ -1,1 +1,5 @@
-# My project's README
+# Dependencies
+
+Run `./build_cudd.sh` to build CUDD.
+
+
