@@ -8,70 +8,70 @@
 
 #include "symrs.hh"
 
-BDD SymRS::encAtom_raw(RctSys::Atom atom, bool succ) const
+BDD SymRS::encEntity_raw(RctSys::Entity entity, bool succ) const
 {
     BDD r;
 
     if (succ)
-        r = (*pv_succ)[atom];
+        r = (*pv_succ)[entity];
     else
-        r = (*pv)[atom];
+        r = (*pv)[entity];
 
     return r;
 }
 
-BDD SymRS::encAtomsConj_raw(const RctSys::Atoms &atoms, bool succ)
+BDD SymRS::encEntitiesConj_raw(const RctSys::Entities &entities, bool succ)
 {
     BDD r = BDD_TRUE;
 
-    for (auto atom = atoms.begin(); atom != atoms.end(); ++atom)
+    for (auto entity = entities.begin(); entity != entities.end(); ++entity)
     {
-        if (succ) r *= encAtomSucc(*atom);
-        else r *= encAtom(*atom);
+        if (succ) r *= encEntitySucc(*entity);
+        else r *= encEntity(*entity);
     }
 
     return r;
 }
 
-BDD SymRS::encAtomsDisj_raw(const RctSys::Atoms &atoms, bool succ)
+BDD SymRS::encEntitiesDisj_raw(const RctSys::Entities &entities, bool succ)
 {
     BDD r = BDD_FALSE;
 
-    for (auto atom = atoms.begin(); atom != atoms.end(); ++atom)
+    for (auto entity = entities.begin(); entity != entities.end(); ++entity)
     {
-        if (succ) r += encAtomSucc(*atom);
-        else r += encAtom(*atom);
+        if (succ) r += encEntitySucc(*entity);
+        else r += encEntity(*entity);
     }
 
     return r;
 }
 
-BDD SymRS::encStateActAtomsConj(const RctSys::Atoms &atoms)
+BDD SymRS::encStateActEntitiesConj(const RctSys::Entities &entities)
 {
     BDD r = BDD_TRUE;
 
-    for (auto atom = atoms.begin(); atom != atoms.end(); ++atom)
+    for (auto entity = entities.begin(); entity != entities.end(); ++entity)
     {
-        BDD state_act = encAtom(*atom);
-        int actAtom;
-        if ((actAtom = getMappedStateToActID(*atom)) >= 0)
-            state_act += encActAtom(actAtom);
+        BDD state_act = encEntity(*entity);
+        int actEntity;
+        if ((actEntity = getMappedStateToActID(*entity)) >= 0)
+            state_act += encActEntity(actEntity);
         r *= state_act;
     }
 
     return r;
 }
 
-BDD SymRS::encStateActAtomsDisj(const RctSys::Atoms &atoms)
+BDD SymRS::encStateActEntitiesDisj(const RctSys::Entities &entities)
 {
     BDD r = BDD_FALSE;
 
-    for (auto atom = atoms.begin(); atom != atoms.end(); ++atom)
+    for (auto entity = entities.begin(); entity != entities.end(); ++entity)
     {
-        BDD state_act = encAtom(*atom);
-        int actAtom;
-        if ((actAtom = getMappedStateToActID(*atom)) >= 0)
-            state_act += encActAtom(actAtom);
+        BDD state_act = encEntity(*entity);
+        int actEntity;
+        if ((actEntity = getMappedStateToActID(*entity)) >= 0)
+            state_act += encActEntity(actEntity);
         r += state_act;
     }
 
@@ -109,9 +109,9 @@ std::string SymRS::decodedStateToStr(const BDD &state)
     std::string s = "{ ";
     for (unsigned int i = 0; i < totalStateVars; ++i)
     {
-        if (!(encAtom(i) * state).IsZero())
+        if (!(encEntity(i) * state).IsZero())
         {
-            s += rs->atomToStr(i) + " ";
+            s += rs->entityToStr(i) + " ";
         }
     }
     s += "}";
@@ -137,7 +137,7 @@ void SymRS::initBDDvars(void)
 {
     cuddMgr = new Cudd(0,0);
 
-    //RctSys::Atoms aa = rs->actionAtoms;
+    //RctSys::Entities aa = rs->actionEntities;
 
     VERB("Preparing BDD variables");
     pv = new vector<BDD>(totalStateVars);
@@ -157,7 +157,7 @@ void SymRS::initBDDvars(void)
         *pv_E *= (*pv)[i];
         *pv_succ_E *= (*pv_succ)[i];
         
-        //if (rs->actionAtoms.find(i) == rs->actionAtoms.end())
+        //if (rs->actionEntities.find(i) == rs->actionEntities.end())
         //    (*pv_noact)[j++] = cuddMgr->bddVar(i*2);
     }
 
@@ -182,7 +182,7 @@ void SymRS::encodeTransitions(void)
         cond.rctt = rs->reactions[i].rctt;
         cond.inhib = rs->reactions[i].inhib;
     
-        for (RctSys::Atoms::iterator p = rs->reactions[i].prod.begin();
+        for (RctSys::Entities::iterator p = rs->reactions[i].prod.begin();
                 p != rs->reactions[i].prod.end(); ++p)
         {
             dr[*p].push_back(cond);
@@ -212,10 +212,10 @@ void SymRS::encodeTransitions(void)
         {
             // nie ma reakcji produkujacej p:
             if (opts->part_tr_rel)
-                (*partTrans)[p] = !encAtomSucc(p);
+                (*partTrans)[p] = !encEntitySucc(p);
             else
             {
-                *monoTrans *= !encAtomSucc(p);
+                *monoTrans *= !encEntitySucc(p);
             }
         }
         else
@@ -228,17 +228,17 @@ void SymRS::encodeTransitions(void)
 
             for (unsigned int j = 0; j < di->second.size(); ++j)
             {
-                conditions += encStateActAtomsConj(di->second[j].rctt) * !encStateActAtomsDisj(di->second[j].inhib);
+                conditions += encStateActEntitiesConj(di->second[j].rctt) * !encStateActEntitiesDisj(di->second[j].inhib);
             }
 
             if (opts->part_tr_rel)
             {
-                (*partTrans)[p] = conditions * encAtomSucc(p);
-                (*partTrans)[p] += !conditions * !encAtomSucc(p);
+                (*partTrans)[p] = conditions * encEntitySucc(p);
+                (*partTrans)[p] += !conditions * !encEntitySucc(p);
             }
             else
             {
-                *monoTrans *= (conditions * encAtomSucc(p)) + (!conditions * !encAtomSucc(p));
+                *monoTrans *= (conditions * encEntitySucc(p)) + (!conditions * !encEntitySucc(p));
             }
         }
         if (opts->reorder_trans)
@@ -252,14 +252,14 @@ void SymRS::encodeTransitions(void)
     /*
     for (unsigned int p = 0; p < totalStateVars; ++p) // we iterate through products
     {
-        RctSys::Atoms::iterator ai = rs->actionAtoms.find(p);
+        RctSys::Entities::iterator ai = rs->actionEntities.find(p);
         DecompReactions::iterator di;
 
         if ((di = dr.find(p)) == dr.end())
         {
             (*partTrans)[p] = cuddMgr->bddOne();
-            if (ai == rs->actionAtoms.end()) 
-                (*partTrans)[p] *= !encAtomSucc(p);
+            if (ai == rs->actionEntities.end()) 
+                (*partTrans)[p] *= !encEntitySucc(p);
         }
         else
         {
@@ -267,20 +267,20 @@ void SymRS::encodeTransitions(void)
 
             for (unsigned int j = 0; j < di->second.size(); ++j)
             {
-                conditions += encAtomsConj(di->second[j].rctt) * !encAtomsDisj(di->second[j].inhib);
+                conditions += encEntitiesConj(di->second[j].rctt) * !encEntitiesDisj(di->second[j].inhib);
             }
 
-            (*partTrans)[p] = conditions * encAtomSucc(p);
+            (*partTrans)[p] = conditions * encEntitySucc(p);
 
-            if (ai == rs->actionAtoms.end())
+            if (ai == rs->actionEntities.end())
             {
                 // not an action entity
-                (*partTrans)[p] += !conditions * !encAtomSucc(p);
+                (*partTrans)[p] += !conditions * !encEntitySucc(p);
             }
             else
             {
                 // action entity
-                (*partTrans)[p] += cuddMgr->bddOne(); //(encAtomSucc(p) + !encAtomSucc(p));
+                (*partTrans)[p] += cuddMgr->bddOne(); //(encEntitySucc(p) + !encEntitySucc(p));
             }
         }
     }
@@ -289,13 +289,13 @@ void SymRS::encodeTransitions(void)
     VERB("Reactions ready");
 }
 
-BDD SymRS::getEncState(const RctSys::Atoms &atoms)
+BDD SymRS::getEncState(const RctSys::Entities &entities)
 {
     assert(0);
-    //BDD state = compState(encAtomsConj(rs->initState));
-    //for (RctSys::Atoms::iterator at = rs->actionAtoms.begin(); at != rs->actionAtoms.end(); ++at)
+    //BDD state = compState(encEntitiesConj(rs->initState));
+    //for (RctSys::Entities::iterator at = rs->actionEntities.begin(); at != rs->actionEntities.end(); ++at)
     //{
-    //    state = state.ExistAbstract(encAtom(*at));
+    //    state = state.ExistAbstract(encEntity(*at));
     //}
     return BDD_FALSE;
 }
@@ -328,7 +328,7 @@ void SymRS::encodeInitStates(void)
             ++state)
     {
         VERB("Encoding a single inital state");
-        BDD newInitState = compState(encAtomsConj(*state)); 
+        BDD newInitState = compState(encEntitiesConj(*state)); 
         BDD q = BDD_TRUE;
         if (opts->part_tr_rel)
         {
@@ -357,7 +357,7 @@ void SymRS::mapStateToAct(void)
     unsigned int j = 0;
     for (unsigned int i = 0; i < totalStateVars; ++i)
     {
-        if (rs->isActionAtom(i)) {
+        if (rs->isActionEntity(i)) {
             stateToAct.push_back(j++);
         }
         else
@@ -399,13 +399,13 @@ void SymRS::encode(void)
     VERB("Encoding done");
 }
 
-BDD SymRS::encActStrAtom(std::string name) const {
-    int id = getMappedStateToActID(rs->getAtomID(name));
+BDD SymRS::encActStrEntity(std::string name) const {
+    int id = getMappedStateToActID(rs->getEntityID(name));
 	if (id < 0) 
 	{
 		FERROR("Entity \"" << name << "\" not defined as context entity");
 		return BDD_FALSE;
 	} else {
-		return encActAtom(getMappedStateToActID(rs->getAtomID(name)));
+		return encActEntity(getMappedStateToActID(rs->getEntityID(name)));
 	}
 }

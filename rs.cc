@@ -8,64 +8,64 @@
 
 #include "rs.hh"
 
-bool RctSys::hasAtom(std::string name)
+bool RctSys::hasEntity(std::string name)
 {
-    if (atoms_names.find(name) == atoms_names.end())
+    if (entities_names.find(name) == entities_names.end())
         return false;
     else
         return true;
 }
 
-void RctSys::addAtom(std::string name)
+void RctSys::addEntity(std::string name)
 {
-    if (!hasAtom(name))
+    if (!hasEntity(name))
     {
-        Atom new_atom_id = atoms_ids.size();
+        Entity new_entity_id = entities_ids.size();
 
-        VERB_L2("Adding atom: " << name << " index=" << new_atom_id);
+        VERB_L2("Adding entity: " << name << " index=" << new_entity_id);
 
-        atoms_ids.push_back(name);
-        atoms_names[name] = new_atom_id;
+        entities_ids.push_back(name);
+        entities_names[name] = new_entity_id;
     }
 }
 
-std::string RctSys::getAtomName(Atom atomID)
+std::string RctSys::getEntityName(Entity entityID)
 {
-    if (atomID < atoms_ids.size())
-        return atoms_ids[atomID];
+    if (entityID < entities_ids.size())
+        return entities_ids[entityID];
     else
     {
-        FERROR("No such atom ID: " << atomID);
+        FERROR("No such entity ID: " << entityID);
         return "??";
     }
 }
 
-RctSys::Atom RctSys::getAtomID(std::string name)
+RctSys::Entity RctSys::getEntityID(std::string name)
 {
-    if (!hasAtom(name))
+    if (!hasEntity(name))
     {
-        FERROR("No such atom: " << name);
+        FERROR("No such entity: " << name);
     }
-    return atoms_names[name];
+    return entities_names[name];
 }
 
-void RctSys::pushReactant(std::string atomName)
+void RctSys::pushReactant(std::string entityName)
 {
-    if (!hasAtom(atomName))
-        addAtom(atomName);
-    tmpReactants.insert(getAtomID(atomName));
+    if (!hasEntity(entityName))
+        addEntity(entityName);
+    tmpReactants.insert(getEntityID(entityName));
 }
-void RctSys::pushInhibitor(std::string atomName)
+void RctSys::pushInhibitor(std::string entityName)
 {
-    if (!hasAtom(atomName))
-        addAtom(atomName);
-    tmpInhibitors.insert(getAtomID(atomName));
+    if (!hasEntity(entityName))
+        addEntity(entityName);
+    tmpInhibitors.insert(getEntityID(entityName));
 }
-void RctSys::pushProduct(std::string atomName)
+void RctSys::pushProduct(std::string entityName)
 {
-    if (!hasAtom(atomName))
-        addAtom(atomName);
-    tmpProducts.insert(getAtomID(atomName));
+    if (!hasEntity(entityName))
+        addEntity(entityName);
+    tmpProducts.insert(getEntityID(entityName));
 }
 
 void RctSys::commitReaction(void)
@@ -85,12 +85,12 @@ void RctSys::commitReaction(void)
     tmpProducts.clear();
 }
 
-std::string RctSys::atomsToStr(const Atoms &atoms)
+std::string RctSys::entitiesToStr(const Entities &entities)
 {
     std::string s = " ";
-    for (auto a = atoms.begin(); a != atoms.end(); ++a)
+    for (auto a = entities.begin(); a != entities.end(); ++a)
     {
-        s += atomToStr(*a) + " ";
+        s += entityToStr(*a) + " ";
     }
     return s;
 }
@@ -100,19 +100,19 @@ void RctSys::showReactions(void)
     cout << "# Reactions:" << endl;
     for (auto r = reactions.begin(); r != reactions.end(); ++r)
     {
-        cout << " * (R={" << atomsToStr(r->rctt) << "},"
-             << "I={" << atomsToStr(r->inhib) << "}," 
-             << "P={" << atomsToStr(r->prod) << "})" << endl;
+        cout << " * (R={" << entitiesToStr(r->rctt) << "},"
+             << "I={" << entitiesToStr(r->inhib) << "}," 
+             << "P={" << entitiesToStr(r->prod) << "})" << endl;
     } 
 }
 
-void RctSys::pushStateAtom(std::string atomName)
+void RctSys::pushStateEntity(std::string entityName)
 {
-    if (!hasAtom(atomName))
+    if (!hasEntity(entityName))
     {
-        FERROR("No such entity: " << atomName);
+        FERROR("No such entity: " << entityName);
     }
-    tmpState.insert(getAtomID(atomName)); 
+    tmpState.insert(getEntityID(entityName)); 
 }
 
 void RctSys::commitInitState(void)
@@ -122,27 +122,27 @@ void RctSys::commitInitState(void)
 }
 
 
-void RctSys::addActionAtom(std::string atomName)
+void RctSys::addActionEntity(std::string entityName)
 {
-    if (!hasAtom(atomName))
-        addAtom(atomName);
-    actionAtoms.insert(getAtomID(atomName));
+    if (!hasEntity(entityName))
+        addEntity(entityName);
+    actionEntities.insert(getEntityID(entityName));
 }
 
-bool RctSys::isActionAtom(Atom atom)
+bool RctSys::isActionEntity(Entity entity)
 {
-    if (actionAtoms.count(atom) > 0)
+    if (actionEntities.count(entity) > 0)
         return true;
     else
         return false;
 }
 
-void RctSys::showActionAtoms(void)
+void RctSys::showActionEntities(void)
 {
     cout << "# Context entities:";
-    for (auto a = actionAtoms.begin(); a != actionAtoms.end(); ++a)
+    for (auto a = actionEntities.begin(); a != actionEntities.end(); ++a)
     {
-        cout << " " << getAtomName(*a);
+        cout << " " << getEntityName(*a);
     }
     cout << endl;
 }
@@ -155,7 +155,7 @@ void RctSys::showInitialStates(void)
         cout << " *";
         for (auto a = s->begin(); a != s->end(); ++a)
         {
-            cout << " " << getAtomName(*a);
+            cout << " " << getEntityName(*a);
         }
         cout << endl;
     }
@@ -164,7 +164,7 @@ void RctSys::showInitialStates(void)
 void RctSys::printSystem(void)
 {
     showInitialStates();
-    showActionAtoms();
+    showActionEntities();
     showReactions();
 
 }

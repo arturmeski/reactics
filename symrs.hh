@@ -36,14 +36,14 @@ class SymRS
     Options *opts;
 
     struct ReactionCond {
-        RctSys::Atoms rctt;
-        RctSys::Atoms inhib;
+        RctSys::Entities rctt;
+        RctSys::Entities inhib;
     };
     typedef vector<ReactionCond> ReactionConds;
-    typedef map<RctSys::Atom,ReactionConds> DecompReactions;
-    typedef std::vector<int> StateAtomToAction; 
+    typedef map<RctSys::Entity,ReactionConds> DecompReactions;
+    typedef std::vector<int> StateEntityToAction; 
 
-    StateAtomToAction stateToAct;
+    StateEntityToAction stateToAct;
 
     BDD *initStates;
     vector<BDD> *pv;
@@ -62,33 +62,33 @@ class SymRS
     unsigned int totalStateVars;
     unsigned int totalActions;
 
-    BDD encAtom_raw(RctSys::Atom atom, bool succ) const;
-    BDD encAtom(RctSys::Atom atom) const {
-        return encAtom_raw(atom, false);
+    BDD encEntity_raw(RctSys::Entity entity, bool succ) const;
+    BDD encEntity(RctSys::Entity entity) const {
+        return encEntity_raw(entity, false);
     }
-    BDD encActAtom(RctSys::Atom atom) const {
-		assert(atom < pv_act->size());
-        return (*pv_act)[atom];
+    BDD encActEntity(RctSys::Entity entity) const {
+		assert(entity < pv_act->size());
+        return (*pv_act)[entity];
     }
-    BDD encAtomSucc(RctSys::Atom atom) const {
-        return encAtom_raw(atom, true); 
+    BDD encEntitySucc(RctSys::Entity entity) const {
+        return encEntity_raw(entity, true); 
     }
-    BDD encAtomsConj_raw(const RctSys::Atoms &atoms, bool succ);
-    BDD encAtomsConj(const RctSys::Atoms &atoms) {
-        return encAtomsConj_raw(atoms, false);
+    BDD encEntitiesConj_raw(const RctSys::Entities &entities, bool succ);
+    BDD encEntitiesConj(const RctSys::Entities &entities) {
+        return encEntitiesConj_raw(entities, false);
     }
-    BDD encAtomsConjSucc(const RctSys::Atoms &atoms) {
-        return encAtomsConj_raw(atoms, true);
+    BDD encEntitiesConjSucc(const RctSys::Entities &entities) {
+        return encEntitiesConj_raw(entities, true);
     }
-    BDD encAtomsDisj_raw(const RctSys::Atoms &atoms, bool succ);
-    BDD encAtomsDisj(const RctSys::Atoms &atoms) {
-        return encAtomsDisj_raw(atoms, false);
+    BDD encEntitiesDisj_raw(const RctSys::Entities &entities, bool succ);
+    BDD encEntitiesDisj(const RctSys::Entities &entities) {
+        return encEntitiesDisj_raw(entities, false);
     }
-    BDD encAtomsDisjSucc(const RctSys::Atoms &atoms) {
-        return encAtomsDisj_raw(atoms, true);
+    BDD encEntitiesDisjSucc(const RctSys::Entities &entities) {
+        return encEntitiesDisj_raw(entities, true);
     }
-    BDD encStateActAtomsConj(const RctSys::Atoms &atoms);
-    BDD encStateActAtomsDisj(const RctSys::Atoms &atoms);
+    BDD encStateActEntitiesConj(const RctSys::Entities &entities);
+    BDD encStateActEntitiesDisj(const RctSys::Entities &entities);
 
     /**
      * @brief Complements an encoding of a given state by negating all the variables that are not set to true
@@ -118,7 +118,7 @@ public:
     {
         this->rs = rs;
         this->opts = opts;
-        totalStateVars = rs->getAtomsSize();
+        totalStateVars = rs->getEntitiesSize();
         totalReactions = rs->getReactionsSize();
         totalActions = rs->getActionsSize();
 
@@ -134,14 +134,14 @@ public:
     BDD *getEncPVact_E(void) { return pv_act_E; }
     vector<BDD> *getEncPartTrans(void) { return partTrans; }
     BDD *getEncMonoTrans(void) { return monoTrans; }
-    BDD getEncState(const RctSys::Atoms &atoms);
+    BDD getEncState(const RctSys::Entities &entities);
     BDD *getEncInitStates(void) { return initStates; }
     Cudd *getCuddMgr(void) { return cuddMgr; }
     unsigned int getTotalStateVars(void) { return totalStateVars; }
-    BDD encAtom(std::string name) const {
-        return encAtom(rs->getAtomID(name));
+    BDD encEntity(std::string name) const {
+        return encEntity(rs->getEntityID(name));
     }
-    BDD encActStrAtom(std::string name) const;
+    BDD encActStrEntity(std::string name) const;
     BDD getBDDtrue(void) const { return BDD_TRUE; }
     BDD getBDDfalse(void) const { return BDD_FALSE; }
 };

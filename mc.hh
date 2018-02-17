@@ -67,7 +67,7 @@ public:
 
     void printReach(void);
     void printReachWithSucc(void);
-    bool checkReach(const RctSys::Atoms testState);
+    bool checkReach(const RctSys::Entities testState);
     bool checkRSCTL(FormRSCTL *form);
     bool checkRSCTLfull(FormRSCTL *form);
     bool checkRSCTLbmc(FormRSCTL *form);

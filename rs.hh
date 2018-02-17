@@ -26,34 +26,35 @@ class RctSys
 {
     friend class SymRS;
     friend class SymRSstate;
+	friend class CtxAut;
 public:
-    typedef unsigned int Atom;
-    typedef std::set<Atom> Atoms;
+    typedef unsigned int Entity;
+    typedef std::set<Entity> Entities;
     struct Reaction {
-        Atoms rctt;
-        Atoms inhib;
-        Atoms prod;
+        Entities rctt;
+        Entities inhib;
+        Entities prod;
     };
     typedef std::vector<Reaction> Reactions;
-    typedef std::vector<std::string> AtomsByIds;
-    typedef std::map<std::string, Atom> AtomsByName;
-    typedef std::set<Atoms> AtomsSets;
+    typedef std::vector<std::string> EntitiesByIds;
+    typedef std::map<std::string, Entity> EntitiesByName;
+    typedef std::set<Entities> EntitiesSets;
 private:
     Reactions reactions;
-    AtomsSets initStates;
+    EntitiesSets initStates;
 
-    Atoms actionAtoms;
+    Entities actionEntities;
 
-    AtomsByIds atoms_ids;
-    AtomsByName atoms_names;
+    EntitiesByIds entities_ids;
+    EntitiesByName entities_names;
 
-    Atoms tmpReactants;
-    Atoms tmpInhibitors;
-    Atoms tmpProducts;
+    Entities tmpReactants;
+    Entities tmpInhibitors;
+    Entities tmpProducts;
 
-    Atoms tmpState;
+    Entities tmpState;
 
-    Atom getAtomID(std::string atomName);
+    Entity getEntityID(std::string entityName);
 
     Options *opts;
 
@@ -62,38 +63,50 @@ public:
     {
         this->opts = opts;
     }
-    bool hasAtom(std::string atomName);
-    void addAtom(std::string atomName);
-    std::string getAtomName(Atom atomID);
-    void pushReactant(std::string atomName);
-    void pushInhibitor(std::string atomName);
-    void pushProduct(std::string atomName);
+    bool hasEntity(std::string entityName);
+    void addEntity(std::string entityName);
+    std::string getEntityName(Entity entityID);
+    void pushReactant(std::string entityName);
+    void pushInhibitor(std::string entityName);
+    void pushProduct(std::string entityName);
     void commitReaction(void);
-    std::string atomToStr(const Atom atom) {
-        return atoms_ids[atom];
+    std::string entityToStr(const Entity entity) {
+        return entities_ids[entity];
     }
-    std::string atomsToStr(const Atoms &atoms);
+    std::string entitiesToStr(const Entities &entities);
     void showReactions(void);
-    void pushStateAtom(std::string atomName);
+    void pushStateEntity(std::string entityName);
     void commitInitState(void);
-    void addActionAtom(std::string atomName);
-    bool isActionAtom(Atom atom);
+    void addActionEntity(std::string entityName);
+    bool isActionEntity(Entity entity);
     void resetInitStates(void) {
         initStates.clear();
     }
-    unsigned int getAtomsSize(void) {
-        return atoms_ids.size();
+    unsigned int getEntitiesSize(void) {
+        return entities_ids.size();
     }
     unsigned int getReactionsSize(void) {
         return reactions.size();
     }
     unsigned int getActionsSize(void) {
-        return actionAtoms.size();
+        return actionEntities.size();
     }
     void showInitialStates(void);
-    void showActionAtoms(void);
+    void showActionEntities(void);
     void printSystem(void);
 };
+
+// Context Automaton
+class CtxAut
+{
+    typedef unsigned int State;
+    typedef std::set<State> States;
+	struct Transition {
+		State src_state;
+		State dst_state;
+	};
+};
+
 
 #endif
 

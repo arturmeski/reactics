@@ -48,7 +48,7 @@ BDD BoolContexts::getBDD(const SymRS *srs) const
 {
 	if (oper == BCTX_PV)
 	{
-		return srs->encActStrAtom(name);
+		return srs->encActStrEntity(name);
 	}
 	else if (oper == BCTX_TF)
 	{
@@ -195,20 +195,20 @@ bool FormRSCTL::hasOper(Oper op) const
     }
 }
 
-void FormRSCTL::encodeAtoms(const SymRS *srs)
+void FormRSCTL::encodeEntities(const SymRS *srs)
 {
     if (RSCTL_COND_1ARG(oper))
     {
-        arg[0]->encodeAtoms(srs);
+        arg[0]->encodeEntities(srs);
     }
     else if (RSCTL_COND_2ARG(oper))
     {
-        arg[0]->encodeAtoms(srs);
-        arg[1]->encodeAtoms(srs);
+        arg[0]->encodeEntities(srs);
+        arg[1]->encodeEntities(srs);
     }
     else if (oper == RSCTL_PV)
     {
-        bdd = new BDD(srs->encAtom(name));
+        bdd = new BDD(srs->encEntity(name));
     }
 }
 
@@ -296,7 +296,7 @@ void FormRSCTL::encodeActions(const SymRS *srs)
 	            BDD single_action = srs->getBDDtrue();
 	            for (Action_f::iterator ent = act->begin(); ent != act->end(); ++ent)
 	            {
-	                single_action *= srs->encActStrAtom(*ent); 
+	                single_action *= srs->encActStrEntity(*ent); 
 	            }
 	            single_action = srs->compContext(single_action);
 	            *actions_bdd += single_action;

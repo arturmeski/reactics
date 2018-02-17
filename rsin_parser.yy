@@ -76,7 +76,7 @@ class rsin_driver;
 system: 
     | REACTIONS LCB reactions RCB system
     | INITIALCONTEXTS LCB initstates RCB system
-    | CONTEXTENTITIES LCB actionatoms RCB system
+    | CONTEXTENTITIES LCB actionentities RCB system
     | RSCTLFORM LCB rsctl_form RCB system {
         driver.addFormRSCTL($3);
     }
@@ -140,23 +140,23 @@ initstates:
     ;
 
 initstate:
-    | atom
-    | initstate COMMA atom 
+    | entity
+    | initstate COMMA entity 
     ;
 
-atom: IDENTIFIER {
-        driver.rs->pushStateAtom(*$1);
+entity: IDENTIFIER {
+        driver.rs->pushStateEntity(*$1);
         free($1);
     }
     ;
 
-actionatoms: 
-    | actatom
-    | actionatoms COMMA actatom
+actionentities: 
+    | actentity
+    | actionentities COMMA actentity
     ;
 
-actatom: IDENTIFIER {
-        driver.rs->addActionAtom(*$1);
+actentity: IDENTIFIER {
+        driver.rs->addActionEntity(*$1);
         free($1);
     }
     ;

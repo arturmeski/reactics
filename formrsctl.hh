@@ -321,7 +321,7 @@ public:
         assert(oper == RSCTL_TF);
         return tf;
     }
-    void encodeAtoms(const SymRS *srs);
+    void encodeEntities(const SymRS *srs);
     void encodeActions(const SymRS *srs);
     void forgetActionsBDD(void) {
         if (actions_bdd != NULL) delete actions_bdd;

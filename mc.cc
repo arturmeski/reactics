@@ -117,7 +117,7 @@ void ModelChecker::printReachWithSucc(void)
     cleanup();
 }
 
-bool ModelChecker::checkReach(const RctSys::Atoms testState)
+bool ModelChecker::checkReach(const RctSys::Entities testState)
 {
     if (opts->measure)
         opts->ver_time = cpuTime();
@@ -370,9 +370,9 @@ bool ModelChecker::checkRSCTLfull(FormRSCTL *form)
 
     VERB("Model checking for RSCTL formula: " << form->toStr());
 
-    VERB("Processing the formula: encoding atoms");
-    form->encodeAtoms(srs);
-    VERB("Atoms encoded");
+    VERB("Processing the formula: encoding entities");
+    form->encodeEntities(srs);
+    VERB("Entities encoded");
 
     VERB("Processing the formula: encoding actions/contexts");
     form->encodeActions(srs);
@@ -448,9 +448,9 @@ bool ModelChecker::checkRSCTLbmc(FormRSCTL *form)
 
     VERB("Bounded model checking for RSCTL formula: " << form->toStr());
 
-    VERB("Processing the formula: encoding atoms");
-    form->encodeAtoms(srs);
-    VERB("Atoms encoded");
+    VERB("Processing the formula: encoding entities");
+    form->encodeEntities(srs);
+    VERB("Entities encoded");
 
     VERB("Processing the formula: encoding actions/contexts");
     form->encodeActions(srs);
