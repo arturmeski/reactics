@@ -53,6 +53,7 @@ blank [ \t]
 "]"                     return token::RSB;
 "<"						return token::LAB;
 ">"						return token::RAB;
+":"						return token::COL;
 ";"                     return token::SEMICOL;
 ","                     return token::COMMA;
 "->"                    return token::RARR;

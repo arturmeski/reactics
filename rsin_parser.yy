@@ -46,7 +46,7 @@ class rsin_driver;
 
 %token REACTIONS INITIALCONTEXTS CONTEXTENTITIES RSCTLFORM
 %token CONTEXTAUTOMATON STATES TRANSITIONS
-%token LCB RCB LRB RRB LSB RSB LAB RAB SEMICOL COMMA RARR
+%token LCB RCB LRB RRB LSB RSB LAB RAB COL SEMICOL COMMA RARR
 %token AND OR XOR IMPLIES NOT
 %token EX EU EF EG AX AU AF AG E A X U F G EMPTY
 
@@ -176,19 +176,35 @@ actentity: IDENTIFIER {
 
 ctxaut:
 	| STATES LCB autstates RCB ctxaut
-	| TRANSITIONS LCB auttrans RCB ctxaut
+	| TRANSITIONS LCB auttransitions RCB ctxaut
 	;
 
 autstate: IDENTIFIER {
 	}
+	;
 
 autstates:
-	| autstate
+	autstate
 	| autstate COMMA autstates
 	;
 	
-auttrans:
+auttransitions:
+	| auttrans
+	| auttrans SEMICOL auttransitions
 	;	
+
+auttrans: LCB contextset RCB COL autstate RARR autstate
+	;
+	
+contextset:
+	ctxentity
+	| contextset COMMA ctxentity
+	;
+		
+ctxentity: IDENTIFIER {
+	//
+	}
+	;
 
 /* formulae */
 	
