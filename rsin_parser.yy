@@ -1,7 +1,7 @@
 %skeleton "lalr1.cc" /* -*- C++ -*- */
 %require "2.5"
 %defines
-%define parser_class_name "rsin_parser"
+%define parser_class_name {rsin_parser}
 
 %code requires {
 #include <string>
@@ -83,6 +83,11 @@ system:
     }
     ;
 
+/* 
+ * -------------------------
+ *         REACTIONS 
+ * -------------------------
+ */
 reactions:
     | reactions reaction SEMICOL
     ;
@@ -131,6 +136,8 @@ reactionProduct: IDENTIFIER {
     }
     ;
 
+/*******************************************/
+
 initstates:
     LCB initstate RCB {
         driver.rs->commitInitState();
@@ -150,6 +157,8 @@ entity: IDENTIFIER {
         free($1);
     }
     ;
+
+/*******************************************/
 
 actionentities: 
     | actentity
