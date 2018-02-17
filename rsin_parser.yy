@@ -78,6 +78,7 @@ system:
     | REACTIONS LCB reactions RCB system
     | INITIALCONTEXTS LCB initstates RCB system
     | CONTEXTENTITIES LCB actionentities RCB system
+	| CONTEXTAUTOMATON LCB ctxaut RCB system
     | RSCTLFORM LCB rsctl_form RCB system {
         driver.addFormRSCTL($3);
     }
@@ -170,6 +171,24 @@ actentity: IDENTIFIER {
         free($1);
     }
     ;
+	
+/*******************************************/
+
+ctxaut:
+	| STATES LCB autstates RCB ctxaut
+	| TRANSITIONS LCB auttrans RCB ctxaut
+	;
+
+autstate: IDENTIFIER {
+	}
+
+autstates:
+	| autstate
+	| autstate COMMA autstates
+	;
+	
+auttrans:
+	;	
 
 /* formulae */
 	
