@@ -2,8 +2,11 @@ CC = g++
 CUDD_PATH = cudd
 CUDD_INCLUDE=cudd/lib/libcudd.a
 INCLUDES=-Icudd/include
-CPPFLAGS = -Wall $(INCLUDES) #-Werror
-CPPFLAGS = -Wall -DNDEBUG
+CPPFLAGS_SILENT = $(INCLUDES)
+CPPFLAGS = -Wall $(CPPFLAGS_SILENT) #-Werror
+#CPPFLAGS = -Wall $(INCLUDES) -DNDEBUG 
+CXXFLAGS_SILENT = -O3 -g
+CXXFLAGS = -std=c++14 $(CXXFLAGS_SILENT)
 #CXXFLAGS = -std=c++14 -O3 -DPUBLIC_RELEASE -DNDEBUG #-g
 LDLIBS = $(CUDD_INCLUDE) 
 
@@ -32,6 +35,9 @@ rsin_parser.cc: rsin_parser.yy
 	bison -o rsin_parser.cc rsin_parser.yy
 
 rsin_parser.o: rsin_parser.cc
+
+rsin_parser.lex.o: rsin_parser.lex.cc
+	$(CC) $(CXXFLAGS_SILENT) $(CPPFLAGS_SILENT) -c -o $@ rsin_parser.lex.cc
 
 rsin_parser.lex.cc: rsin_parser.ll
 	flex rsin_parser.ll
