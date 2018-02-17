@@ -96,6 +96,10 @@ public:
     void printSystem(void);
 };
 
+class RctSysWithCtxAut : private RctSys
+{
+};
+
 // Context Automaton
 class CtxAut
 {
@@ -106,7 +110,6 @@ class CtxAut
 		State dst_state;
 	};
 };
-
 
 #endif
 

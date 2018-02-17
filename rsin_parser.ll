@@ -41,7 +41,10 @@ blank [ \t]
 "reactions"             return token::REACTIONS;
 "initial-contexts"      return token::INITIALCONTEXTS;
 "context-entities"      return token::CONTEXTENTITIES;
-"rsctl-property"         return token::RSCTLFORM;
+"context-automaton"		return token::CONTEXTAUTOMATON;
+"transitions"			return token::TRANSITIONS;
+"states"				return token::STATES;
+"rsctl-property"        return token::RSCTLFORM;
 "{"                     return token::LCB;
 "}"                     return token::RCB;
 "("                     return token::LRB;

@@ -45,6 +45,7 @@ class rsin_driver;
 }
 
 %token REACTIONS INITIALCONTEXTS CONTEXTENTITIES RSCTLFORM
+%token CONTEXTAUTOMATON STATES TRANSITIONS
 %token LCB RCB LRB RRB LSB RSB LAB RAB SEMICOL COMMA RARR
 %token AND OR XOR IMPLIES NOT
 %token EX EU EF EG AX AU AF AG E A X U F G EMPTY
@@ -59,7 +60,7 @@ class rsin_driver;
 //%right SRB
 
 %type <frsctl> rsctl_form
-%type <ent> entity
+%type <ent> f_entity
 %type <act> action
 %type <actionsVec> actions
 %type <fboolctx> bool_contexts
@@ -201,19 +202,19 @@ action:
     { 
         $$ = new Action_f;
     } 
-    | entity {
+    | f_entity {
         $$ = new Action_f;
         $$->insert(*$1);
         free($1);
     }
-    | action COMMA entity {
+    | action COMMA f_entity {
         $$ = $1;        
         $$->insert(*$3);
         free($3);
     }
     ;
 
-entity: IDENTIFIER {
+f_entity: IDENTIFIER {
         $$ = new Entity_f(*$1);
         free($1);
     }
