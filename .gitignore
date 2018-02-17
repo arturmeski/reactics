@@ -9,3 +9,4 @@ rsin_parser.cc
 rsin_parser.hh
 rsin_parser.lex.cc
 stack.hh
+.DS_Store
