@@ -168,3 +168,34 @@ void RctSys::printSystem(void)
     showReactions();
 
 }
+
+bool CtxAut::hasState(std::string name)
+{
+    if (states_names.find(name) == states_names.end())
+        return false;
+    else
+        return true;
+}
+
+void CtxAut::addState(std::string name)
+{
+    if (!hasState(name))
+    {
+        State new_state_id = states_ids.size();
+
+        VERB_L2("Adding state: " << name << " index=" << new_state_id);
+
+        states_ids.push_back(name);
+        states_names[name] = new_state_id;
+    }
+}
+
+void CtxAut::pushContextEntity(std::string entityName) 
+{
+	
+}
+
+void CtxAut::addTransition(std::string srcStateName, std::string dstStateName) 
+{
+		
+}

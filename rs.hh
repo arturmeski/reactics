@@ -24,91 +24,109 @@ using std::endl;
 
 class RctSys
 {
-    friend class SymRS;
-    friend class SymRSstate;
-	friend class CtxAut;
-public:
-    typedef unsigned int Entity;
-    typedef std::set<Entity> Entities;
-    struct Reaction {
-        Entities rctt;
-        Entities inhib;
-        Entities prod;
-    };
-    typedef std::vector<Reaction> Reactions;
-    typedef std::vector<std::string> EntitiesByIds;
-    typedef std::map<std::string, Entity> EntitiesByName;
-    typedef std::set<Entities> EntitiesSets;
-private:
-    Reactions reactions;
-    EntitiesSets initStates;
+	    friend class SymRS;
+	    friend class SymRSstate;
+	public:
+	    typedef unsigned int Entity;
+	    typedef std::set<Entity> Entities;
+	    struct Reaction {
+	        Entities rctt;
+	        Entities inhib;
+	        Entities prod;
+	    };
+	    typedef std::vector<Reaction> Reactions;
+	    typedef std::vector<std::string> EntitiesByIds;
+	    typedef std::map<std::string, Entity> EntitiesByName;
+	    typedef std::set<Entities> EntitiesSets;
+	private:
+	    Reactions reactions;
+	    EntitiesSets initStates;
 
-    Entities actionEntities;
+	    Entities actionEntities;
 
-    EntitiesByIds entities_ids;
-    EntitiesByName entities_names;
+	    EntitiesByIds entities_ids;
+	    EntitiesByName entities_names;
 
-    Entities tmpReactants;
-    Entities tmpInhibitors;
-    Entities tmpProducts;
+	    Entities tmpReactants;
+	    Entities tmpInhibitors;
+	    Entities tmpProducts;
 
-    Entities tmpState;
+	    Entities tmpState;
 
-    Entity getEntityID(std::string entityName);
+	    Entity getEntityID(std::string entityName);
 
-    Options *opts;
+	    Options *opts;
 
-public:
-    void setOptions(Options *opts)
-    {
-        this->opts = opts;
-    }
-    bool hasEntity(std::string entityName);
-    void addEntity(std::string entityName);
-    std::string getEntityName(Entity entityID);
-    void pushReactant(std::string entityName);
-    void pushInhibitor(std::string entityName);
-    void pushProduct(std::string entityName);
-    void commitReaction(void);
-    std::string entityToStr(const Entity entity) {
-        return entities_ids[entity];
-    }
-    std::string entitiesToStr(const Entities &entities);
-    void showReactions(void);
-    void pushStateEntity(std::string entityName);
-    void commitInitState(void);
-    void addActionEntity(std::string entityName);
-    bool isActionEntity(Entity entity);
-    void resetInitStates(void) {
-        initStates.clear();
-    }
-    unsigned int getEntitiesSize(void) {
-        return entities_ids.size();
-    }
-    unsigned int getReactionsSize(void) {
-        return reactions.size();
-    }
-    unsigned int getActionsSize(void) {
-        return actionEntities.size();
-    }
-    void showInitialStates(void);
-    void showActionEntities(void);
-    void printSystem(void);
+	public:
+	    void setOptions(Options *opts)
+	    {
+	        this->opts = opts;
+	    }
+	    bool hasEntity(std::string entityName);
+	    void addEntity(std::string entityName);
+	    std::string getEntityName(Entity entityID);
+	    void pushReactant(std::string entityName);
+	    void pushInhibitor(std::string entityName);
+	    void pushProduct(std::string entityName);
+	    void commitReaction(void);
+	    std::string entityToStr(const Entity entity) {
+	        return entities_ids[entity];
+	    }
+	    std::string entitiesToStr(const Entities &entities);
+	    void showReactions(void);
+	    void pushStateEntity(std::string entityName);
+	    void commitInitState(void);
+	    void addActionEntity(std::string entityName);
+	    bool isActionEntity(Entity entity);
+	    void resetInitStates(void) {
+	        initStates.clear();
+	    }
+	    unsigned int getEntitiesSize(void) {
+	        return entities_ids.size();
+	    }
+	    unsigned int getReactionsSize(void) {
+	        return reactions.size();
+	    }
+	    unsigned int getActionsSize(void) {
+	        return actionEntities.size();
+	    }
+	    void showInitialStates(void);
+	    void showActionEntities(void);
+	    void printSystem(void);
 };
 
 class RctSysWithCtxAut : private RctSys
 {
+	friend class CtxAut;
+	
 };
 
 // Context Automaton
 class CtxAut
 {
-    typedef unsigned int State;
-    typedef std::set<State> States;
-	struct Transition {
-		State src_state;
-		State dst_state;
-	};
+	public:
+	    typedef unsigned int State;
+	    typedef std::vector<std::string> StatesById;
+	    typedef std::map<std::string, State> StatesByName;
+		struct Transition {
+			State src_state;
+			RctSys::Entities ctx;
+			State dst_state;
+		};
+		bool hasState(std::string name);
+		void addState(std::string stateName);
+		void addTransition(std::string srcStateName, std::string dstStateName);
+		void pushContextEntity(std::string entityName);	
+	    void setOptions(Options *opts)
+	    {
+	        this->opts = opts;
+	    }
+		
+	private:
+	    Options *opts;
+		StatesById states_ids;
+		StatesByName states_names;
+		RctSys::Entities tmpEntities;	
 };
 
 #endif
