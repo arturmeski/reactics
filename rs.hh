@@ -95,12 +95,6 @@ class RctSys
 	    void printSystem(void);
 };
 
-class RctSysWithCtxAut : private RctSys
-{
-	friend class CtxAut;
-	
-};
-
 // Context Automaton
 class CtxAut
 {
@@ -113,14 +107,13 @@ class CtxAut
 			RctSys::Entities ctx;
 			State dst_state;
 		};
+		
 		bool hasState(std::string name);
 		void addState(std::string stateName);
+		State getStateID(std::string name);
 		void addTransition(std::string srcStateName, std::string dstStateName);
-		void pushContextEntity(std::string entityName);	
-	    void setOptions(Options *opts)
-	    {
-	        this->opts = opts;
-	    }
+		void pushContextEntity(RctSys::Entity entity_id);	
+	    void setOptions(Options *opts) { this->opts = opts; }
 		
 	private:
 	    Options *opts;
@@ -129,5 +122,11 @@ class CtxAut
 		RctSys::Entities tmpEntities;	
 };
 
-#endif
+class RctSysWithCtxAut : public RctSys
+{
+	// friend class CtxAut;
+	
+	CtxAut ctx_aut;
+};
 
+#endif

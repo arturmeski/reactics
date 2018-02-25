@@ -38,6 +38,9 @@ blank [ \t]
   typedef yy::rsin_parser::token token;
 %}
 
+"options"				return token::OPTIONS;
+"use-context-automaton"	return token::USE_CTX_AUT;
+"use-concentrations"	return token::USE_CONCENTRATIONS;
 "reactions"             return token::REACTIONS;
 "initial-contexts"      return token::INITIALCONTEXTS;
 "context-entities"      return token::CONTEXTENTITIES;

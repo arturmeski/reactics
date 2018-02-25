@@ -122,8 +122,8 @@ public:
         totalReactions = rs->getReactionsSize();
         totalActions = rs->getActionsSize();
 
-        partTrans = NULL;
-        monoTrans = NULL;
+        partTrans = nullptr;
+        monoTrans = nullptr;
 
         encode();
     }

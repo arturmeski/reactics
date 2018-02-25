@@ -189,8 +189,8 @@ bool FormRSCTL::hasOper(Oper op) const
     else
     {
         bool result = false;
-        if (arg[0] != NULL) result = arg[0]->hasOper(op);
-        if (!result && arg[1] != NULL) result = arg[1]->hasOper(op);
+        if (arg[0] != nullptr) result = arg[0]->hasOper(op);
+        if (!result && arg[1] != nullptr) result = arg[1]->hasOper(op);
         return result;
     }
 }
@@ -249,7 +249,7 @@ bool FormRSCTL::isERSCTL(void) const
 
 std::string FormRSCTL::getActionsStr(void) const
 {
-	if (actions != NULL)
+	if (actions != nullptr)
 	{
 	    std::string r = "[ ";
 	    bool firstact = true;
@@ -271,7 +271,7 @@ std::string FormRSCTL::getActionsStr(void) const
 		r += " ]";		
 	    return r;
 	}
-	else if (boolCtx != NULL)
+	else if (boolCtx != nullptr)
 	{
 		return "< " + boolCtx->toStr() + " >";
 	}
@@ -285,11 +285,11 @@ void FormRSCTL::encodeActions(const SymRS *srs)
 {
     if (RSCTL_COND_ACT(oper))
     {
-        if (actions_bdd != NULL) forgetActionsBDD();
+        if (actions_bdd != nullptr) forgetActionsBDD();
         actions_bdd = new BDD(srs->getBDDfalse());
-        assert(actions != NULL || boolCtx != NULL);
-		assert(!(actions != NULL && boolCtx != NULL));
-		if (actions != NULL)
+        assert(actions != nullptr || boolCtx != nullptr);
+		assert(!(actions != nullptr && boolCtx != nullptr));
+		if (actions != nullptr)
 		{
 	        for (ActionsVec_f::iterator act = actions->begin(); act != actions->end(); ++act)
 	        {
@@ -302,7 +302,7 @@ void FormRSCTL::encodeActions(const SymRS *srs)
 	            *actions_bdd += single_action;
 	        }
 		}
-		else if (boolCtx != NULL)
+		else if (boolCtx != nullptr)
 		{
 			*actions_bdd = boolCtx->getBDD(srs);
 		}

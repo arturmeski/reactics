@@ -10,12 +10,10 @@
 
 int main(int argc, char **argv)
 {
-
-
-    RctSys rs;
-    rsin_driver driver(&rs);
+    rsin_driver driver;
 
     Options *opts = new Options;
+	driver.setOptions(opts);
 
     bool show_reactions = false;
     bool rstl_model_checking = false;
@@ -95,10 +93,8 @@ int main(int argc, char **argv)
             default:
                 usage_error = true;
         }
-    }
-
-    rs.setOptions(opts);
-
+    }	
+	
     std::string inputfile;
     if (optind < argc)
     {
@@ -113,9 +109,9 @@ int main(int argc, char **argv)
     if (usage_error)
     {
         cout << endl
-             << " **********************************" << endl
-             << " **Reaction Systems Model Checker**" << endl
-             << " **********************************" << endl
+             << " ------------------------------------" << endl
+             << " -- Reaction Systems Model Checker --" << endl
+             << " ------------------------------------" << endl
              << endl
              << "   Version:   " << VERSION << endl
              << "   Contact:   " << AUTHOR << endl
@@ -128,28 +124,30 @@ int main(int argc, char **argv)
              << endl
 #endif
              << " Usage: " << argv[0] << " [options] <inputfile>" << endl << endl
-             << " -b   -- disable bounded model checking (BMC) heuristic" << endl
-             << " -c   -- perform RSCTL model checking" << endl
+			 << " TASKS:" << endl	 
+             << "  -c   -- perform RSCTL model checking" << endl
              //<< " -f K -- generate SMT input for the depth K" << endl
-             << " -p   -- show progress (where possible)" << endl
-             << " -P   -- print parsed system" << endl
-             << " -r   -- print reactions" << endl
-             << " -s   -- print the set of all the reachable states" << endl
-             << " -t   -- print the set of all the reachable states with their successors" << endl
-             << " -x   -- use partitioned transition relation (may use less memory)" << endl
-             << " -z   -- use reordering of the BDD variables" << endl
-             << " -v   -- verbose (can be used more than once to increase verbosity)" << endl
+             << "  -P   -- print parsed system" << endl
+             << "  -r   -- print reactions" << endl
+             << "  -s   -- print the set of all the reachable states" << endl
+             << "  -t   -- print the set of all the reachable states with their successors" << endl
+			 << endl << " OTHER:" << endl 
+	         << "  -b   -- disable bounded model checking (BMC) heuristic" << endl
+             << "  -x   -- use partitioned transition relation (may use less memory)" << endl
+             << "  -z   -- use reordering of the BDD variables" << endl
+             << "  -v   -- verbose (can be used more than once to increase verbosity)" << endl
+             << "  -p   -- show progress (where possible)" << endl
              << endl
              << " Benchmarking options:" << endl
-             << " -m   -- measure and display time and memory usage" << endl
-             << " -B   -- display an easy to parse summary (enables -m)" << endl
+             << "  -m   -- measure and display time and memory usage" << endl
+             << "  -B   -- display an easy to parse summary (enables -m)" << endl
              << endl;
         return 100;
     }
 
     if (!(reach_states || reach_states_succ || rstl_model_checking || show_reactions || print_parsed_sys))
     {
-        FERROR("No task specified: -c, -f, -P, -r, or -s needs to be used");
+        FERROR("No task specified: -c, -P, -r, or -s needs to be used");
     }
 
     if (opts->verbose > 0) 
@@ -163,6 +161,17 @@ int main(int argc, char **argv)
     {
         FERROR("Parse error");
     }
+	
+	//
+	// Here we retrieve the reaction system from the parser
+	//
+	// We decide which RS will be used at the parser level.
+	// This decision depends on whether we use concentrations,
+	// context automaton, etc.
+	//
+	auto rs = *driver.getReactionSystem();
+	
+    rs.setOptions(opts); // these need to be passed to the driver
 
     if (show_reactions)
         rs.showReactions();
@@ -184,9 +193,14 @@ int main(int argc, char **argv)
         if (rstl_model_checking)
         {
             if (bmc)
-                mc.checkRSCTL(driver.getFormRSCTL());
-            else
-                mc.checkRSCTLfull(driver.getFormRSCTL());
+			{
+				cout << "Using BDD-based Bounded Model Checking" << endl;
+				mc.checkRSCTL(driver.getFormRSCTL());	
+			}
+            else 
+			{
+				mc.checkRSCTLfull(driver.getFormRSCTL());	
+			}
         }
     }
 
@@ -197,7 +211,7 @@ int main(int argc, char **argv)
              << "Verification time: " << opts->ver_time << " sec" << endl
              << "Encoding memory: " << opts->enc_mem << " MB" << endl
              << "Memory (total): " << opts->ver_mem << " MB" << endl
-             << "TOTAL time: " << opts->enc_time+opts->ver_time << " sec" << endl;
+             << "TOTAL time: " << opts->enc_time + opts->ver_time << " sec" << endl;
         if (benchmarking)
         {
             cout << std::setprecision(4)

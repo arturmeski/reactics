@@ -151,7 +151,7 @@ bool ModelChecker::checkReach(const RctSys::Entities testState)
 
 BDD ModelChecker::getStatesRSCTL(const FormRSCTL *form)
 {
-    assert(reach != NULL);
+    assert(reach != nullptr);
     Oper oper = form->getOper();
     if (oper == RSCTL_PV)
     {
@@ -364,7 +364,7 @@ bool ModelChecker::checkRSCTLfull(FormRSCTL *form)
     if (opts->measure)
         opts->ver_time = cpuTime();
 
-    assert(form != NULL);
+    assert(form != nullptr);
 
     bool result = false;
 
@@ -378,7 +378,7 @@ bool ModelChecker::checkRSCTLfull(FormRSCTL *form)
     form->encodeActions(srs);
     VERB("Contexts encoded");
 
-    assert(reach == NULL);
+    assert(reach == nullptr);
 
     reach = new BDD(*initStates);
     BDD reach_p = cuddMgr->bddZero();
@@ -437,7 +437,7 @@ bool ModelChecker::checkRSCTLbmc(FormRSCTL *form)
     if (opts->measure)
         opts->ver_time = cpuTime();
 
-    assert(form != NULL);
+    assert(form != nullptr);
 
     if (!form->isERSCTL())
     {
@@ -456,7 +456,7 @@ bool ModelChecker::checkRSCTLbmc(FormRSCTL *form)
     form->encodeActions(srs);
     VERB("Contexts encoded");
 
-    assert(reach == NULL);
+    assert(reach == nullptr);
 
     reach = new BDD(*initStates);
     BDD reach_p = cuddMgr->bddZero();
@@ -499,6 +499,6 @@ bool ModelChecker::checkRSCTLbmc(FormRSCTL *form)
 void ModelChecker::cleanup(void)
 {
     delete reach;
-    reach = NULL;
+    reach = nullptr;
 }
 

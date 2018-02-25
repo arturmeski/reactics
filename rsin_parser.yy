@@ -44,6 +44,7 @@ class rsin_driver;
 #include "rsin_driver.hh"
 }
 
+%token OPTIONS USE_CTX_AUT USE_CONCENTRATIONS
 %token REACTIONS INITIALCONTEXTS CONTEXTENTITIES RSCTLFORM
 %token CONTEXTAUTOMATON STATES TRANSITIONS
 %token LCB RCB LRB RRB LSB RSB LAB RAB COL SEMICOL COMMA RARR
@@ -75,6 +76,7 @@ class rsin_driver;
 %start system;
 
 system: 
+	| OPTIONS LCB options RCB system
     | REACTIONS LCB reactions RCB system
     | INITIALCONTEXTS LCB initstates RCB system
     | CONTEXTENTITIES LCB actionentities RCB system
@@ -83,6 +85,14 @@ system:
         driver.addFormRSCTL($3);
     }
     ;
+
+options:
+	| options option SEMICOL
+	;
+
+option:
+	| USE_CTX_AUT { } 
+	;
 
 /* 
  * -------------------------
@@ -95,7 +105,7 @@ reactions:
 
 reaction:
     | LCB reactionConditions RARR LCB reactionProducts RCB RCB {
-        driver.rs->commitReaction();
+        driver.getReactionSystem()->commitReaction();
     }
     ;
 
@@ -109,7 +119,7 @@ reactants:
     ;
 
 reactant: IDENTIFIER {
-        driver.rs->pushReactant(*$1);
+        driver.getReactionSystem()->pushReactant(*$1);
         free($1);
     }
     ;
@@ -121,7 +131,7 @@ inhibitors:
 
 inhibitor:
     | IDENTIFIER {
-        driver.rs->pushInhibitor(*$1);
+        driver.getReactionSystem()->pushInhibitor(*$1);
         free($1);
     }
     ;
@@ -132,7 +142,7 @@ reactionProducts:
     ;
 
 reactionProduct: IDENTIFIER {
-        driver.rs->pushProduct(*$1);
+        driver.getReactionSystem()->pushProduct(*$1);
         free($1);
     }
     ;
@@ -141,10 +151,10 @@ reactionProduct: IDENTIFIER {
 
 initstates:
     LCB initstate RCB {
-        driver.rs->commitInitState();
+        driver.getReactionSystem()->commitInitState();
     }
     | initstates COMMA LCB initstate RCB {
-        driver.rs->commitInitState();
+        driver.getReactionSystem()->commitInitState();
     }
     ;
 
@@ -154,7 +164,7 @@ initstate:
     ;
 
 entity: IDENTIFIER {
-        driver.rs->pushStateEntity(*$1);
+        driver.getReactionSystem()->pushStateEntity(*$1);
         free($1);
     }
     ;
@@ -167,7 +177,7 @@ actionentities:
     ;
 
 actentity: IDENTIFIER {
-        driver.rs->addActionEntity(*$1);
+        driver.getReactionSystem()->addActionEntity(*$1);
         free($1);
     }
     ;

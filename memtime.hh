@@ -40,7 +40,7 @@ static inline int memReadStat(void)
     pid_t pid = getpid();
     sprintf(name, "/proc/%d/statm", pid);
     FILE* in = fopen(name, "rb");
-    if (in == NULL)
+    if (in == nullptr)
     {
         return 0;
     }

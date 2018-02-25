@@ -24,7 +24,7 @@ void RctSys::addEntity(std::string name)
 
         VERB_L2("Adding entity: " << name << " index=" << new_entity_id);
 
-        entities_ids.push_back(name);
+        entities_ids.push_back(name);		
         entities_names[name] = new_entity_id;
     }
 }
@@ -166,7 +166,6 @@ void RctSys::printSystem(void)
     showInitialStates();
     showActionEntities();
     showReactions();
-
 }
 
 bool CtxAut::hasState(std::string name)
@@ -175,6 +174,15 @@ bool CtxAut::hasState(std::string name)
         return false;
     else
         return true;
+}
+
+CtxAut::State CtxAut::getStateID(std::string name)
+{
+    if (!hasState(name))
+    {
+        FERROR("No such state: " << name);
+    }
+    return states_names[name];
 }
 
 void CtxAut::addState(std::string name)
@@ -190,12 +198,20 @@ void CtxAut::addState(std::string name)
     }
 }
 
-void CtxAut::pushContextEntity(std::string entityName) 
+void CtxAut::pushContextEntity(RctSys::Entity entity_id) 
 {
-	
+	tmpEntities.insert(entity_id);
 }
 
 void CtxAut::addTransition(std::string srcStateName, std::string dstStateName) 
 {
-		
+    VERB_L3("Saving transition");
+	
+	Transition new_transition;
+	
+	new_transition.src_state = getStateID(srcStateName);
+	new_transition.ctx = tmpEntities; 
+	tmpEntities.clear();
+	new_transition.dst_state = getStateID(dstStateName);
 }
+

@@ -318,7 +318,7 @@ void SymRS::encodeInitStates(void)
 
 #ifndef NDEBUG
     if (opts->part_tr_rel)
-        assert(partTrans != NULL);
+        assert(partTrans != nullptr);
 #endif
 		
     initStates = new BDD(BDD_FALSE);

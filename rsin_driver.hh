@@ -5,6 +5,7 @@
 #include "rsin_parser.hh"
 #include "rs.hh"
 #include "formrsctl.hh"
+#include "options.hh"
 
 // Tell Flex the lexer's prototype ...
 #define YY_DECL                                  \
@@ -19,12 +20,20 @@ YY_DECL;
 class rsin_driver
 {
 public:
+    rsin_driver(void);
     rsin_driver(RctSys *rs);
     virtual ~rsin_driver();
 
     //std::map<std::string, int> variables;
     RctSys *rs;
     FormRSCTL *rsctlform;
+    Options *opts;
+	
+	//
+	// options in configuration file
+	//
+	bool use_ctx_aut;
+	bool use_concentrations;
 
     // Handling the scanner
     void scan_begin();
@@ -35,14 +44,26 @@ public:
     std::string file;
     bool trace_parsing;
 
-    void addFormRSCTL(FormRSCTL *f) { rsctlform = f; }
+	void setOptions(Options *opts) 		{ this->opts = opts; };
+    void addFormRSCTL(FormRSCTL *f) 	{ rsctlform = f; };
     FormRSCTL *getFormRSCTL(void);
+
+	void ensureOptionsAllowed(void);
+	void useContextAutomaton(void)		{ ensureOptionsAllowed(); use_ctx_aut = true; };
+	void useConcentrations(void)		{ ensureOptionsAllowed(); use_concentrations = true; };
+	
+	void ensureReactionSystemReady(void);
+	void setupReactionSystem(void);
+	
+	RctSys *getReactionSystem(void);
 
     // Error handling.
     void error(const yy::location &l, const std::string &m);
     void error(const std::string &m);
+	
+private:
+	void initialise(void);
 };
 
 #endif
-
 

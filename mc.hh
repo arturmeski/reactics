@@ -59,10 +59,10 @@ public:
         pv_succ_E = srs->getEncPVsucc_E();
         pv_act_E = srs->getEncPVact_E();
         trp = srs->getEncPartTrans();
-        if (trp == NULL) trp_size = 0;
+        if (trp == nullptr) trp_size = 0;
         else trp_size = trp->size();
         trm = srs->getEncMonoTrans();
-        reach = NULL;
+        reach = nullptr;
     }
 
     void printReach(void);

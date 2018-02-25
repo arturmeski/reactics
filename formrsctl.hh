@@ -82,8 +82,8 @@ public:
 	{
 		oper = BCTX_PV;
 		name = varName;
-        arg[0] = NULL;
-        arg[1] = NULL;
+        arg[0] = nullptr;
+        arg[1] = nullptr;
 	}
 	
    /**
@@ -94,8 +94,8 @@ public:
    BoolContexts(bool val) {
        oper = BCTX_TF;
        tf = val;
-       arg[0] = NULL;
-       arg[1] = NULL;
+       arg[0] = nullptr;
+       arg[1] = nullptr;
    }
 
    /**
@@ -105,7 +105,7 @@ public:
        assert(op == BCTX_NOT);
        oper = op;
        arg[0] = form1;
-       arg[1] = NULL;
+       arg[1] = nullptr;
    }
 
    /**
@@ -132,12 +132,12 @@ public:
        return oper;
    }
    BoolContexts *getLeftSF(void) const {
-       assert(arg[0] != NULL);
+       assert(arg[0] != nullptr);
        return arg[0];
    }
    BoolContexts *getRightSF(void) const {
        assert(BCTX_COND_2ARG(oper));
-       assert(arg[1] != NULL);
+       assert(arg[1] != nullptr);
        return arg[1];
    }
 };
@@ -162,12 +162,12 @@ public:
     FormRSCTL(std::string varName) {
         oper = RSCTL_PV;
         name = varName;
-        arg[0] = NULL;
-        arg[1] = NULL;
-        bdd = NULL;
-        actions = NULL;
-        actions_bdd = NULL;
-		boolCtx = NULL;
+        arg[0] = nullptr;
+        arg[1] = nullptr;
+        bdd = nullptr;
+        actions = nullptr;
+        actions_bdd = nullptr;
+		boolCtx = nullptr;
     }
 
     /**
@@ -178,12 +178,12 @@ public:
     FormRSCTL(bool val) {
         oper = RSCTL_TF;
         tf = val;
-        arg[0] = NULL;
-        arg[1] = NULL;
-        bdd = NULL;
-        actions = NULL;
-        actions_bdd = NULL;
-		boolCtx = NULL;
+        arg[0] = nullptr;
+        arg[1] = nullptr;
+        bdd = nullptr;
+        actions = nullptr;
+        actions_bdd = nullptr;
+		boolCtx = nullptr;
     }
 
     /**
@@ -195,41 +195,41 @@ public:
         oper = op;
         arg[0] = form1;
         arg[1] = form2;
-        bdd = NULL;
-        actions = NULL;
-        actions_bdd = NULL;
-		boolCtx = NULL;
+        bdd = nullptr;
+        actions = nullptr;
+        actions_bdd = nullptr;
+		boolCtx = nullptr;
     }
 
     /**
      * @brief Constructor for two-argument formula with action restrictions.
      */
     FormRSCTL(Oper op, ActionsVec_f *acts, FormRSCTL *form1, FormRSCTL *form2) {
-        assert(acts != NULL);
+        assert(acts != nullptr);
         assert(RSCTL_COND_2ARG(op));
         assert(RSCTL_COND_ACT(op));
         oper = op;
         arg[0] = form1;
         arg[1] = form2;
-        bdd = NULL;
+        bdd = nullptr;
         actions = acts;
-        actions_bdd = NULL;
-		boolCtx = NULL;
+        actions_bdd = nullptr;
+		boolCtx = nullptr;
     }
 
    /**
     * @brief Constructor for two-argument formula with Boolean context restrictions.
     */
    FormRSCTL(Oper op, BoolContexts *bctx, FormRSCTL *form1, FormRSCTL *form2) {
-       assert(bctx != NULL);
+       assert(bctx != nullptr);
        assert(RSCTL_COND_2ARG(op));
        assert(RSCTL_COND_ACT(op));
        oper = op;
        arg[0] = form1;
        arg[1] = form2;
-       bdd = NULL;
-       actions = NULL;
-       actions_bdd = NULL;
+       bdd = nullptr;
+       actions = nullptr;
+       actions_bdd = nullptr;
 	   boolCtx = bctx;
    }
 
@@ -241,42 +241,42 @@ public:
         assert(!RSCTL_COND_ACT(op));
         oper = op;
         arg[0] = form1;
-        arg[1] = NULL;
-        bdd = NULL;
-        actions = NULL;
-        actions_bdd = NULL;
-		boolCtx = NULL;
+        arg[1] = nullptr;
+        bdd = nullptr;
+        actions = nullptr;
+        actions_bdd = nullptr;
+		boolCtx = nullptr;
     }
 
     /**
      * @brief Constructor for one-argument formula with action restrictions.
      */
     FormRSCTL(Oper op, ActionsVec_f *acts, FormRSCTL *form1) {
-        assert(acts != NULL);
+        assert(acts != nullptr);
         assert(RSCTL_COND_1ARG(op));
         assert(RSCTL_COND_ACT(op));
         oper = op;
         arg[0] = form1;
-        arg[1] = NULL;
-        bdd = NULL;
+        arg[1] = nullptr;
+        bdd = nullptr;
         actions = acts;
-        actions_bdd = NULL;
-		boolCtx = NULL;
+        actions_bdd = nullptr;
+		boolCtx = nullptr;
     }
 
    /**
     * @brief Constructor for one-argument formula with Boolean context restrictions.
     */
    FormRSCTL(Oper op, BoolContexts *bctx, FormRSCTL *form1) {
-       assert(bctx != NULL);
+       assert(bctx != nullptr);
        assert(RSCTL_COND_1ARG(op));
        assert(RSCTL_COND_ACT(op));
        oper = op;
        arg[0] = form1;
-       arg[1] = NULL;
-       bdd = NULL;
-       actions = NULL;
-       actions_bdd = NULL;
+       arg[1] = nullptr;
+       bdd = nullptr;
+       actions = nullptr;
+       actions_bdd = nullptr;
 	   boolCtx = bctx;
 	}
 
@@ -295,12 +295,12 @@ public:
     bool hasOper(Oper op) const;
     const BDD *getBDD(void) const {
         assert(oper == RSCTL_PV);
-        assert(bdd != NULL);
+        assert(bdd != nullptr);
         return bdd;
     }
     const BDD *getActionsBDD(void) const {
         assert(RSCTL_COND_ACT(oper));
-        assert(actions_bdd != NULL);
+        assert(actions_bdd != nullptr);
         return actions_bdd;
     }
     Oper getOper(void) const {
@@ -308,12 +308,12 @@ public:
         return oper;
     }
     FormRSCTL *getLeftSF(void) const {
-        assert(arg[0] != NULL);
+        assert(arg[0] != nullptr);
         return arg[0];
     }
     FormRSCTL *getRightSF(void) const {
         assert(RSCTL_COND_2ARG(oper));
-        assert(arg[1] != NULL);
+        assert(arg[1] != nullptr);
         return arg[1];
     }
     std::string getActionsStr(void) const;
@@ -324,7 +324,7 @@ public:
     void encodeEntities(const SymRS *srs);
     void encodeActions(const SymRS *srs);
     void forgetActionsBDD(void) {
-        if (actions_bdd != NULL) delete actions_bdd;
+        if (actions_bdd != nullptr) delete actions_bdd;
     }
     bool isERSCTL(void) const;
 };
