@@ -181,11 +181,11 @@ void RctSys::printSystem(void)
 void RctSys::ctxAutEnable(void)
 {
 	assert(ctx_aut == nullptr);
-	ctx_aut = new CtxAut;
+	ctx_aut = new CtxAut(opts);
 }
 
 void RctSys::ctxAutAddState(std::string stateName)
 {
 	assert(ctx_aut != nullptr);
-	
+	ctx_aut->addState(stateName);
 }

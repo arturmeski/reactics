@@ -46,7 +46,7 @@ public:
     FormRSCTL *getFormRSCTL(void);
 
 	void ensureOptionsAllowed(void);
-	void useContextAutomaton(void)		{ ensureOptionsAllowed(); use_ctx_aut = true; getReactionSystem()->ctxAutEnable(); };
+	void useContextAutomaton(void);
 	void useConcentrations(void)		{ ensureOptionsAllowed(); use_concentrations = true; };
 	
 	void ensureReactionSystemReady(void);

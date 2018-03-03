@@ -94,3 +94,10 @@ RctSys *rsin_driver::getReactionSystem(void)
 	return rs;
 }
 
+void rsin_driver::useContextAutomaton(void)
+{
+	ensureOptionsAllowed(); 
+	use_ctx_aut = true; 
+	getReactionSystem()->ctxAutEnable();
+}
+
