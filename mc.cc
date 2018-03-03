@@ -117,7 +117,7 @@ void ModelChecker::printReachWithSucc(void)
     cleanup();
 }
 
-bool ModelChecker::checkReach(const RctSys::Entities testState)
+bool ModelChecker::checkReach(const Entities testState)
 {
     if (opts->measure)
         opts->ver_time = cpuTime();

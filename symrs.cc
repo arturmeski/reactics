@@ -8,7 +8,7 @@
 
 #include "symrs.hh"
 
-BDD SymRS::encEntity_raw(RctSys::Entity entity, bool succ) const
+BDD SymRS::encEntity_raw(Entity entity, bool succ) const
 {
     BDD r;
 
@@ -20,7 +20,7 @@ BDD SymRS::encEntity_raw(RctSys::Entity entity, bool succ) const
     return r;
 }
 
-BDD SymRS::encEntitiesConj_raw(const RctSys::Entities &entities, bool succ)
+BDD SymRS::encEntitiesConj_raw(const Entities &entities, bool succ)
 {
     BDD r = BDD_TRUE;
 
@@ -33,7 +33,7 @@ BDD SymRS::encEntitiesConj_raw(const RctSys::Entities &entities, bool succ)
     return r;
 }
 
-BDD SymRS::encEntitiesDisj_raw(const RctSys::Entities &entities, bool succ)
+BDD SymRS::encEntitiesDisj_raw(const Entities &entities, bool succ)
 {
     BDD r = BDD_FALSE;
 
@@ -46,7 +46,7 @@ BDD SymRS::encEntitiesDisj_raw(const RctSys::Entities &entities, bool succ)
     return r;
 }
 
-BDD SymRS::encStateActEntitiesConj(const RctSys::Entities &entities)
+BDD SymRS::encStateActEntitiesConj(const Entities &entities)
 {
     BDD r = BDD_TRUE;
 
@@ -62,7 +62,7 @@ BDD SymRS::encStateActEntitiesConj(const RctSys::Entities &entities)
     return r;
 }
 
-BDD SymRS::encStateActEntitiesDisj(const RctSys::Entities &entities)
+BDD SymRS::encStateActEntitiesDisj(const Entities &entities)
 {
     BDD r = BDD_FALSE;
 
@@ -182,7 +182,7 @@ void SymRS::encodeTransitions(void)
         cond.rctt = rs->reactions[i].rctt;
         cond.inhib = rs->reactions[i].inhib;
     
-        for (RctSys::Entities::iterator p = rs->reactions[i].prod.begin();
+        for (Entities::iterator p = rs->reactions[i].prod.begin();
                 p != rs->reactions[i].prod.end(); ++p)
         {
             dr[*p].push_back(cond);
@@ -289,7 +289,7 @@ void SymRS::encodeTransitions(void)
     VERB("Reactions ready");
 }
 
-BDD SymRS::getEncState(const RctSys::Entities &entities)
+BDD SymRS::getEncState(const Entities &entities)
 {
     assert(0);
     //BDD state = compState(encEntitiesConj(rs->initState));

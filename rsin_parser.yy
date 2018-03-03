@@ -91,7 +91,12 @@ options:
 	;
 
 option:
-	| USE_CTX_AUT { } 
+	| USE_CTX_AUT { 
+		driver.useContextAutomaton(); 
+	}
+	| USE_CONCENTRATIONS {
+		driver.useConcentrations();
+	}
 	;
 
 /* 
@@ -190,6 +195,8 @@ ctxaut:
 	;
 
 autstate: IDENTIFIER {
+		driver.getReactionSystem()->ctxAutAddState(*$1);
+		free($1);
 	}
 	;
 

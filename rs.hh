@@ -15,6 +15,8 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include "types.hh"
+#include "ctx_aut.hh"
 #include "macro.hh"
 #include "options.hh"
 #include "memtime.hh"
@@ -26,38 +28,9 @@ class RctSys
 {
 	    friend class SymRS;
 	    friend class SymRSstate;
-	public:
-	    typedef unsigned int Entity;
-	    typedef std::set<Entity> Entities;
-	    struct Reaction {
-	        Entities rctt;
-	        Entities inhib;
-	        Entities prod;
-	    };
-	    typedef std::vector<Reaction> Reactions;
-	    typedef std::vector<std::string> EntitiesByIds;
-	    typedef std::map<std::string, Entity> EntitiesByName;
-	    typedef std::set<Entities> EntitiesSets;
-	private:
-	    Reactions reactions;
-	    EntitiesSets initStates;
-
-	    Entities actionEntities;
-
-	    EntitiesByIds entities_ids;
-	    EntitiesByName entities_names;
-
-	    Entities tmpReactants;
-	    Entities tmpInhibitors;
-	    Entities tmpProducts;
-
-	    Entities tmpState;
-
-	    Entity getEntityID(std::string entityName);
-
-	    Options *opts;
 
 	public:
+		RctSys(void);
 	    void setOptions(Options *opts)
 	    {
 	        this->opts = opts;
@@ -93,40 +66,31 @@ class RctSys
 	    void showInitialStates(void);
 	    void showActionEntities(void);
 	    void printSystem(void);
-};
 
-// Context Automaton
-class CtxAut
-{
-	public:
-	    typedef unsigned int State;
-	    typedef std::vector<std::string> StatesById;
-	    typedef std::map<std::string, State> StatesByName;
-		struct Transition {
-			State src_state;
-			RctSys::Entities ctx;
-			State dst_state;
-		};
-		
-		bool hasState(std::string name);
-		void addState(std::string stateName);
-		State getStateID(std::string name);
-		void addTransition(std::string srcStateName, std::string dstStateName);
-		void pushContextEntity(RctSys::Entity entity_id);	
-	    void setOptions(Options *opts) { this->opts = opts; }
+		void ctxAutEnable(void);		
+		void ctxAutAddState(std::string stateName);
 		
 	private:
-	    Options *opts;
-		StatesById states_ids;
-		StatesByName states_names;
-		RctSys::Entities tmpEntities;	
-};
+	    Reactions reactions;
+	    EntitiesSets initStates;
 
-class RctSysWithCtxAut : public RctSys
-{
-	// friend class CtxAut;
-	
-	CtxAut ctx_aut;
+	    Entities actionEntities;
+
+		CtxAut *ctx_aut;
+
+	    EntitiesByIds entities_ids;
+	    EntitiesByName entities_names;
+
+	    Entities tmpReactants;
+	    Entities tmpInhibitors;
+	    Entities tmpProducts;
+
+	    Entities tmpState;
+
+	    Options *opts;
+
+	    Entity getEntityID(std::string entityName);
+
 };
 
 #endif

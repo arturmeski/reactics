@@ -14,6 +14,7 @@
 #include <map>
 #include <cassert>
 #include "cudd.hh"
+#include "types.hh"
 #include "macro.hh"
 #include "bdd_macro.hh"
 #include "rs.hh"
@@ -36,11 +37,11 @@ class SymRS
     Options *opts;
 
     struct ReactionCond {
-        RctSys::Entities rctt;
-        RctSys::Entities inhib;
+        Entities rctt;
+        Entities inhib;
     };
     typedef vector<ReactionCond> ReactionConds;
-    typedef map<RctSys::Entity,ReactionConds> DecompReactions;
+    typedef map<Entity,ReactionConds> DecompReactions;
     typedef std::vector<int> StateEntityToAction; 
 
     StateEntityToAction stateToAct;
@@ -62,33 +63,33 @@ class SymRS
     unsigned int totalStateVars;
     unsigned int totalActions;
 
-    BDD encEntity_raw(RctSys::Entity entity, bool succ) const;
-    BDD encEntity(RctSys::Entity entity) const {
+    BDD encEntity_raw(Entity entity, bool succ) const;
+    BDD encEntity(Entity entity) const {
         return encEntity_raw(entity, false);
     }
-    BDD encActEntity(RctSys::Entity entity) const {
+    BDD encActEntity(Entity entity) const {
 		assert(entity < pv_act->size());
         return (*pv_act)[entity];
     }
-    BDD encEntitySucc(RctSys::Entity entity) const {
+    BDD encEntitySucc(Entity entity) const {
         return encEntity_raw(entity, true); 
     }
-    BDD encEntitiesConj_raw(const RctSys::Entities &entities, bool succ);
-    BDD encEntitiesConj(const RctSys::Entities &entities) {
+    BDD encEntitiesConj_raw(const Entities &entities, bool succ);
+    BDD encEntitiesConj(const Entities &entities) {
         return encEntitiesConj_raw(entities, false);
     }
-    BDD encEntitiesConjSucc(const RctSys::Entities &entities) {
+    BDD encEntitiesConjSucc(const Entities &entities) {
         return encEntitiesConj_raw(entities, true);
     }
-    BDD encEntitiesDisj_raw(const RctSys::Entities &entities, bool succ);
-    BDD encEntitiesDisj(const RctSys::Entities &entities) {
+    BDD encEntitiesDisj_raw(const Entities &entities, bool succ);
+    BDD encEntitiesDisj(const Entities &entities) {
         return encEntitiesDisj_raw(entities, false);
     }
-    BDD encEntitiesDisjSucc(const RctSys::Entities &entities) {
+    BDD encEntitiesDisjSucc(const Entities &entities) {
         return encEntitiesDisj_raw(entities, true);
     }
-    BDD encStateActEntitiesConj(const RctSys::Entities &entities);
-    BDD encStateActEntitiesDisj(const RctSys::Entities &entities);
+    BDD encStateActEntitiesConj(const Entities &entities);
+    BDD encStateActEntitiesDisj(const Entities &entities);
 
     /**
      * @brief Complements an encoding of a given state by negating all the variables that are not set to true
@@ -134,7 +135,7 @@ public:
     BDD *getEncPVact_E(void) { return pv_act_E; }
     vector<BDD> *getEncPartTrans(void) { return partTrans; }
     BDD *getEncMonoTrans(void) { return monoTrans; }
-    BDD getEncState(const RctSys::Entities &entities);
+    BDD getEncState(const Entities &entities);
     BDD *getEncInitStates(void) { return initStates; }
     Cudd *getCuddMgr(void) { return cuddMgr; }
     unsigned int getTotalStateVars(void) { return totalStateVars; }

@@ -16,8 +16,8 @@ rsin_driver::rsin_driver(RctSys *rs)
 
 void rsin_driver::initialise(void)
 {
-    this->rs = nullptr;
-    this->rsctlform = nullptr;
+    rs = nullptr;
+    rsctlform = nullptr;
 	opts = nullptr;
 	use_ctx_aut = false;
 	use_concentrations = false;
@@ -79,14 +79,11 @@ void rsin_driver::ensureReactionSystemReady(void)
 void rsin_driver::setupReactionSystem(void)
 {
 	assert(rs == nullptr);
-	if (use_ctx_aut)
-	{
-		rs = new RctSysWithCtxAut;
-	}
-	else
-	{
-		rs = new RctSys;
-	}
+	rs = new RctSys;
+	
+	if (use_ctx_aut) VERB("Using RS with CA")
+	else VERB("Using ordinary RS")
+
 	rs->setOptions(opts);
 }
 
@@ -96,3 +93,4 @@ RctSys *rsin_driver::getReactionSystem(void)
 	assert(rs != nullptr);
 	return rs;
 }
+

@@ -25,13 +25,10 @@ public:
     virtual ~rsin_driver();
 
     //std::map<std::string, int> variables;
-    RctSys *rs;
     FormRSCTL *rsctlform;
     Options *opts;
 	
-	//
-	// options in configuration file
-	//
+	// options in configuration file:
 	bool use_ctx_aut;
 	bool use_concentrations;
 
@@ -49,19 +46,22 @@ public:
     FormRSCTL *getFormRSCTL(void);
 
 	void ensureOptionsAllowed(void);
-	void useContextAutomaton(void)		{ ensureOptionsAllowed(); use_ctx_aut = true; };
+	void useContextAutomaton(void)		{ ensureOptionsAllowed(); use_ctx_aut = true; getReactionSystem()->ctxAutEnable(); };
 	void useConcentrations(void)		{ ensureOptionsAllowed(); use_concentrations = true; };
 	
 	void ensureReactionSystemReady(void);
 	void setupReactionSystem(void);
 	
 	RctSys *getReactionSystem(void);
+	CtxAut *getCtxAut(void);
 
     // Error handling.
     void error(const yy::location &l, const std::string &m);
     void error(const std::string &m);
 	
 private:
+    RctSys *rs;
+
 	void initialise(void);
 };
 

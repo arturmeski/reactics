@@ -10,7 +10,7 @@ CXXFLAGS = -std=c++14 $(CXXFLAGS_SILENT)
 #CXXFLAGS = -std=c++14 -O3 -DPUBLIC_RELEASE -DNDEBUG #-g
 LDLIBS = $(CUDD_INCLUDE) 
 
-OBJ = rs.o symrs.o mc.o rsin_driver.o rsin_parser.o rsin_parser.lex.o formrsctl.o 
+OBJ = rs.o ctx_aut.o symrs.o mc.o rsin_driver.o rsin_parser.o rsin_parser.lex.o formrsctl.o 
 
 all: main
 
