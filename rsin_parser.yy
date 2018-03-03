@@ -210,7 +210,11 @@ auttransitions:
 	| auttrans SEMICOL auttransitions
 	;	
 
-auttrans: LCB contextset RCB COL autstate RARR autstate
+auttrans: LCB contextset RCB COL IDENTIFIER RARR IDENTIFIER {
+		driver.getReactionSystem()->ctxAutAddTransition(*$5, *$7);
+		free($5);
+		free($7);
+	}
 	;
 	
 contextset:
@@ -219,7 +223,8 @@ contextset:
 	;
 		
 ctxentity: IDENTIFIER {
-	//
+		driver.getReactionSystem()->ctxAutPushNamedContextEntity(*$1);
+		free($1);
 	}
 	;
 

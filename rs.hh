@@ -24,6 +24,8 @@
 using std::cout;
 using std::endl;
 
+class CtxAut;
+
 class RctSys
 {
 	    friend class SymRS;
@@ -69,6 +71,8 @@ class RctSys
 
 		void ctxAutEnable(void);		
 		void ctxAutAddState(std::string stateName);
+		void ctxAutAddTransition(std::string srcStateName, std::string dstStateName);
+		void ctxAutPushNamedContextEntity(std::string entity_name);
 		
 	private:
 	    Reactions reactions;

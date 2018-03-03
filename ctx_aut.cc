@@ -1,6 +1,12 @@
 
 #include "ctx_aut.hh"
 
+CtxAut::CtxAut(Options *opts, RctSys *parent_rctsys) 
+{ 
+	setOptions(opts);
+	this->parent_rctsys = parent_rctsys;
+}
+
 bool CtxAut::hasState(std::string name)
 {
     if (states_names.find(name) == states_names.end())
@@ -16,6 +22,12 @@ State CtxAut::getStateID(std::string name)
         FERROR("No such state: " << name);
     }
     return states_names[name];
+}
+
+std::string CtxAut::getStateName(State state_id)
+{
+	assert(state_id < states_ids.size());
+	return states_ids[state_id];
 }
 
 void CtxAut::addState(std::string name)
@@ -34,6 +46,7 @@ void CtxAut::addState(std::string name)
 void CtxAut::printAutomaton(void)
 {
 	showStates();
+	showTransitions();
 }
 
 void CtxAut::showStates(void)
@@ -58,6 +71,17 @@ void CtxAut::addTransition(std::string srcStateName, std::string dstStateName)
 	new_transition.ctx = tmpEntities; 
 	tmpEntities.clear();
 	new_transition.dst_state = getStateID(dstStateName);
+	transitions.push_back(new_transition);
+}
+
+void CtxAut::showTransitions(void)
+{
+	cout << "# Context Automaton Transitions:" << endl;
+	for (const auto &t : transitions)
+	{
+		cout << " * [" << getStateName(t.src_state) << " -> " << getStateName(t.dst_state) 
+			 << "]: {" << parent_rctsys->entitiesToStr(t.ctx) << "}" << endl;
+	}	
 }
 
 /** EOF **/

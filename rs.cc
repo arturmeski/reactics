@@ -181,11 +181,24 @@ void RctSys::printSystem(void)
 void RctSys::ctxAutEnable(void)
 {
 	assert(ctx_aut == nullptr);
-	ctx_aut = new CtxAut(opts);
+	ctx_aut = new CtxAut(opts, this);
 }
 
 void RctSys::ctxAutAddState(std::string stateName)
 {
 	assert(ctx_aut != nullptr);
 	ctx_aut->addState(stateName);
+}
+
+void RctSys::ctxAutAddTransition(std::string srcStateName, std::string dstStateName)
+{
+	assert(ctx_aut != nullptr);
+	ctx_aut->addTransition(srcStateName, dstStateName);
+}
+
+void RctSys::ctxAutPushNamedContextEntity(std::string entity_name)
+{
+	assert(ctx_aut != nullptr);
+	Entity entity_id = getEntityID(entity_name);
+	ctx_aut->pushContextEntity(entity_id);
 }

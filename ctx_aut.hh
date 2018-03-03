@@ -15,6 +15,7 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include "rs.hh"
 #include "types.hh"
 #include "macro.hh"
 #include "options.hh"
@@ -22,24 +23,30 @@
 using std::cout;
 using std::endl;
 
+class RctSys;
+
 class CtxAut
 {
 	public:
-		CtxAut(Options *opts) { setOptions(opts); }
+		CtxAut(Options *opts, RctSys *parent_rctsys);
 		bool hasState(std::string name);
 		void addState(std::string stateName);
 		State getStateID(std::string name);
+		std::string getStateName(State state_id);
 		void printAutomaton(void);
 		void showStates(void);
 		void addTransition(std::string srcStateName, std::string dstStateName);
+		void showTransitions(void);
 		void pushContextEntity(Entity entity_id);	
 	    void setOptions(Options *opts) { this->opts = opts; }
 		
 	private:
+		RctSys *parent_rctsys;
 	    Options *opts;
 		StatesById states_ids;
 		StatesByName states_names;
-		Entities tmpEntities;	
+		Entities tmpEntities;
+		Transitions transitions;
 };
 
 #endif /* RS_CTX_AUT_HH */
