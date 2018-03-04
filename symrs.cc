@@ -399,7 +399,8 @@ void SymRS::encode(void)
     VERB("Encoding done");
 }
 
-BDD SymRS::encActStrEntity(std::string name) const {
+BDD SymRS::encActStrEntity(std::string name) const 
+{
     int id = getMappedStateToActID(rs->getEntityID(name));
 	if (id < 0) 
 	{
@@ -409,3 +410,5 @@ BDD SymRS::encActStrEntity(std::string name) const {
 		return encActEntity(getMappedStateToActID(rs->getEntityID(name)));
 	}
 }
+
+/** EOF **/

@@ -75,6 +75,8 @@ class RctSys
 		void ctxAutAddTransition(std::string srcStateName, std::string dstStateName);
 		void ctxAutPushNamedContextEntity(std::string entity_name);
 		
+		bool initStatesDefined(void) { return initStates.size() != 0; }
+		
 	private:
 	    Reactions reactions;
 	    EntitiesSets initStates;

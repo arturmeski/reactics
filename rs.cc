@@ -122,6 +122,10 @@ void RctSys::pushStateEntity(std::string entityName)
 
 void RctSys::commitInitState(void)
 {
+	if (ctx_aut != nullptr)
+	{
+		FERROR("Initial RS states must not be used with context automaton");
+	}
     initStates.insert(tmpState); 
     tmpState.clear();
 }
@@ -181,6 +185,10 @@ void RctSys::printSystem(void)
 void RctSys::ctxAutEnable(void)
 {
 	assert(ctx_aut == nullptr);
+	if (initStatesDefined())
+	{
+		FERROR("Initial states must not be defined if using context automaton");
+	}
 	ctx_aut = new CtxAut(opts, this);
 }
 
@@ -208,3 +216,5 @@ void RctSys::ctxAutPushNamedContextEntity(std::string entityName)
 	Entity entity_id = getEntityID(entityName);
 	ctx_aut->pushContextEntity(entity_id);
 }
+
+/** EOF **/
