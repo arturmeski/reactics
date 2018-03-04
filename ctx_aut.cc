@@ -40,7 +40,21 @@ void CtxAut::addState(std::string name)
 
         states_ids.push_back(name);
         states_names[name] = new_state_id;
+		
+		if (!init_state_defined)
+		{
+			setInitState(name);
+		}
     }
+}
+
+void CtxAut::setInitState(std::string name)
+{
+	VERB_L2("Setting initial CA state: " << name);
+	State state_id = getStateID(name);
+	VERB_L2("Got initial CA state ID: index=" << state_id);
+	init_state_id = state_id;
+	init_state_defined = true;
 }
 
 void CtxAut::printAutomaton(void)
@@ -52,6 +66,7 @@ void CtxAut::printAutomaton(void)
 void CtxAut::showStates(void)
 {
 	cout << "# Context Automaton States:" << endl;
+	cout << " = Init state: " << getStateName(init_state_id) << endl;
 	for (const auto &s : states_ids)
 		cout << " * " << s << endl;
 }

@@ -31,6 +31,7 @@ class CtxAut
 		CtxAut(Options *opts, RctSys *parent_rctsys);
 		bool hasState(std::string name);
 		void addState(std::string stateName);
+		void setInitState(std::string stateName);
 		State getStateID(std::string name);
 		std::string getStateName(State state_id);
 		void printAutomaton(void);
@@ -45,6 +46,8 @@ class CtxAut
 	    Options *opts;
 		StatesById states_ids;
 		StatesByName states_names;
+		State init_state_id;
+		bool init_state_defined;
 		Entities tmpEntities;
 		Transitions transitions;
 };

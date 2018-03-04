@@ -46,7 +46,7 @@ class rsin_driver;
 
 %token OPTIONS USE_CTX_AUT USE_CONCENTRATIONS
 %token REACTIONS INITIALCONTEXTS CONTEXTENTITIES RSCTLFORM
-%token CONTEXTAUTOMATON STATES TRANSITIONS
+%token CONTEXTAUTOMATON STATES INITSTATE TRANSITIONS
 %token LCB RCB LRB RRB LSB RSB LAB RAB COL SEMICOL COMMA RARR
 %token AND OR XOR IMPLIES NOT
 %token EX EU EF EG AX AU AF AG E A X U F G EMPTY
@@ -191,6 +191,7 @@ actentity: IDENTIFIER {
 
 ctxaut:
 	| STATES LCB autstates RCB ctxaut
+	| INITSTATE LCB autinitstate RCB ctxaut
 	| TRANSITIONS LCB auttransitions RCB ctxaut
 	;
 
@@ -203,6 +204,12 @@ autstate: IDENTIFIER {
 autstates:
 	autstate
 	| autstate COMMA autstates
+	;
+
+autinitstate: IDENTIFIER {
+		driver.getReactionSystem()->ctxAutSetInitState(*$1);
+		free($1);
+	}
 	;
 	
 auttransitions:

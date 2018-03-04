@@ -190,15 +190,21 @@ void RctSys::ctxAutAddState(std::string stateName)
 	ctx_aut->addState(stateName);
 }
 
+void RctSys::ctxAutSetInitState(std::string stateName)
+{
+	assert(ctx_aut != nullptr);
+	ctx_aut->setInitState(stateName);
+}
+
 void RctSys::ctxAutAddTransition(std::string srcStateName, std::string dstStateName)
 {
 	assert(ctx_aut != nullptr);
 	ctx_aut->addTransition(srcStateName, dstStateName);
 }
 
-void RctSys::ctxAutPushNamedContextEntity(std::string entity_name)
+void RctSys::ctxAutPushNamedContextEntity(std::string entityName)
 {
 	assert(ctx_aut != nullptr);
-	Entity entity_id = getEntityID(entity_name);
+	Entity entity_id = getEntityID(entityName);
 	ctx_aut->pushContextEntity(entity_id);
 }

@@ -71,6 +71,7 @@ class RctSys
 
 		void ctxAutEnable(void);		
 		void ctxAutAddState(std::string stateName);
+		void ctxAutSetInitState(std::string stateName);
 		void ctxAutAddTransition(std::string srcStateName, std::string dstStateName);
 		void ctxAutPushNamedContextEntity(std::string entity_name);
 		
