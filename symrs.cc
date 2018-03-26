@@ -52,7 +52,7 @@ BDD SymRS::encStateActEntitiesConj(const Entities &entities)
         BDD state_act = encEntity(*entity);
         int actEntity;
 		
-		// if entity is also an aciton entity, we include it in the encoding
+		// if entity is also an action entity, we include it in the encoding
         if ((actEntity = getMappedStateToActID(*entity)) >= 0)
             state_act += encActEntity(actEntity);
         
