@@ -13,15 +13,16 @@ SymRS::SymRS(RctSys *rs, Options *opts)
     totalStateVars = rs->getEntitiesSize();
     totalReactions = rs->getReactionsSize();
     totalActions = rs->getActionsSize();
+	
 	totalCtxAutStateVars = getCtxAutStateEncodingSize();
-
+	
     partTrans = nullptr;
     monoTrans = nullptr;
 	
 	pv_ca = nullptr;
 	pv_ca_succ = nullptr;
 
-    encode();
+    encode();	
 }
 
 BDD SymRS::encEntity_raw(Entity entity, bool succ) const
@@ -200,28 +201,31 @@ void SymRS::initBDDvars(void)
         *pv_act_E *= (*pv_act)[i];
     }
 
-	offset += totalActions;
-
-	VERB("Context automaton variables");
-
-	pv_ca = new vector<BDD>(totalCtxAutStateVars);
-	pv_ca_succ = new vector<BDD>(totalCtxAutStateVars);
-	pv_ca_E = new BDD(BDD_TRUE);
-	pv_ca_succ_E = new BDD(BDD_TRUE);
-	
-	//
-	// BDD variables for encoding local states of context automaton
-	//
-	unsigned int base_index = offset;
-	for (unsigned int i = 0; i < totalCtxAutStateVars; ++i)
+	if (usingContextAutomaton())
 	{
-		(*pv_ca)[i] = cuddMgr->bddVar(base_index);
-		(*pv_ca_succ)[i] = cuddMgr->bddVar(base_index+1);
+		VERB("Context automaton variables");
+
+		offset += totalActions;
+
+		pv_ca = new vector<BDD>(totalCtxAutStateVars);
+		pv_ca_succ = new vector<BDD>(totalCtxAutStateVars);
+		pv_ca_E = new BDD(BDD_TRUE);
+		pv_ca_succ_E = new BDD(BDD_TRUE);
 		
-		*pv_ca_E *= (*pv_ca)[i];
-		*pv_ca_succ_E *= (*pv_ca_succ)[i];
-	
-		base_index += 2;
+		//
+		// BDD variables for encoding local states of context automaton
+		//
+		unsigned int base_index = offset;
+		for (unsigned int i = 0; i < totalCtxAutStateVars; ++i)
+		{
+			(*pv_ca)[i] = cuddMgr->bddVar(base_index);
+			(*pv_ca_succ)[i] = cuddMgr->bddVar(base_index+1);
+			
+			*pv_ca_E *= (*pv_ca)[i];
+			*pv_ca_succ_E *= (*pv_ca_succ)[i];
+		
+			base_index += 2;
+		}
 	}
 
     VERB("All BDD variables ready");
@@ -433,6 +437,10 @@ BDD SymRS::encActStrEntity(std::string name) const
 
 size_t SymRS::getCtxAutStateEncodingSize(void)
 {
+	if (!usingContextAutomaton()) return 0;
+	
+	assert(rs->ctx_aut != nullptr);
+	
     size_t bitCount = 0;
     size_t bitCountMaxVal = 1;
     size_t numStates = rs->ctx_aut->statesCount();

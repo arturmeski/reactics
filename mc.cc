@@ -7,7 +7,7 @@ ModelChecker::ModelChecker(SymRS *srs, Options *opts)
     
 	cuddMgr = srs->getCuddMgr();
 	
-	if (srs->usingContextAutomaton())
+	if (!srs->usingContextAutomaton())
 	    initStates = srs->getEncInitStates();
 	
     totalStateVars = srs->getTotalStateVars();
@@ -107,11 +107,15 @@ inline BDD ModelChecker::getPreEctx(const BDD &states, const BDD *contexts)
 
 void ModelChecker::printReach(void)
 {
+	VERB_LN(2, "Printing/generating reachable states");
+	
     if (opts->measure)
         opts->ver_time = cpuTime();
 
+	assert(initStates != nullptr);
+	
     BDD *reach = new BDD(*initStates);
-    BDD reach_p = cuddMgr->bddZero();
+    BDD reach_p = BDD_FALSE;
 
     unsigned int k = 0;
 
@@ -138,12 +142,13 @@ void ModelChecker::printReach(void)
 
 void ModelChecker::printReachWithSucc(void)
 {
+	VERB_LN(2, "Printing/generating reachable states (with successors)");
+	
     BDD *reach = new BDD(*initStates);
     BDD reach_p = cuddMgr->bddZero();
 
     while (*reach != reach_p)
     {
-        //cout << "==[ " << ++k << " ]===========================" << endl;
         reach_p = *reach;
         BDD newStates = getSucc(*reach) - *reach;
         *reach += newStates;
@@ -530,7 +535,7 @@ bool ModelChecker::checkRSCTLbmc(FormRSCTL *form)
 
     cleanup(); 
 
-    cout << "Formula " << form->toStr() << (result ? " holds" : " does not hold") << endl;
+    cout << "Formula " << form->toStr() << " " << (result ? "holds" : "does not hold") << endl;
 
     if (opts->measure)
     {

@@ -65,7 +65,6 @@ class SymRS
     unsigned int totalActions;
 	unsigned int totalCtxAutStateVars;
 	
-
     BDD encEntity_raw(Entity entity, bool succ) const;
     BDD encEntity(Entity entity) const {
         return encEntity_raw(entity, false);

@@ -186,9 +186,13 @@ int main(int argc, char **argv)
         ModelChecker mc(&srs, opts);
 
         if (reach_states)
-            mc.printReach();
+		{
+			mc.printReach();
+		}
         if (reach_states_succ)
-            mc.printReachWithSucc();
+		{
+			mc.printReachWithSucc();	
+		}
 
         if (rstl_model_checking)
         {
