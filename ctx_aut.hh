@@ -40,6 +40,7 @@ class CtxAut
 		void showTransitions(void);
 		void pushContextEntity(Entity entity_id);	
 	    void setOptions(Options *opts) { this->opts = opts; }
+		size_t statesCount(void) { return states_ids.size(); }
 		
 	private:
 		RctSys *parent_rctsys;

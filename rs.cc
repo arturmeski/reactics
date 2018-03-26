@@ -172,14 +172,12 @@ void RctSys::showInitialStates(void)
 
 void RctSys::printSystem(void)
 {
-    showInitialStates();
+	if (!usingContextAutomaton())
+	    showInitialStates();
     showActionEntities();
     showReactions();
 	
-	if (ctx_aut != nullptr)
-	{
-		ctx_aut->printAutomaton();
-	}
+	if (ctx_aut != nullptr) ctx_aut->printAutomaton();
 }
 
 void RctSys::ctxAutEnable(void)

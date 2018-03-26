@@ -320,7 +320,7 @@ void SymRS::encodeInitStates(void)
     if (opts->part_tr_rel)
         assert(partTrans != nullptr);
 #endif
-		
+
     initStates = new BDD(BDD_FALSE);
 		
     for (auto state = rs->initStates.begin();

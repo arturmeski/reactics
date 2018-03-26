@@ -76,6 +76,7 @@ class RctSys
 		void ctxAutPushNamedContextEntity(std::string entity_name);
 		
 		bool initStatesDefined(void) { return initStates.size() != 0; }
+		bool usingContextAutomaton(void) { return ctx_aut != nullptr; }
 		
 	private:
 	    Reactions reactions;
