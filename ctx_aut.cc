@@ -86,7 +86,7 @@ void CtxAut::addTransition(std::string srcStateName, std::string dstStateName)
 {
     VERB_L3("Saving transition");
 	
-	Transition new_transition;
+	CtxAutTransition new_transition;
 	
 	new_transition.src_state = getStateID(srcStateName);
 	new_transition.ctx = tmpEntities; 

@@ -39,12 +39,12 @@ typedef std::vector<ReactionCond> ReactionConds;
 typedef std::map<Entity,ReactionConds> DecompReactions;
 typedef std::vector<int> StateEntityToAction;
 
-struct Transition {
+struct CtxAutTransition {
 	State src_state;
 	Entities ctx;
 	State dst_state;
 };
 
-typedef std::vector<Transition> Transitions;
+typedef std::vector<CtxAutTransition> CtxAutTransitions;
 
 #endif

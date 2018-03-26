@@ -51,7 +51,7 @@ class CtxAut
 		State init_state_id;
 		bool init_state_defined;
 		Entities tmpEntities;
-		Transitions transitions;
+		CtxAutTransitions transitions;
 };
 
 #endif /* RS_CTX_AUT_HH */

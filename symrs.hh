@@ -148,6 +148,7 @@ public:
     BDD encEntity(std::string name) const {
         return encEntity(rs->getEntityID(name));
     }
+	
     BDD encActStrEntity(std::string name) const;
     BDD getBDDtrue(void) const { return BDD_TRUE; }
     BDD getBDDfalse(void) const { return BDD_FALSE; }
