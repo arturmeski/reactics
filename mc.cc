@@ -7,8 +7,7 @@ ModelChecker::ModelChecker(SymRS *srs, Options *opts)
     
 	cuddMgr = srs->getCuddMgr();
 	
-	if (!srs->usingContextAutomaton())
-	    initStates = srs->getEncInitStates();
+	initStates = srs->getEncInitStates();
 	
     totalStateVars = srs->getTotalStateVars();
     
@@ -35,7 +34,7 @@ ModelChecker::ModelChecker(SymRS *srs, Options *opts)
     
 	if (srs->usingContextAutomaton())
 	{
-		ca_init_state = srs->getEncCtxAutInitState();
+		// ca_init_state = srs->getEncCtxAutInitState();
 		pv_ca = srs->getEncCtxAutPV();
 		pv_ca_succ = srs->getEncCtxAutPVsucc();
 		ca_tr = srs->getEncCtxAutTrans();

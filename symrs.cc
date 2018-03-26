@@ -337,8 +337,33 @@ BDD SymRS::encNoContext(void)
 
 void SymRS::encodeInitStates(void)
 {
-    VERB("Encoding initial states");
+	if (usingContextAutomaton())
+	{
+	    VERB("Encoding initial states (using context automaton)");
+		encodeInitStatesForCtxAut();
+	}
+	else
+	{
+	    VERB("Encoding initial states (for the action entities method -- no CA)");
+		encodeInitStatesNoCtxAut();
+	}
+    VERB("Initial states encoded");
+}
 
+void SymRS::encodeInitStatesForCtxAut(void)
+{
+    initStates = new BDD(BDD_TRUE);
+
+    for (unsigned int i = 0; i < totalStateVars; ++i)
+    {
+    	*initStates *= !(*pv)[i];
+    }
+
+	*initStates *= getEncCtxAutInitState();
+}
+
+void SymRS::encodeInitStatesNoCtxAut(void)
+{
 #ifndef NDEBUG
     if (opts->part_tr_rel)
         assert(partTrans != nullptr);
@@ -370,8 +395,6 @@ void SymRS::encodeInitStates(void)
 
         *initStates += q;
     }
-
-    VERB("Initial states encoded");
 }
 
 void SymRS::mapStateToAct(void)
@@ -487,15 +510,13 @@ BDD SymRS::encCtxAutState_raw(State state_id, bool succ) const
     return r;
 }
 
-BDD *SymRS::getEncCtxAutInitState(void)
+BDD SymRS::getEncCtxAutInitState(void)
 {
 	VERB_LN(2, "Encoding context automaton's initial state");
 	
 	State state = rs->ctx_aut->getInitState();
-	
-	BDD *r = new BDD(encCtxAutState(state));
-	
-	return r;
+
+	return encCtxAutState(state);
 }
 
 BDD *SymRS::getEncCtxAutTrans(void)

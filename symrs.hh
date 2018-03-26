@@ -113,6 +113,8 @@ class SymRS
     void encodeTransitions(void);
     void encodeTransitions_old(void);
     void encodeInitStates(void);
+	void encodeInitStatesForCtxAut(void);
+	void encodeInitStatesNoCtxAut(void);
     void mapStateToAct(void);
     void encode(void);
 
@@ -142,60 +144,60 @@ public:
     BDD getBDDtrue(void) const { return BDD_TRUE; }
     BDD getBDDfalse(void) const { return BDD_FALSE; }
 	
-   /**
-    * @brief Checks if context automaton is used
-    *
-    * @return True if CA is used
-    */
+    /**
+     * @brief Checks if context automaton is used
+     *
+     * @return True if CA is used
+     */
 	bool usingContextAutomaton(void) { return rs->ctx_aut != nullptr; }
 	
-   /**
-    * @brief Encodes a context automaton's state
-    *
-    * @return Returns the encoded state
-    */
+    /**
+     * @brief Encodes a context automaton's state
+     *
+     * @return Returns the encoded state
+     */
 	BDD encCtxAutState_raw(State state_id, bool succ) const;
 
-   /**
-    * @brief Encodes a context automaton's state (as predecessor/non-primed)
-    *
-    * @return Returns the encoded state
-    */
+	/**
+     * @brief Encodes a context automaton's state (as predecessor/non-primed)
+     *
+     * @return Returns the encoded state
+     */
 	BDD encCtxAutState(State state_id) const { return encCtxAutState_raw(state_id, false); }
 	
-   /**
-    * @brief Encodes a context automaton's state (as successor/primed)
-    *
-    * @return Returns the encoded state
-    */
+    /**
+     * @brief Encodes a context automaton's state (as successor/primed)
+     *
+     * @return Returns the encoded state
+     */
 	BDD encCtxAutStateSucc(State state_id) const { return encCtxAutState_raw(state_id, true); }
 	
-   /**
-    * @brief Encodes the initial state of context automaton
-    *
-    * @return Returns the encoded state(s)
-    */
-	BDD *getEncCtxAutInitState(void);
+    /**
+     * @brief Encodes the initial state of context automaton
+     *
+     * @return Returns the encoded state(s)
+     */
+	BDD getEncCtxAutInitState(void);
 	
-   /**
-    * @brief Getter for context automaton's state variables (predecessor/non-primed)
-    *
-    * @return Returns a vector of BDDs
-    */
+    /**
+     * @brief Getter for context automaton's state variables (predecessor/non-primed)
+     *
+     * @return Returns a vector of BDDs
+     */
 	vector<BDD> *getEncCtxAutPV(void) { return pv_ca; }
 
-   /**
-    * @brief Getter for context automaton's successor (primed) state variables
-    *
-    * @return Returns a vector of BDDs
-    */
+    /**
+     * @brief Getter for context automaton's successor (primed) state variables
+     *
+     * @return Returns a vector of BDDs
+     */
 	vector<BDD> *getEncCtxAutPVsucc(void) { return pv_ca_succ; }
 	
-   /**
-    * @brief Encodes the monolithic transition relation
-    *
-    * @return Returns a BDD encoding the transition relation
-    */	
+    /**
+     * @brief Encodes the monolithic transition relation
+     *
+     * @return Returns a BDD encoding the transition relation
+     */	
 	BDD *getEncCtxAutTrans(void);
 };
 

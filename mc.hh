@@ -31,11 +31,11 @@ class ModelChecker
     BDD *trm;
 	
 	// Context Automaton
-	BDD *ca_init_state;
 	vector<BDD> *pv_ca;
 	vector<BDD> *pv_ca_succ;
-	BDD *ca_tr;
-	
+	// BDD *ca_tr;
+	// BDD *ca_init_state;
+		
     unsigned int trp_size;
     unsigned int totalStateVars;
 
