@@ -27,6 +27,8 @@ class RctSys;
 
 class CtxAut
 {
+    friend class SymRS;
+	
 	public:
 		CtxAut(Options *opts, RctSys *parent_rctsys);
 		bool hasState(std::string name);

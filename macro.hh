@@ -33,4 +33,10 @@ if (opts->verbose > 2) { \
 	std::cerr << "ii VERBOSE(3): " << __FILE__ << " (" << __func__ << ":" << __LINE__ << "): " << s << std::endl;		\
 }
 
+#define VERB_LN(n,s) \
+assert(opts != nullptr); \
+if (opts->verbose >= (n)) { \
+	std::cerr << "ii VERBOSE(" << (n) << "): " << __FILE__ << " (" << __func__ << ":" << __LINE__ << "): " << s << std::endl;		\
+}
+
 #endif

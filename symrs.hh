@@ -94,6 +94,8 @@ class SymRS
     BDD encStateActEntitiesConj(const Entities &entities);
     BDD encStateActEntitiesDisj(const Entities &entities);
 
+	BDD encActEntitiesConj(const Entities &entities);
+
     /**
      * @brief Complements an encoding of a given state by negating all the variables that are not set to true
      *
@@ -120,20 +122,8 @@ class SymRS
 	size_t getCtxAutStateEncodingSize(void);
 	
 public:
-    SymRS(RctSys *rs, Options *opts)
-    {
-        this->rs = rs;
-        this->opts = opts;
-        totalStateVars = rs->getEntitiesSize();
-        totalReactions = rs->getReactionsSize();
-        totalActions = rs->getActionsSize();
-		totalCtxAutStateVars = getCtxAutStateEncodingSize();
-
-        partTrans = nullptr;
-        monoTrans = nullptr;
-
-        encode();
-    }
+    SymRS(RctSys *rs, Options *opts);
+	
     vector<BDD> *getEncPV(void) { return pv; }
     vector<BDD> *getEncPVsucc(void) { return pv_succ; }
     BDD *getEncPV_E(void) { return pv_E; }
@@ -193,14 +183,14 @@ public:
     *
     * @return Returns a vector of BDDs
     */
-	vector<BDD> *getEncCtxAutPV(void);
+	vector<BDD> *getEncCtxAutPV(void) { return pv_ca; }
 
    /**
     * @brief Getter for context automaton's successor (primed) state variables
     *
     * @return Returns a vector of BDDs
     */
-	vector<BDD> *getEncCtxAutPVsucc(void);
+	vector<BDD> *getEncCtxAutPVsucc(void) { return pv_ca_succ; }
 	
    /**
     * @brief Encodes the monolithic transition relation

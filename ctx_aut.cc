@@ -102,7 +102,7 @@ void CtxAut::showTransitions(void)
 	{
 		cout << " * [" << getStateName(t.src_state) << " -> " << getStateName(t.dst_state) 
 			 << "]: {" << parent_rctsys->entitiesToStr(t.ctx) << "}" << endl;
-	}	
+	}
 }
 
 /** EOF **/

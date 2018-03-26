@@ -5,6 +5,25 @@
 
 #include "symrs.hh"
 
+
+SymRS::SymRS(RctSys *rs, Options *opts)
+{
+    this->rs = rs;
+    this->opts = opts;
+    totalStateVars = rs->getEntitiesSize();
+    totalReactions = rs->getReactionsSize();
+    totalActions = rs->getActionsSize();
+	totalCtxAutStateVars = getCtxAutStateEncodingSize();
+
+    partTrans = nullptr;
+    monoTrans = nullptr;
+	
+	pv_ca = nullptr;
+	pv_ca_succ = nullptr;
+
+    encode();
+}
+
 BDD SymRS::encEntity_raw(Entity entity, bool succ) const
 {
     BDD r;
@@ -21,10 +40,10 @@ BDD SymRS::encEntitiesConj_raw(const Entities &entities, bool succ)
 {
     BDD r = BDD_TRUE;
 
-    for (auto entity = entities.begin(); entity != entities.end(); ++entity)
+    for (const auto &entity : entities)
     {
-        if (succ) r *= encEntitySucc(*entity);
-        else r *= encEntity(*entity);
+        if (succ) r *= encEntitySucc(entity);
+        else r *= encEntity(entity);
     }
 
     return r;
@@ -34,10 +53,10 @@ BDD SymRS::encEntitiesDisj_raw(const Entities &entities, bool succ)
 {
     BDD r = BDD_FALSE;
 
-    for (auto entity = entities.begin(); entity != entities.end(); ++entity)
+    for (const auto &entity : entities)
     {
-        if (succ) r += encEntitySucc(*entity);
-        else r += encEntity(*entity);
+        if (succ) r += encEntitySucc(entity);
+        else r += encEntity(entity);
     }
 
     return r;
@@ -47,13 +66,13 @@ BDD SymRS::encStateActEntitiesConj(const Entities &entities)
 {
     BDD r = BDD_TRUE;
 
-    for (auto entity = entities.begin(); entity != entities.end(); ++entity)
+    for (const auto &entity : entities)
     {
-        BDD state_act = encEntity(*entity);
+        BDD state_act = encEntity(entity);
         int actEntity;
 		
 		// if entity is also an action entity, we include it in the encoding
-        if ((actEntity = getMappedStateToActID(*entity)) >= 0)
+        if ((actEntity = getMappedStateToActID(entity)) >= 0)
             state_act += encActEntity(actEntity);
         
 		r *= state_act;
@@ -66,16 +85,29 @@ BDD SymRS::encStateActEntitiesDisj(const Entities &entities)
 {
     BDD r = BDD_FALSE;
 
-    for (auto entity = entities.begin(); entity != entities.end(); ++entity)
+    for (const auto &entity : entities)
     {
-        BDD state_act = encEntity(*entity);
+        BDD state_act = encEntity(entity);
         int actEntity;
 
 		// if entity is also an aciton entity, we include it in the encoding
-        if ((actEntity = getMappedStateToActID(*entity)) >= 0)
+        if ((actEntity = getMappedStateToActID(entity)) >= 0)
             state_act += encActEntity(actEntity);
 		
         r += state_act;
+    }
+
+    return r;
+}
+
+BDD SymRS::encActEntitiesConj(const Entities &entities)
+{
+    BDD r = BDD_TRUE;
+
+    for (const auto &entity : entities)
+    {
+        Entity actEntity = getMappedStateToActID(entity);
+        r *= encActEntity(actEntity);
     }
 
     return r;
@@ -413,7 +445,7 @@ size_t SymRS::getCtxAutStateEncodingSize(void)
 }
 
 BDD SymRS::encCtxAutState_raw(State state_id, bool succ) const
-{
+{	
 	// select appropriate BDD vector
 	vector<BDD> *enc_vec;
     if (succ)
@@ -421,7 +453,9 @@ BDD SymRS::encCtxAutState_raw(State state_id, bool succ) const
     else
         enc_vec = pv_ca;
 
-    BDD r;
+	assert(enc_vec != nullptr);
+ 
+    BDD r = BDD_TRUE;
 	State val = state_id;
 
 	for (unsigned int i = 0; i < totalCtxAutStateVars; ++i)
@@ -429,9 +463,13 @@ BDD SymRS::encCtxAutState_raw(State state_id, bool succ) const
 		if (val != 0)
 		{
 			if (val % 2 == 1)
-				r *= (*enc_vec)[i];
+			{
+				r *= (*enc_vec)[i];	
+			}
 			else
-				r *= !(*enc_vec)[i];
+			{
+				r *= !(*enc_vec)[i];	
+			}
 			val /= 2;
 		}
 		else
@@ -443,22 +481,31 @@ BDD SymRS::encCtxAutState_raw(State state_id, bool succ) const
 
 BDD *SymRS::getEncCtxAutInitState(void)
 {
-	return new BDD(BDD_TRUE);
-}
-
-vector<BDD> *SymRS::getEncCtxAutPV(void)
-{
-	return new vector<BDD>();
-}
-
-vector<BDD> *SymRS::getEncCtxAutPVsucc(void)
-{
-	return new vector<BDD>();
+	VERB_LN(2, "Encoding context automaton's initial state");
+	
+	State state = rs->ctx_aut->getInitState();
+	
+	BDD *r = new BDD(encCtxAutState(state));
+	
+	return r;
 }
 
 BDD *SymRS::getEncCtxAutTrans(void)
 {
-	return new BDD(BDD_TRUE);
+	VERB_LN(2, "Encoding context automaton's transition relation");
+
+	BDD *r = new BDD(BDD_FALSE);
+
+	for (auto &t : rs->ctx_aut->transitions)
+	{
+		BDD enc_src = encCtxAutState(t.src_state);
+		BDD enc_dst = encCtxAutStateSucc(t.dst_state);
+		BDD enc_ctx = encActEntitiesConj(t.ctx);
+		
+		*r += enc_src * enc_ctx * enc_dst;
+	}
+
+	return r;
 }
 
 /** EOF **/
