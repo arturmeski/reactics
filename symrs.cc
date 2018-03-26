@@ -408,4 +408,24 @@ BDD SymRS::encActStrEntity(std::string name) const
 	}
 }
 
+BDD *SymRS::getEncCA_InitState(void)
+{
+	return new BDD(BDD_TRUE);
+}
+
+vector<BDD> *SymRS::getEncCA_PV(void)
+{
+	return new vector<BDD>();
+}
+
+vector<BDD> *SymRS::getEncCA_PVsucc(void)
+{
+	return new vector<BDD>();
+}
+
+BDD *SymRS::getEncCA_Trans(void)
+{
+	return new BDD(BDD_TRUE);
+}
+
 /** EOF **/

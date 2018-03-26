@@ -29,6 +29,13 @@ class ModelChecker
     BDD *reach;
     vector<BDD> *trp;
     BDD *trm;
+	
+	// Context Automaton
+	BDD *ca_init_state;
+	vector<BDD> *pv_ca;
+	vector<BDD> *pv_ca_succ;
+	BDD *ca_tr;
+	
     unsigned int trp_size;
     unsigned int totalStateVars;
 
@@ -46,24 +53,7 @@ class ModelChecker
     void cleanup(void);
 
 public:
-    ModelChecker(SymRS *srs, Options *opts)
-    {
-        this->srs = srs;
-        this->opts = opts;
-        cuddMgr = srs->getCuddMgr();
-        initStates = srs->getEncInitStates();
-        totalStateVars = srs->getTotalStateVars();
-        pv = srs->getEncPV();
-        pv_succ = srs->getEncPVsucc();
-        pv_E = srs->getEncPV_E();
-        pv_succ_E = srs->getEncPVsucc_E();
-        pv_act_E = srs->getEncPVact_E();
-        trp = srs->getEncPartTrans();
-        if (trp == nullptr) trp_size = 0;
-        else trp_size = trp->size();
-        trm = srs->getEncMonoTrans();
-        reach = nullptr;
-    }
+    ModelChecker(SymRS *srs, Options *opts);
 
     void printReach(void);
     void printReachWithSucc(void);

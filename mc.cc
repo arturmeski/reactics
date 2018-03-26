@@ -1,5 +1,47 @@
 #include "mc.hh"
 
+ModelChecker::ModelChecker(SymRS *srs, Options *opts)
+{
+    this->srs = srs;
+    this->opts = opts;
+    
+	cuddMgr = srs->getCuddMgr();
+	
+	if (srs->usingContextAutomaton())
+	    initStates = srs->getEncInitStates();
+	
+    totalStateVars = srs->getTotalStateVars();
+    
+	pv = srs->getEncPV();
+    pv_succ = srs->getEncPVsucc();
+    pv_E = srs->getEncPV_E();
+    pv_succ_E = srs->getEncPVsucc_E();
+    pv_act_E = srs->getEncPVact_E();
+
+    //
+	// Transition relations
+	//
+	// If we use trp, then trm is going to be nullptr (same for trm)
+	//
+	trp = srs->getEncPartTrans();
+    if (trp == nullptr) 
+		trp_size = 0;
+    else 
+		trp_size = trp->size();	
+    trm = srs->getEncMonoTrans();
+    
+	if (srs->usingContextAutomaton())
+	{
+		ca_init_state = srs->getEncCA_InitState();
+		pv_ca = srs->getEncCA_PV();
+		pv_ca_succ = srs->getEncCA_PVsucc();
+		ca_tr = srs->getEncCA_Trans();
+	}
+	
+	// Initialise the set of reachable states
+	reach = nullptr;
+}
+
 inline BDD ModelChecker::getSucc(const BDD &states)
 {
     BDD q = BDD_TRUE;
@@ -502,3 +544,4 @@ void ModelChecker::cleanup(void)
     reach = nullptr;
 }
 
+/** EOF **/

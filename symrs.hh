@@ -137,7 +137,16 @@ public:
     BDD encActStrEntity(std::string name) const;
     BDD getBDDtrue(void) const { return BDD_TRUE; }
     BDD getBDDfalse(void) const { return BDD_FALSE; }
+	
+	bool usingContextAutomaton(void) { return rs->ctx_aut != nullptr; }
+	
+	BDD *getEncCA_InitState(void);
+	vector<BDD> *getEncCA_PV(void);
+	vector<BDD> *getEncCA_PVsucc(void);
+	BDD *getEncCA_Trans(void);
+	
 };
 
 #endif
 
+/** EOF **/
