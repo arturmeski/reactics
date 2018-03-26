@@ -52,6 +52,7 @@ class RctSys
 	    void pushStateEntity(std::string entityName);
 	    void commitInitState(void);
 	    void addActionEntity(std::string entityName);
+	    void addActionEntity(Entity entity);
 	    bool isActionEntity(Entity entity);
 	    void resetInitStates(void) {
 	        initStates.clear();

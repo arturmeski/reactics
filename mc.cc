@@ -21,7 +21,10 @@ ModelChecker::ModelChecker(SymRS *srs, Options *opts)
     //
 	// Transition relations
 	//
-	// If we use trp, then trm is going to be nullptr (same for trm)
+	//	trp -- partitioned TR
+	//	trm -- monolithic TR
+	//
+	// If we use trp, then trm is nullptr (same for trm)
 	//
 	trp = srs->getEncPartTrans();
     if (trp == nullptr) 
@@ -32,10 +35,10 @@ ModelChecker::ModelChecker(SymRS *srs, Options *opts)
     
 	if (srs->usingContextAutomaton())
 	{
-		ca_init_state = srs->getEncCA_InitState();
-		pv_ca = srs->getEncCA_PV();
-		pv_ca_succ = srs->getEncCA_PVsucc();
-		ca_tr = srs->getEncCA_Trans();
+		ca_init_state = srs->getEncCtxAutInitState();
+		pv_ca = srs->getEncCtxAutPV();
+		pv_ca_succ = srs->getEncCtxAutPVsucc();
+		ca_tr = srs->getEncCtxAutTrans();
 	}
 	
 	// Initialise the set of reachable states

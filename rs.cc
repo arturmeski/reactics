@@ -130,12 +130,17 @@ void RctSys::commitInitState(void)
     tmpState.clear();
 }
 
-
 void RctSys::addActionEntity(std::string entityName)
 {
     if (!hasEntity(entityName))
         addEntity(entityName);
     actionEntities.insert(getEntityID(entityName));
+}
+
+void RctSys::addActionEntity(Entity entity)
+{
+	if (!isActionEntity(entity))
+	    actionEntities.insert(entity);
 }
 
 bool RctSys::isActionEntity(Entity entity)
@@ -211,7 +216,17 @@ void RctSys::ctxAutAddTransition(std::string srcStateName, std::string dstStateN
 void RctSys::ctxAutPushNamedContextEntity(std::string entityName)
 {
 	assert(ctx_aut != nullptr);
+	
 	Entity entity_id = getEntityID(entityName);
+
+	//
+	// We mark the entity as an action entity
+	//
+	// 	This step is required to ensure the minimal number of
+	//  BDD variables used in the encoding of the context sets
+	//
+	addActionEntity(entity_id);
+	
 	ctx_aut->pushContextEntity(entity_id);
 }
 

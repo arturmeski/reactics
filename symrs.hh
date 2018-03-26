@@ -36,24 +36,35 @@ class SymRS
     Cudd *cuddMgr;
     Options *opts;
 
+	// Mapping: entity ID -> action/context entity ID
     StateEntityToAction stateToAct;
 
     BDD *initStates;
+	
     vector<BDD> *pv;
     vector<BDD> *pv_act;
     vector<BDD> *pv_succ;
+	
+	// BDDs for quantification
     BDD *pv_E;
     BDD *pv_act_E;
     BDD *pv_succ_E;
 
-    vector<BDD> *pv_noact;
     vector<BDD> *partTrans;
 
     BDD *monoTrans;
 
+	// Context automaton
+	vector<BDD> *pv_ca;
+	vector<BDD> *pv_ca_succ;
+	BDD *pv_ca_E;
+	BDD *pv_ca_succ_E;
+
     unsigned int totalReactions;
     unsigned int totalStateVars;
     unsigned int totalActions;
+	unsigned int totalCtxAutStateVars;
+	
 
     BDD encEntity_raw(Entity entity, bool succ) const;
     BDD encEntity(Entity entity) const {
@@ -106,6 +117,8 @@ class SymRS
 
     int getMappedStateToActID(int stateID) const { assert(stateID < static_cast<int>(totalStateVars)); return stateToAct[stateID]; }
 
+	size_t getCtxAutStateEncodingSize(void);
+	
 public:
     SymRS(RctSys *rs, Options *opts)
     {
@@ -114,6 +127,7 @@ public:
         totalStateVars = rs->getEntitiesSize();
         totalReactions = rs->getReactionsSize();
         totalActions = rs->getActionsSize();
+		totalCtxAutStateVars = getCtxAutStateEncodingSize();
 
         partTrans = nullptr;
         monoTrans = nullptr;
@@ -140,11 +154,13 @@ public:
 	
 	bool usingContextAutomaton(void) { return rs->ctx_aut != nullptr; }
 	
-	BDD *getEncCA_InitState(void);
-	vector<BDD> *getEncCA_PV(void);
-	vector<BDD> *getEncCA_PVsucc(void);
-	BDD *getEncCA_Trans(void);
-	
+	BDD encCtxAutState_raw(State state_id, bool succ) const;
+	BDD encCtxAutState(State state_id) const { return encCtxAutState_raw(state_id, false); }
+	BDD encCtxAutStateSucc(State state_id) const { return encCtxAutState_raw(state_id, true); }
+	BDD *getEncCtxAutInitState(void);
+	vector<BDD> *getEncCtxAutPV(void);
+	vector<BDD> *getEncCtxAutPVsucc(void);
+	BDD *getEncCtxAutTrans(void);
 };
 
 #endif

@@ -57,6 +57,12 @@ void CtxAut::setInitState(std::string name)
 	init_state_defined = true;
 }
 
+State CtxAut::getInitState(void)
+{
+	assert(init_state_defined);
+	return init_state_id;
+}
+
 void CtxAut::printAutomaton(void)
 {
 	showStates();
