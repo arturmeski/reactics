@@ -1,9 +1,6 @@
 /*
-    Copyright (c) 2012-2014
+    Copyright (c) 2012-2018
     Artur Meski <meski@ipipan.waw.pl>
-
-    Reuse of the code or its part for any purpose
-    without the author's permission is strictly prohibited.
 */
 
 #include "symrs.hh"
@@ -210,7 +207,7 @@ void SymRS::encodeTransitions(void)
 
         if ((di = dr.find(p)) == dr.end())
         {
-            // nie ma reakcji produkujacej p:
+            // there is no reaction producing p:
             if (opts->part_tr_rel)
                 (*partTrans)[p] = !encEntitySucc(p);
             else
@@ -220,7 +217,7 @@ void SymRS::encodeTransitions(void)
         }
         else
         {
-            // di - reakcje produkujace p
+            // di - reactions producing p
             
             BDD conditions = BDD_FALSE;
 

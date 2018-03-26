@@ -30,6 +30,15 @@ typedef unsigned int State;
 typedef std::vector<std::string> StatesById;
 typedef std::map<std::string, State> StatesByName;
 
+struct ReactionCond {
+    Entities rctt;
+    Entities inhib;
+};
+
+typedef std::vector<ReactionCond> ReactionConds;
+typedef std::map<Entity,ReactionConds> DecompReactions;
+typedef std::vector<int> StateEntityToAction;
+
 struct Transition {
 	State src_state;
 	Entities ctx;

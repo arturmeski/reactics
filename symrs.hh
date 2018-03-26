@@ -36,14 +36,6 @@ class SymRS
     Cudd *cuddMgr;
     Options *opts;
 
-    struct ReactionCond {
-        Entities rctt;
-        Entities inhib;
-    };
-    typedef vector<ReactionCond> ReactionConds;
-    typedef map<Entity,ReactionConds> DecompReactions;
-    typedef std::vector<int> StateEntityToAction; 
-
     StateEntityToAction stateToAct;
 
     BDD *initStates;
