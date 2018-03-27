@@ -59,6 +59,7 @@ class SymRS
 	vector<BDD> *pv_ca_succ;
 	BDD *pv_ca_E;
 	BDD *pv_ca_succ_E;
+	BDD *tr_ca;
 
     unsigned int totalReactions;
     unsigned int totalStateVars;
@@ -118,7 +119,11 @@ class SymRS
     void mapStateToAct(void);
     void encode(void);
 
-    int getMappedStateToActID(int stateID) const { assert(stateID < static_cast<int>(totalStateVars)); return stateToAct[stateID]; }
+    int getMappedStateToActID(int stateID) const 
+	{ 
+		assert(stateID < static_cast<int>(totalStateVars)); 
+		return stateToAct[stateID]; 
+	}
 
 	size_t getCtxAutStateEncodingSize(void);
 	
@@ -192,13 +197,18 @@ public:
      * @return Returns a vector of BDDs
      */
 	vector<BDD> *getEncCtxAutPVsucc(void) { return pv_ca_succ; }
+
+   /**
+    * @brief Encodes the monolithic transition relation
+    */	
+	void encodeCtxAutTrans(void);
 	
     /**
-     * @brief Encodes the monolithic transition relation
+     * @brief Getter for context automaton's transition relation
      *
      * @return Returns a BDD encoding the transition relation
      */	
-	BDD *getEncCtxAutTrans(void);
+	BDD *getEncCtxAutTrans(void) { return tr_ca; }	
 };
 
 #endif

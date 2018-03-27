@@ -37,7 +37,7 @@ ModelChecker::ModelChecker(SymRS *srs, Options *opts)
 		// ca_init_state = srs->getEncCtxAutInitState();
 		pv_ca = srs->getEncCtxAutPV();
 		pv_ca_succ = srs->getEncCtxAutPVsucc();
-		ca_tr = srs->getEncCtxAutTrans();
+		// ca_tr = srs->getEncCtxAutTrans();
 	}
 	
 	// Initialise the set of reachable states
