@@ -10,11 +10,13 @@ SymRS::SymRS(RctSys *rs, Options *opts)
 {
     this->rs = rs;
     this->opts = opts;
-    totalStateVars = rs->getEntitiesSize();
+    totalRctSysStateVars = rs->getEntitiesSize();
     totalReactions = rs->getReactionsSize();
     totalActions = rs->getActionsSize();
 	
 	totalCtxAutStateVars = getCtxAutStateEncodingSize();
+	
+	totalStateVars = totalRctSysStateVars + totalCtxAutStateVars;
 	
     partTrans = nullptr;
     monoTrans = nullptr;
@@ -119,7 +121,7 @@ BDD SymRS::compState(const BDD &state) const
 {
     BDD s = state;
 
-    for (unsigned int i = 0; i < totalStateVars; ++i)
+    for (unsigned int i = 0; i < totalRctSysStateVars; ++i)
     {
         if (!(*pv)[i] * state != cuddMgr->bddZero())
             s *= !(*pv)[i];
@@ -141,10 +143,10 @@ BDD SymRS::compContext(const BDD &context) const
     return c;
 }
 
-std::string SymRS::decodedStateToStr(const BDD &state)
+std::string SymRS::decodedRctSysStateToStr(const BDD &state)
 {
     std::string s = "{ ";
-    for (unsigned int i = 0; i < totalStateVars; ++i)
+    for (unsigned int i = 0; i < totalRctSysStateVars; ++i)
     {
         if (!(encEntity(i) * state).IsZero())
         {
@@ -155,13 +157,13 @@ std::string SymRS::decodedStateToStr(const BDD &state)
     return s;
 }
 
-void SymRS::printDecodedStates(const BDD &states)
+void SymRS::printDecodedRctSysStates(const BDD &states)
 {
     BDD unproc = states;
     while (!unproc.IsZero())
     {
-        BDD t = unproc.PickOneMinterm(*pv);
-        cout << decodedStateToStr(t) << endl;
+        BDD t = unproc.PickOneMinterm(*pv_rs);
+        cout << decodedRctSysStateToStr(t) << endl;
         if (opts->verbose > 9) {
             t.PrintMinterm();
             cout << endl;
@@ -178,17 +180,37 @@ void SymRS::initBDDvars(void)
 
     VERB("Preparing BDD variables");
 
-	unsigned int needed_state_vars = totalStateVars;
-	if (usingContextAutomaton())
-		needed_state_vars += totalCtxAutStateVars;
+	// used for bddVar
+	unsigned int bdd_var_idx = 0;
 	
-    pv = new vector<BDD>(needed_state_vars);
-    pv_succ = new vector<BDD>(needed_state_vars);
-    pv_act = new vector<BDD>(totalActions);
+	// used for pv, pv_succ
+	unsigned int global_state_idx = 0;
+
+	// Variables for reaction system with CA (if used)
+    pv = new vector<BDD>(totalStateVars);
+    pv_succ = new vector<BDD>(totalStateVars);
     pv_E = new BDD(BDD_TRUE);
     pv_succ_E = new BDD(BDD_TRUE);
-    pv_act_E = new BDD(BDD_TRUE);
+	
+	// Reaction system (no actions, no CA)
+    pv_rs = new vector<BDD>(totalRctSysStateVars);
+    pv_rs_succ = new vector<BDD>(totalRctSysStateVars);
+    pv_rs_E = new BDD(BDD_TRUE);
+    pv_rs_succ_E = new BDD(BDD_TRUE);
 
+	for (unsigned int i = 0; i < totalRctSysStateVars; ++i)
+	{
+		(*pv_rs)[i] = cuddMgr->bddVar(bdd_var_idx++);
+        (*pv_rs_succ)[i] = cuddMgr->bddVar(bdd_var_idx++);
+        *pv_rs_E *= (*pv_rs)[i];
+        *pv_rs_succ_E *= (*pv_rs_succ)[i];
+		
+		(*pv)[global_state_idx] = (*pv_rs)[i];
+		(*pv_succ)[global_state_idx] = (*pv_rs_succ)[i];
+		++global_state_idx;
+	}
+
+	// CA
 	if (usingContextAutomaton())
 	{
 		VERB("Context automaton variables");
@@ -197,73 +219,40 @@ void SymRS::initBDDvars(void)
 		pv_ca_succ = new vector<BDD>(totalCtxAutStateVars);
 		pv_ca_E = new BDD(BDD_TRUE);
 		pv_ca_succ_E = new BDD(BDD_TRUE);
-	}
 
-	VERB_LN(3, "Preparing individual variables");
-		
-    for (unsigned int i = 0; i < needed_state_vars; ++i)
-    {
-        (*pv)[i] = cuddMgr->bddVar(i*2);
-        (*pv_succ)[i] = cuddMgr->bddVar((i*2)+1);
-
-        *pv_E *= (*pv)[i];
-        *pv_succ_E *= (*pv_succ)[i];
-
-		if (i >= totalStateVars)
+		for (unsigned int i = 0; i < totalCtxAutStateVars; ++i)
 		{
-			VERB_LN(3, "Preparing CA variables");
-			unsigned int ca_i = i - totalStateVars;
-
-			(*pv_ca)[ca_i] = (*pv)[i];
-			(*pv_ca_succ)[ca_i] = (*pv_succ)[i];
+			(*pv_ca)[i] = cuddMgr->bddVar(bdd_var_idx++);
+	        (*pv_ca_succ)[i] = cuddMgr->bddVar(bdd_var_idx++);
+	        *pv_ca_E *= (*pv_ca)[i];
+	        *pv_ca_succ_E *= (*pv_ca_succ)[i];
 			
-			*pv_ca_E *= (*pv)[i];
-			*pv_ca_succ_E *= (*pv_succ)[i];
+			(*pv)[global_state_idx] = (*pv_ca)[i];
+			(*pv_succ)[global_state_idx] = (*pv_ca_succ)[i];
+			++global_state_idx;	
 		}
-    }
-
-	// first index after state vars
-    unsigned int offset = needed_state_vars * 2;
-
-	// if (usingContextAutomaton())
-	// {
-	// 	VERB("Context automaton variables");
-	//
-	// 	pv_ca = new vector<BDD>(totalCtxAutStateVars);
-	// 	pv_ca_succ = new vector<BDD>(totalCtxAutStateVars);
-	// 	pv_ca_E = new BDD(BDD_TRUE);
-	// 	pv_ca_succ_E = new BDD(BDD_TRUE);
-	//
-	// 	//
-	// 	// BDD variables for encoding local states of context automaton
-	// 	//
-	// 	unsigned int base_index = offset;
-	// 	for (unsigned int i = 0; i < totalCtxAutStateVars; ++i)
-	// 	{
-	// 		(*pv_ca)[i] = cuddMgr->bddVar(base_index);
-	// 		(*pv_ca_succ)[i] = cuddMgr->bddVar(base_index+1);
-	//
-	// 		*pv_ca_E *= (*pv_ca)[i];
-	// 		*pv_ca_succ_E *= (*pv_ca_succ)[i];
-	//
-	// 		base_index += 2;
-	// 	}
-	//
-	// 	//
-	// 	// We need to extend the quantification to the states of the
-	// 	// context automaton, because they constitute the control part
-	// 	// of the system.
-	// 	//
-	// 	// *pv_E *= *pv_ca_E;
-	// 	// *pv_succ_E *= *pv_ca_succ_E;
-	// }
+	}
 	
-    for (unsigned int i = 0; i < totalActions; ++i)
+	// Actions/Contexts
+    pv_act = new vector<BDD>(totalActions);
+    pv_act_E = new BDD(BDD_TRUE);
+    
+	for (unsigned int i = 0; i < totalActions; ++i)
     {
-        (*pv_act)[i] = cuddMgr->bddVar(offset+i);
+        (*pv_act)[i] = cuddMgr->bddVar(bdd_var_idx++);
         *pv_act_E *= (*pv_act)[i];
     }
-
+	
+	// Quantification BDDs
+	
+	*pv_E = *pv_rs_E;
+	*pv_succ_E = *pv_rs_succ_E;
+	
+	if (usingContextAutomaton())
+	{
+		*pv_E *= *pv_ca_E;
+		*pv_succ_E *= *pv_ca_succ_E;
+	}
 
     VERB("All BDD variables ready");
 }
@@ -291,7 +280,7 @@ void SymRS::encodeTransitions(void)
     if (opts->part_tr_rel)
     {
         VERB("Using partitioned transition relation encoding");
-        partTrans = new vector<BDD>(totalStateVars);
+        partTrans = new vector<BDD>(totalRctSysStateVars);
     }
     else
     {
@@ -299,7 +288,7 @@ void SymRS::encodeTransitions(void)
         monoTrans = new BDD(BDD_TRUE);
     }
 
-    for (unsigned int p = 0; p < totalStateVars; ++p)
+    for (unsigned int p = 0; p < totalRctSysStateVars; ++p)
     {
         VERB_L3("Encoding for successor " << p);
 
@@ -407,7 +396,7 @@ void SymRS::encodeInitStatesForCtxAut(void)
 {
     initStates = new BDD(BDD_TRUE);
 
-    for (unsigned int i = 0; i < totalStateVars; ++i)
+    for (unsigned int i = 0; i < totalRctSysStateVars; ++i)
     {
     	*initStates *= !(*pv)[i];
     }
@@ -454,7 +443,7 @@ void SymRS::mapStateToAct(void)
 {
     VERB("Mapping state variables to action variables");
     unsigned int j = 0;
-    for (unsigned int i = 0; i < totalStateVars; ++i)
+    for (unsigned int i = 0; i < totalRctSysStateVars; ++i)
     {
         if (rs->isActionEntity(i)) {
             stateToAct.push_back(j++);
@@ -572,8 +561,6 @@ BDD SymRS::encCtxAutState_raw(State state_id, bool succ) const
 			r *= !(*enc_vec)[i];
 	}
 
-	cout << "STATE:" << endl;
-	BDD_PRINT(r);
     return r;
 }
 
@@ -607,12 +594,7 @@ void SymRS::encodeCtxAutTrans(void)
 		BDD enc_ctx = compContext(encActEntitiesConj(t.ctx));
 		
 		*tr_ca += enc_src * enc_ctx * enc_dst;
-		// cout << "tr_ca:" << endl;
-		// BDD_PRINT(*tr_ca);
 	}
-	
-	// cout << "tr_ca:" << endl;
-	// BDD_PRINT(*tr_ca);
 }
 
 /** EOF **/

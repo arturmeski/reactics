@@ -1,6 +1,7 @@
 #include "mc.hh"
 
 ModelChecker::ModelChecker(SymRS *srs, Options *opts)
+	: using_ctx_aut(false) 
 {
     this->srs = srs;
     this->opts = opts;
@@ -34,10 +35,19 @@ ModelChecker::ModelChecker(SymRS *srs, Options *opts)
     
 	if (srs->usingContextAutomaton())
 	{
-		// ca_init_state = srs->getEncCtxAutInitState();
+		using_ctx_aut = true;
 		pv_ca = srs->getEncCtxAutPV();
 		pv_ca_succ = srs->getEncCtxAutPVsucc();
-		// ca_tr = srs->getEncCtxAutTrans();
+		pv_ca_E = srs->getEncCtxAutPV_E();
+		pv_ca_succ_E = srs->getEncCtxAutPVsucc_E();
+	}
+	else
+	{
+		using_ctx_aut = false;
+		pv_ca = nullptr;
+		pv_ca_succ = nullptr;
+		pv_ca_E = nullptr;
+		pv_ca_succ_E = nullptr;
 	}
 	
 	// Initialise the set of reachable states
@@ -62,7 +72,7 @@ inline BDD ModelChecker::getSucc(const BDD &states)
     }
     q = (q.ExistAbstract(*pv_E)).SwapVariables(*pv_succ, *pv);
     q = q.ExistAbstract(*pv_act_E);
-
+	
     return q;
 }
 
@@ -104,6 +114,11 @@ inline BDD ModelChecker::getPreEctx(const BDD &states, const BDD *contexts)
     return q;
 }
 
+void ModelChecker::dropCtxAutStatePart(BDD &states)
+{
+	states = states.ExistAbstract(*pv_ca_E);
+}
+
 void ModelChecker::printReach(void)
 {
 	VERB_LN(2, "Printing/generating reachable states");
@@ -127,8 +142,10 @@ void ModelChecker::printReach(void)
         reach_p = *reach;
         *reach += getSucc(*reach);
     }
+	
+	dropCtxAutStatePart(*reach);
 
-    srs->printDecodedStates(*reach);
+    srs->printDecodedRctSysStates(*reach);
 
     cleanup();
 
@@ -159,11 +176,12 @@ void ModelChecker::printReachWithSucc(void)
     {
         BDD t;
         t = unproc.PickOneMinterm(*pv);
-        cout << "Successors of " << srs->decodedStateToStr(t) << ":" << endl;
-        srs->printDecodedStates(getSucc(t));
+        cout << "Successors of " << srs->decodedRctSysStateToStr(t) << ":" << endl;
+        srs->printDecodedRctSysStates(getSucc(t));
         unproc -= t;
     }
-    cleanup();
+    
+	cleanup();
 }
 
 bool ModelChecker::checkReach(const Entities testState)

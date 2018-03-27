@@ -31,15 +31,20 @@ class ModelChecker
     BDD *trm;
 	
 	// Context Automaton
+	bool using_ctx_aut;
 	vector<BDD> *pv_ca;
 	vector<BDD> *pv_ca_succ;
-	// BDD *ca_tr;
-	// BDD *ca_init_state;
+	BDD *pv_ca_E;	
+	BDD *pv_ca_succ_E;
 		
     unsigned int trp_size;
     unsigned int totalStateVars;
+	
+    /**
+     * @brief Abstracts away (in-place!) the context automaton states
+     */
+	void dropCtxAutStatePart(BDD &states);
 
-    BDD zeroFill(const BDD &state);
     BDD getSucc(const BDD &states);
     BDD getPreE(const BDD &states);
     BDD getPreEctx(const BDD &states, const BDD *contexts);

@@ -42,13 +42,14 @@ class SymRS
     BDD *initStates;
 	
     vector<BDD> *pv;
-    vector<BDD> *pv_act;
     vector<BDD> *pv_succ;
-	
-	// BDDs for quantification
     BDD *pv_E;
-    BDD *pv_act_E;
     BDD *pv_succ_E;
+
+    vector<BDD> *pv_rs;
+    vector<BDD> *pv_rs_succ;
+    BDD *pv_rs_E;
+    BDD *pv_rs_succ_E;
 
     vector<BDD> *partTrans;
 
@@ -61,8 +62,12 @@ class SymRS
 	BDD *pv_ca_succ_E;
 	BDD *tr_ca;
 
-    unsigned int totalReactions;
+    vector<BDD> *pv_act;
+    BDD *pv_act_E;
+
     unsigned int totalStateVars;
+    unsigned int totalReactions;
+    unsigned int totalRctSysStateVars;
     unsigned int totalActions;
 	unsigned int totalCtxAutStateVars;
 	
@@ -105,8 +110,8 @@ class SymRS
 
     BDD compContext(const BDD &context) const;
 
-    std::string decodedStateToStr(const BDD &state);
-    void printDecodedStates(const BDD &states);
+    std::string decodedRctSysStateToStr(const BDD &state);
+    void printDecodedRctSysStates(const BDD &states);
 
 	BDD encNoContext(void);
 
@@ -121,7 +126,7 @@ class SymRS
 
     int getMappedStateToActID(int stateID) const 
 	{ 
-		assert(stateID < static_cast<int>(totalStateVars)); 
+		assert(stateID < static_cast<int>(totalRctSysStateVars)); 
 		return stateToAct[stateID]; 
 	}
 
@@ -141,6 +146,7 @@ public:
     BDD *getEncInitStates(void) { return initStates; }
     Cudd *getCuddMgr(void) { return cuddMgr; }
     unsigned int getTotalStateVars(void) { return totalStateVars; }
+    unsigned int getTotalRctSysStateVars(void) { return totalRctSysStateVars; }
     BDD encEntity(std::string name) const {
         return encEntity(rs->getEntityID(name));
     }
@@ -198,9 +204,23 @@ public:
      */
 	vector<BDD> *getEncCtxAutPVsucc(void) { return pv_ca_succ; }
 
-   /**
-    * @brief Encodes the monolithic transition relation
-    */	
+    /**
+     * @brief Getter for context automaton's quantification BDD (for non-primed vars)
+     *
+     * @return Returns a BDD for quantification 
+     */
+	BDD *getEncCtxAutPV_E(void) { return pv_ca_E; }
+
+    /**
+     * @brief Getter for context automaton's quantification BDD (for primed vars)
+     *
+     * @return Returns a BDD for quantification 
+     */
+	BDD *getEncCtxAutPVsucc_E(void) { return pv_ca_succ_E; }
+
+    /**
+     * @brief Encodes the monolithic transition relation
+     */	
 	void encodeCtxAutTrans(void);
 	
     /**
