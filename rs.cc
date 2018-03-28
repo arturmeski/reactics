@@ -101,6 +101,16 @@ Process RctSys::getProcessID(std::string processName)
     return processes_names[processName];
 }
 
+std::string RctSys::getProcessName(Process processID)
+{
+    if (processID < processes_ids.size())
+        return processes_ids[processID];
+    else
+    {
+        FERROR("No such process ID: " << processID);
+    }
+}
+
 void RctSys::pushReactant(std::string entityName)
 {
     if (!hasEntity(entityName))
@@ -155,12 +165,20 @@ std::string RctSys::entitiesToStr(const Entities &entities)
 void RctSys::showReactions(void)
 {
     cout << "# Reactions:" << endl;
-    for (auto r = reactions.begin(); r != reactions.end(); ++r)
-    {
-        cout << " * (R={" << entitiesToStr(r->rctt) << "},"
-             << "I={" << entitiesToStr(r->inhib) << "}," 
-             << "P={" << entitiesToStr(r->prod) << "})" << endl;
-    } 
+	
+	for (unsigned int proc_id = 0; proc_id < processes_ids.size(); ++proc_id)
+	{
+		cout << endl;
+		cout << "  . proc = \"" << getProcessName(proc_id) << "\":" << endl;
+	    for (const auto &r : proc_reactions[proc_id])
+	    {
+	        cout << "     * (R={" << entitiesToStr(r.rctt) << "},"
+	             << "I={" << entitiesToStr(r.inhib) << "}," 
+	             << "P={" << entitiesToStr(r.prod) << "})" << endl;
+	    } 
+		
+	}
+	cout << endl;
 }
 
 void RctSys::pushStateEntity(std::string entityName)

@@ -43,6 +43,7 @@ class RctSys
 		void addProcess(std::string processName);
 		bool hasProcess(std::string processName);
 		Process getProcessID(std::string processName);
+		std::string getProcessName(Process processID);
 		
 		void addReactionForCurrentProcess(Reaction reaction);
 		
