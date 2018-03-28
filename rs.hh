@@ -40,6 +40,9 @@ class RctSys
 	    bool hasEntity(std::string entityName);
 	    void addEntity(std::string entityName);
 	    std::string getEntityName(Entity entityID);
+		
+		void setCurrentProcess(std::string processName);
+		
 	    void pushReactant(std::string entityName);
 	    void pushInhibitor(std::string entityName);
 	    void pushProduct(std::string entityName);

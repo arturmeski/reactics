@@ -77,7 +77,7 @@ class rsin_driver;
 
 system: 
 	| OPTIONS LCB options RCB system
-    | REACTIONS LCB reactions RCB system
+    | REACTIONS LCB reactionsets RCB system
     | INITIALCONTEXTS LCB initstates RCB system
     | CONTEXTENTITIES LCB actionentities RCB system
 	| CONTEXTAUTOMATON LCB ctxaut RCB system
@@ -104,6 +104,20 @@ option:
  *         REACTIONS 
  * -------------------------
  */
+
+reactionsets:
+	| processname LCB reactions RCB SEMICOL
+	;
+	
+processname: IDENTIFIER {
+		//driver.getReactionSystem()->ctxAutAddState(*$1);
+		//
+		// Set the current process name for which we are saving reactions...
+		//
+		driver.getReactionSystem()->setCurrentProcess(*$1);
+		free($1);
+	}	
+
 reactions:
     | reactions reaction SEMICOL
     ;

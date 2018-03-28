@@ -54,6 +54,11 @@ Entity RctSys::getEntityID(std::string name)
     return entities_names[name];
 }
 
+void RctSys::setCurrentProcess(std::string processName)
+{
+	VERB_LN(2, "Current Process: " << processName);
+}
+
 void RctSys::pushReactant(std::string entityName)
 {
     if (!hasEntity(entityName))
