@@ -47,7 +47,7 @@ class rsin_driver;
 %token OPTIONS USE_CTX_AUT USE_CONCENTRATIONS
 %token REACTIONS INITIALCONTEXTS CONTEXTENTITIES RSCTLFORM
 %token CONTEXTAUTOMATON STATES INITSTATE TRANSITIONS
-%token LCB RCB LRB RRB LSB RSB LAB RAB COL SEMICOL COMMA RARR
+%token EQ LCB RCB LRB RRB LSB RSB LAB RAB COL SEMICOL COMMA RARR
 %token AND OR XOR IMPLIES NOT
 %token EX EU EF EG AX AU AF AG E A X U F G EMPTY
 
@@ -110,10 +110,6 @@ reactionsets:
 	;
 	
 processname: IDENTIFIER {
-		//driver.getReactionSystem()->ctxAutAddState(*$1);
-		//
-		// Set the current process name for which we are saving reactions...
-		//
 		driver.getReactionSystem()->setCurrentProcess(*$1);
 		free($1);
 	}	
@@ -231,10 +227,16 @@ auttransitions:
 	| auttrans SEMICOL auttransitions
 	;	
 
-auttrans: LCB contextset RCB COL IDENTIFIER RARR IDENTIFIER {
+auttrans: LCB proc_contextset RCB COL IDENTIFIER RARR IDENTIFIER {
 		driver.getReactionSystem()->ctxAutAddTransition(*$5, *$7);
 		free($5);
 		free($7);
+	}
+	;
+
+proc_contextset: IDENTIFIER EQ LCB contextset RCB {
+		driver.getReactionSystem()->setCurrentProcess(*$1);
+		free($1);
 	}
 	;
 	

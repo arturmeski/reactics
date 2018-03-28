@@ -65,6 +65,7 @@ void RctSys::setCurrentProcess(std::string processName)
 	}
 	
 	current_proc_id = getProcessID(processName);
+	current_process_defined = true;
 }
 
 void RctSys::addProcess(std::string processName)
@@ -79,7 +80,7 @@ void RctSys::addProcess(std::string processName)
         processes_names[processName] = new_proc_id;
 		
 		// reactions for the new process
-		proc_reactions.push_back(Reactions());
+		proc_reactions[new_proc_id] = Reactions();
 		assert(proc_reactions.size() == new_proc_id+1);
     }
 }
@@ -132,6 +133,10 @@ void RctSys::pushProduct(std::string entityName)
 
 void RctSys::addReactionForCurrentProcess(Reaction reaction)
 {
+	if (!current_process_defined)
+	{
+		FERROR("Internal error. Current process is not set!");
+	}
 	proc_reactions[current_proc_id].push_back(reaction);
 }
 
@@ -176,7 +181,6 @@ void RctSys::showReactions(void)
 	             << "I={" << entitiesToStr(r.inhib) << "}," 
 	             << "P={" << entitiesToStr(r.prod) << "})" << endl;
 	    } 
-		
 	}
 	cout << endl;
 }

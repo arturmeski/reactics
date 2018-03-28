@@ -55,6 +55,7 @@ blank [ \t]
 ")"                     return token::RRB;
 "["                     return token::LSB;
 "]"                     return token::RSB;
+"="						return token::EQ;
 "<"						return token::LAB;
 ">"						return token::RAB;
 ":"						return token::COL;

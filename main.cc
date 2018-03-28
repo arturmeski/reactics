@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     int c;
     int option_index = 0;
 
-    while ((c = getopt_long(argc, argv, "cbBmpPrsStTvxz", long_options, &option_index)) != -1)
+    while ((c = getopt_long(argc, argv, "cbBmpPrsStTvxzh", long_options, &option_index)) != -1)
     {
         switch (c) {
             case 0:
@@ -90,8 +90,12 @@ int main(int argc, char **argv)
                 opts->reorder_reach = true;
                 opts->reorder_trans = true;
                 break;
+			case 'h':
+				usage_error = true;
+				break;
             default:
                 usage_error = true;
+				break;
         }
     }	
 	
@@ -108,40 +112,7 @@ int main(int argc, char **argv)
 
     if (usage_error)
     {
-        cout << endl
-             << " ------------------------------------" << endl
-             << " -- Reaction Systems Model Checker --" << endl
-             << " ------------------------------------" << endl
-             << endl
-             << "   Version:   " << VERSION << endl
-             << "   Contact:   " << AUTHOR << endl
-             << endl
-#ifndef PUBLIC_RELEASE
-             << " ###################################" << endl
-             << "  THIS IS A PRIVATE VERSION OF RSMC " << endl
-             << "     PLEASE, DO NOT DISTRIBUTE      " << endl
-             << " ###################################" << endl
-             << endl
-#endif
-             << " Usage: " << argv[0] << " [options] <inputfile>" << endl << endl
-			 << " TASKS:" << endl	 
-             << "  -c   -- perform RSCTL model checking" << endl
-             //<< " -f K -- generate SMT input for the depth K" << endl
-             << "  -P   -- print parsed system" << endl
-             << "  -r   -- print reactions" << endl
-             << "  -s   -- print the set of all the reachable states" << endl
-             << "  -t   -- print the set of all the reachable states with their successors" << endl
-			 << endl << " OTHER:" << endl 
-	         << "  -b   -- disable bounded model checking (BMC) heuristic" << endl
-             << "  -x   -- use partitioned transition relation (may use less memory)" << endl
-             << "  -z   -- use reordering of the BDD variables" << endl
-             << "  -v   -- verbose (can be used more than once to increase verbosity)" << endl
-             << "  -p   -- show progress (where possible)" << endl
-             << endl
-             << " Benchmarking options:" << endl
-             << "  -m   -- measure and display time and memory usage" << endl
-             << "  -B   -- display an easy to parse summary (enables -m)" << endl
-             << endl;
+		print_help(std::string(argv[0]));
         return 100;
     }
 
@@ -233,4 +204,43 @@ int main(int argc, char **argv)
     return 0;
 }
 
+void print_help(std::string path_str)
+{
+    cout << endl
+         << " ------------------------------------" << endl
+         << " -- Reaction Systems Model Checker --" << endl
+         << " ------------------------------------" << endl
+         << endl
+         << "   Version:   " << VERSION << endl
+         << "   Contact:   " << AUTHOR << endl
+         << endl
+#ifndef PUBLIC_RELEASE
+         << " ###################################" << endl
+         << "  THIS IS A PRIVATE VERSION OF RSMC " << endl
+         << "     PLEASE, DO NOT DISTRIBUTE      " << endl
+         << " ###################################" << endl
+         << endl
+#endif
+         << " Usage: " << path_str << " [options] <inputfile>" << endl << endl
+		 << " TASKS:" << endl	 
+         << "  -c   -- perform RSCTL model checking" << endl
+         //<< " -f K -- generate SMT input for the depth K" << endl
+         << "  -P   -- print parsed system" << endl
+         << "  -r   -- print reactions" << endl
+         << "  -s   -- print the set of all the reachable states" << endl
+         << "  -t   -- print the set of all the reachable states with their successors" << endl
+		 << endl << " OTHER:" << endl 
+         << "  -b   -- disable bounded model checking (BMC) heuristic" << endl
+         << "  -x   -- use partitioned transition relation (may use less memory)" << endl
+         << "  -z   -- use reordering of the BDD variables" << endl
+         << "  -v   -- verbose (can be used more than once to increase verbosity)" << endl
+         << "  -p   -- show progress (where possible)" << endl
+         << endl
+         << " Benchmarking options:" << endl
+         << "  -m   -- measure and display time and memory usage" << endl
+         << "  -B   -- display an easy to parse summary (enables -m)" << endl
+         << endl;
+}
+
 /** EOF **/
+

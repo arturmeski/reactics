@@ -22,9 +22,11 @@
 #include "options.hh"
 #include "memtime.hh"
 
-#define VERSION     "1.0alpha"
-#define AUTHOR      "Artur Męski <meski@ipipan.waw.pl>"
+#define VERSION     "2.0 ALPHA"
+#define AUTHOR      "Artur Meski <meski@ipipan.waw.pl>"
 using std::cout;
 using std::endl;
+
+void print_help(std::string path_str);
 
 #endif

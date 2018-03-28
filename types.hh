@@ -21,8 +21,13 @@ struct Reaction {
     Entities inhib;
     Entities prod;
 };
+
+typedef unsigned int Process;
+typedef std::vector<std::string> ProcessesById;
+typedef std::map<std::string, Process> ProcessesByName;
+
 typedef std::vector<Reaction> Reactions;
-typedef std::vector<Reactions> ReactionsForProc;
+typedef std::map<Process, Reactions> ReactionsForProc;
 
 typedef std::vector<std::string> EntitiesById;
 typedef std::map<std::string, Entity> EntitiesByName;
@@ -32,9 +37,7 @@ typedef unsigned int State;
 typedef std::vector<std::string> StatesById;
 typedef std::map<std::string, State> StatesByName;
 
-typedef unsigned int Process;
-typedef std::vector<std::string> ProcessesById;
-typedef std::map<std::string, Process> ProcessesByName;
+typedef std::map<Process, Entities> EntitiesForProc;
 
 struct ReactionCond {
     Entities rctt;
