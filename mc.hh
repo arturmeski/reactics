@@ -20,7 +20,7 @@ class ModelChecker
     SymRS *srs;
     Options *opts;
     Cudd *cuddMgr;
-    BDD *initStates; 
+    BDD *initStates;
     vector<BDD> *pv;
     vector<BDD> *pv_succ;
     BDD *pv_E;
@@ -29,21 +29,21 @@ class ModelChecker
     BDD *reach;
     vector<BDD> *trp;
     BDD *trm;
-	
-	// Context Automaton
-	bool using_ctx_aut;
-	vector<BDD> *pv_ca;
-	vector<BDD> *pv_ca_succ;
-	BDD *pv_ca_E;	
-	BDD *pv_ca_succ_E;
-		
+
+    // Context Automaton
+    bool using_ctx_aut;
+    vector<BDD> *pv_ca;
+    vector<BDD> *pv_ca_succ;
+    BDD *pv_ca_E;
+    BDD *pv_ca_succ_E;
+
     unsigned int trp_size;
     unsigned int totalStateVars;
-	
+
     /**
      * @brief Abstracts away (in-place!) the context automaton states
      */
-	void dropCtxAutStatePart(BDD &states);
+    void dropCtxAutStatePart(BDD &states);
 
     BDD getSucc(const BDD &states);
     BDD getPreE(const BDD &states);
@@ -57,7 +57,7 @@ class ModelChecker
     BDD statesEFctx(const BDD *contexts, const BDD &states);
     void cleanup(void);
 
-public:
+  public:
     ModelChecker(SymRS *srs, Options *opts);
 
     void printReach(void);

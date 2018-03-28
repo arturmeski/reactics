@@ -17,9 +17,9 @@
 typedef unsigned int Entity;
 typedef std::set<Entity> Entities;
 struct Reaction {
-    Entities rctt;
-    Entities inhib;
-    Entities prod;
+  Entities rctt;
+  Entities inhib;
+  Entities prod;
 };
 
 typedef unsigned int Process;
@@ -40,18 +40,18 @@ typedef std::map<std::string, State> StatesByName;
 typedef std::map<Process, Entities> EntitiesForProc;
 
 struct ReactionCond {
-    Entities rctt;
-    Entities inhib;
+  Entities rctt;
+  Entities inhib;
 };
 
 typedef std::vector<ReactionCond> ReactionConds;
-typedef std::map<Entity,ReactionConds> DecompReactions;
+typedef std::map<Entity, ReactionConds> DecompReactions;
 typedef std::vector<int> StateEntityToAction;
 
 struct CtxAutTransition {
-	State src_state;
-	Entities ctx;
-	State dst_state;
+  State src_state;
+  Entities ctx;
+  State dst_state;
 };
 
 typedef std::vector<CtxAutTransition> CtxAutTransitions;

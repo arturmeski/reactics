@@ -1,9 +1,10 @@
 #ifndef RS_OPTIONS_HH
 #define RS_OPTIONS_HH
 
-class Options {
+class Options
+{
 
-public:
+  public:
     unsigned int verbose;
     bool show_progress;
     bool measure;
@@ -18,19 +19,19 @@ public:
 
     Options(void)
     {
-        verbose = 0;
-        show_progress = false;
-        measure = false;
+      verbose = 0;
+      show_progress = false;
+      measure = false;
 
-        part_tr_rel = false;
+      part_tr_rel = false;
 
-        reorder_reach = false; 
-        reorder_trans = false;
+      reorder_reach = false;
+      reorder_trans = false;
 
-        enc_time = 0;
-        enc_mem = 0;
-        ver_time = 0;
-        ver_mem = 0;
+      enc_time = 0;
+      enc_mem = 0;
+      ver_time = 0;
+      ver_mem = 0;
     }
 };
 
