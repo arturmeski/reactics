@@ -22,13 +22,19 @@ struct Reaction {
     Entities prod;
 };
 typedef std::vector<Reaction> Reactions;
-typedef std::vector<std::string> EntitiesByIds;
+typedef std::vector<Reactions> ReactionsForProc;
+
+typedef std::vector<std::string> EntitiesById;
 typedef std::map<std::string, Entity> EntitiesByName;
 typedef std::set<Entities> EntitiesSets;
 
 typedef unsigned int State;
 typedef std::vector<std::string> StatesById;
 typedef std::map<std::string, State> StatesByName;
+
+typedef unsigned int Process;
+typedef std::vector<std::string> ProcessesById;
+typedef std::map<std::string, Process> ProcessesByName;
 
 struct ReactionCond {
     Entities rctt;

@@ -9,6 +9,7 @@
 #include "rs.hh"
 
 RctSys::RctSys(void)
+	: current_process_defined(false)
 {
 	ctx_aut = nullptr;
 }
@@ -29,7 +30,7 @@ void RctSys::addEntity(std::string name)
 
         VERB_L2("Adding entity: " << name << " index=" << new_entity_id);
 
-        entities_ids.push_back(name);		
+        entities_ids.push_back(name);
         entities_names[name] = new_entity_id;
     }
 }
@@ -57,6 +58,47 @@ Entity RctSys::getEntityID(std::string name)
 void RctSys::setCurrentProcess(std::string processName)
 {
 	VERB_LN(2, "Current Process: " << processName);
+	
+	if (!hasProcess(processName))
+	{
+		addProcess(processName);
+	}
+	
+	current_proc_id = getProcessID(processName);
+}
+
+void RctSys::addProcess(std::string processName)
+{
+    if (!hasProcess(processName))
+    {
+        Process new_proc_id = processes_ids.size();
+
+        VERB_L2("Adding process: " << processName << " index=" << new_proc_id);
+
+        processes_ids.push_back(processName);
+        processes_names[processName] = new_proc_id;
+		
+		// reactions for the new process
+		proc_reactions.push_back(Reactions());
+		assert(proc_reactions.size() == new_proc_id+1);
+    }
+}
+
+bool RctSys::hasProcess(std::string processName)
+{
+    if (processes_names.find(processName) == processes_names.end())
+        return false;
+    else
+        return true;
+}
+
+Process RctSys::getProcessID(std::string processName)
+{
+    if (!hasProcess(processName))
+    {
+        FERROR("No such process: " << processName);
+    }
+    return processes_names[processName];
 }
 
 void RctSys::pushReactant(std::string entityName)
@@ -78,6 +120,11 @@ void RctSys::pushProduct(std::string entityName)
     tmpProducts.insert(getEntityID(entityName));
 }
 
+void RctSys::addReactionForCurrentProcess(Reaction reaction)
+{
+	proc_reactions[current_proc_id].push_back(reaction);
+}
+
 void RctSys::commitReaction(void)
 {
     VERB_L3("Saving reaction");
@@ -88,7 +135,7 @@ void RctSys::commitReaction(void)
     r.inhib = tmpInhibitors;
     r.prod = tmpProducts;
 
-    reactions.push_back(r);
+    addReactionForCurrentProcess(r);
 
     tmpReactants.clear();
     tmpInhibitors.clear();
