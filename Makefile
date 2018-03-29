@@ -18,7 +18,7 @@ cleanly:
 	rm -f *.lex.cc *.lex.o location.hh stack.hh position.hh rsin_parser.cc rsin_parser.hh
 
 clean: cleanly
-	rm -f *.o main *~ makefile.dep tags
+	rm -f *.o main *.orig *~ makefile.dep tags
 
 cleanall: clean
 

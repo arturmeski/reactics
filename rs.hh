@@ -93,7 +93,7 @@ class RctSys
     void ctxAutAddTransition(std::string srcStateName, std::string dstStateName);
     void ctxAutPushNamedContextEntity(std::string entity_name);
     void ctxAutSaveCurrentContextSet(std::string processName);
-    
+
     bool initStatesDefined(void)
     {
       return initStates.size() != 0;
