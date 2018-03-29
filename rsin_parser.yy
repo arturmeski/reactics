@@ -106,8 +106,10 @@ option:
  */
 
 reactionsets:
-	| processname LCB reactions RCB SEMICOL
+	| reactionsets process_reactions
 	;
+
+process_reactions: processname LCB reactions RCB SEMICOL
 	
 processname: IDENTIFIER {
 		driver.getReactionSystem()->setCurrentProcess(*$1);
@@ -227,21 +229,25 @@ auttransitions:
 	| auttrans SEMICOL auttransitions
 	;	
 
-auttrans: LCB proc_contextset RCB COL IDENTIFIER RARR IDENTIFIER {
+auttrans: LCB proc_ctxsets RCB COL IDENTIFIER RARR IDENTIFIER {
 		driver.getReactionSystem()->ctxAutAddTransition(*$5, *$7);
 		free($5);
 		free($7);
 	}
 	;
-
-proc_contextset: IDENTIFIER EQ LCB contextset RCB {
-		driver.getReactionSystem()->setCurrentProcess(*$1);
+  
+proc_ctxsets:
+  | proc_ctxsets single_proc_ctxset
+  ;
+  
+single_proc_ctxset: IDENTIFIER EQ LCB contextset RCB {
+  driver.getReactionSystem()->ctxAutSaveCurrentContextSet(*$1);
 		free($1);
 	}
 	;
 	
 contextset:
-	ctxentity
+	| ctxentity
 	| contextset COMMA ctxentity
 	;
 		

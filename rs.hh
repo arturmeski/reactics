@@ -44,6 +44,7 @@ class RctSys
 
     void setCurrentProcess(std::string processName);
     void addProcess(std::string processName);
+    bool hasProcess(Process processID);
     bool hasProcess(std::string processName);
     Process getProcessID(std::string processName);
     std::string getProcessName(Process processID);
@@ -59,6 +60,7 @@ class RctSys
       return entities_ids[entity];
     }
     std::string entitiesToStr(const Entities &entities);
+    std::string procEntitiesToStr(const EntitiesForProc &procEntities);
     void showReactions(void);
     void pushStateEntity(std::string entityName);
     void commitInitState(void);
@@ -90,7 +92,8 @@ class RctSys
     void ctxAutSetInitState(std::string stateName);
     void ctxAutAddTransition(std::string srcStateName, std::string dstStateName);
     void ctxAutPushNamedContextEntity(std::string entity_name);
-
+    void ctxAutSaveCurrentContextSet(std::string processName);
+    
     bool initStatesDefined(void)
     {
       return initStates.size() != 0;

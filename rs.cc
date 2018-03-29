@@ -1,9 +1,6 @@
 /*
-    Copyright (c) 2012-2014
+    Copyright (c) 2012-2018
     Artur Meski <meski@ipipan.waw.pl>
-
-    Reuse of the code or its part for any purpose
-    without the author's permission is strictly prohibited.
 */
 
 #include "rs.hh"
@@ -94,18 +91,25 @@ bool RctSys::hasProcess(std::string processName)
   }
 }
 
+bool RctSys::hasProcess(Process processID)
+{
+  if (processID >= processes_ids.size()) {
+    return false;
+  }
+  return true;
+}
+
 Process RctSys::getProcessID(std::string processName)
 {
   if (!hasProcess(processName)) {
     FERROR("No such process: " << processName);
   }
-
   return processes_names[processName];
 }
 
 std::string RctSys::getProcessName(Process processID)
 {
-  if (processID < processes_ids.size()) {
+  if (hasProcess(processID)) {
     return processes_ids[processID];
   }
   else {
@@ -118,7 +122,6 @@ void RctSys::pushReactant(std::string entityName)
   if (!hasEntity(entityName)) {
     addEntity(entityName);
   }
-
   tmpReactants.insert(getEntityID(entityName));
 }
 void RctSys::pushInhibitor(std::string entityName)
@@ -126,7 +129,6 @@ void RctSys::pushInhibitor(std::string entityName)
   if (!hasEntity(entityName)) {
     addEntity(entityName);
   }
-
   tmpInhibitors.insert(getEntityID(entityName));
 }
 void RctSys::pushProduct(std::string entityName)
@@ -134,7 +136,6 @@ void RctSys::pushProduct(std::string entityName)
   if (!hasEntity(entityName)) {
     addEntity(entityName);
   }
-
   tmpProducts.insert(getEntityID(entityName));
 }
 
@@ -172,6 +173,17 @@ std::string RctSys::entitiesToStr(const Entities &entities)
     s += entityToStr(*a) + " ";
   }
 
+  return s;
+}
+
+std::string RctSys::procEntitiesToStr(const EntitiesForProc &procEntities)
+{
+  std::string s = " ";
+  
+  for (auto const &p : procEntities)
+  {
+    s += getProcessName(p.first) + "={" + entitiesToStr(p.second) + "} ";
+  }
   return s;
 }
 
@@ -323,6 +335,12 @@ void RctSys::ctxAutPushNamedContextEntity(std::string entityName)
   addActionEntity(entity_id);
 
   ctx_aut->pushContextEntity(entity_id);
+}
+
+void RctSys::ctxAutSaveCurrentContextSet(std::string processName)
+{
+  Process processID = getProcessID(processName);
+  ctx_aut->saveCurrentContextSet(processID);
 }
 
 /** EOF **/

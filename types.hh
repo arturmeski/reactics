@@ -50,7 +50,7 @@ typedef std::vector<int> StateEntityToAction;
 
 struct CtxAutTransition {
   State src_state;
-  Entities ctx;
+  EntitiesForProc ctx;
   State dst_state;
 };
 

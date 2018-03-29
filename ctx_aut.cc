@@ -73,7 +73,6 @@ void CtxAut::showStates(void)
 {
   cout << "# Context Automaton States:" << endl;
   cout << " = Init state: " << getStateName(init_state_id) << endl;
-
   for (const auto &s : states_ids) {
     cout << " * " << s << endl;
   }
@@ -84,6 +83,15 @@ void CtxAut::pushContextEntity(Entity entity_id)
   tmpEntities.insert(entity_id);
 }
 
+void CtxAut::saveCurrentContextSet(Process proc_id)
+{
+  if (!parent_rctsys->hasProcess(proc_id)) {
+    FERROR("No such process: ID=" << proc_id);
+  }
+  tmpProcEntities[proc_id] = tmpEntities;
+  tmpEntities.clear();
+}
+
 void CtxAut::addTransition(std::string srcStateName, std::string dstStateName)
 {
   VERB_L3("Saving transition");
@@ -91,7 +99,7 @@ void CtxAut::addTransition(std::string srcStateName, std::string dstStateName)
   CtxAutTransition new_transition;
 
   new_transition.src_state = getStateID(srcStateName);
-  new_transition.ctx = tmpEntities;
+  new_transition.ctx = tmpProcEntities;
   tmpEntities.clear();
   new_transition.dst_state = getStateID(dstStateName);
   transitions.push_back(new_transition);
@@ -100,11 +108,10 @@ void CtxAut::addTransition(std::string srcStateName, std::string dstStateName)
 void CtxAut::showTransitions(void)
 {
   cout << "# Context Automaton Transitions:" << endl;
-
   for (const auto &t : transitions) {
     cout << " * [" << getStateName(t.src_state) << " -> " << getStateName(
            t.dst_state)
-         << "]: {" << parent_rctsys->entitiesToStr(t.ctx) << "}" << endl;
+         << "]: {" << parent_rctsys->procEntitiesToStr(t.ctx) << "}" << endl;
   }
 }
 

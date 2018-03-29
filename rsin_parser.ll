@@ -38,16 +38,16 @@ blank [ \t]
   typedef yy::rsin_parser::token token;
 %}
 
-"options"				return token::OPTIONS;
+"options"				        return token::OPTIONS;
 "use-context-automaton"	return token::USE_CTX_AUT;
-"use-concentrations"	return token::USE_CONCENTRATIONS;
+"use-concentrations"	  return token::USE_CONCENTRATIONS;
 "reactions"             return token::REACTIONS;
 "initial-contexts"      return token::INITIALCONTEXTS;
 "context-entities"      return token::CONTEXTENTITIES;
-"context-automaton"		return token::CONTEXTAUTOMATON;
-"transitions"			return token::TRANSITIONS;
-"states"				return token::STATES;
-"init-state"			return token::INITSTATE;
+"context-automaton"		  return token::CONTEXTAUTOMATON;
+"transitions"			      return token::TRANSITIONS;
+"states"				        return token::STATES;
+"init-state"			      return token::INITSTATE;
 "rsctl-property"        return token::RSCTLFORM;
 "{"                     return token::LCB;
 "}"                     return token::RCB;
@@ -55,16 +55,16 @@ blank [ \t]
 ")"                     return token::RRB;
 "["                     return token::LSB;
 "]"                     return token::RSB;
-"="						return token::EQ;
-"<"						return token::LAB;
-">"						return token::RAB;
-":"						return token::COL;
+"="						          return token::EQ;
+"<"						          return token::LAB;
+">"						          return token::RAB;
+":"						          return token::COL;
 ";"                     return token::SEMICOL;
 ","                     return token::COMMA;
 "->"                    return token::RARR;
 "AND"                   return token::AND;
 "OR"                    return token::OR;
-"XOR"					return token::XOR;
+"XOR"					          return token::XOR;
 "IMPLIES"               return token::IMPLIES;
 "~"                     return token::NOT;
 "EX"                    return token::EX;

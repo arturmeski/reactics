@@ -1,9 +1,6 @@
 /*
     Copyright (c) 2018
     Artur Meski <meski@ipipan.waw.pl>
-
-    Reuse of the code or its part for any purpose
-    without the author's permission is strictly prohibited.
 */
 
 #ifndef RS_CTX_AUT_HH
@@ -42,6 +39,7 @@ class CtxAut
     void addTransition(std::string srcStateName, std::string dstStateName);
     void showTransitions(void);
     void pushContextEntity(Entity entity_id);
+    void saveCurrentContextSet(Process proc_id);
     void setOptions(Options *opts)
     {
       this->opts = opts;
@@ -58,6 +56,7 @@ class CtxAut
     StatesByName states_names;
     State init_state_id;
     bool init_state_defined;
+    EntitiesForProc tmpProcEntities;
     Entities tmpEntities;
     CtxAutTransitions transitions;
 };

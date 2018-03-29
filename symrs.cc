@@ -581,7 +581,8 @@ void SymRS::encodeCtxAutTrans(void)
             << " -> " << rs->ctx_aut->getStateName(t.dst_state));
     BDD enc_src = encCtxAutState(t.src_state);
     BDD enc_dst = encCtxAutStateSucc(t.dst_state);
-    BDD enc_ctx = compContext(encActEntitiesConj(t.ctx));
+    assert(0); // enc_ctx
+    BDD enc_ctx = BDD_FALSE; //compContext(encActEntitiesConj(t.ctx));
 
     *tr_ca += enc_src * enc_ctx * enc_dst;
   }
