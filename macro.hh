@@ -39,4 +39,7 @@ if (opts->verbose >= (n)) { \
   std::cerr << "ii VERBOSE(" << (n) << "): " << __FILE__ << " (" << __func__ << ":" << __LINE__ << "): " << s << std::endl;   \
 }
 
+
+#define SET_ADD(set1, set2) (set1).insert((set2).begin(), (set2).end())
+
 #endif

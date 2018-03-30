@@ -32,113 +32,6 @@ class SymRS
     friend class ModelChecker;
     friend class FormRSCTL;
 
-    RctSys *rs;
-    Cudd *cuddMgr;
-    Options *opts;
-
-    // Mapping: entity ID -> action/context entity ID
-    StateEntityToAction stateToAct;
-
-    BDD *initStates;
-
-    vector<BDD> *pv;
-    vector<BDD> *pv_succ;
-    BDD *pv_E;
-    BDD *pv_succ_E;
-
-    vector<BDD> *pv_rs;
-    vector<BDD> *pv_rs_succ;
-    BDD *pv_rs_E;
-    BDD *pv_rs_succ_E;
-
-    vector<BDD> *partTrans;
-
-    BDD *monoTrans;
-
-    // Context automaton
-    vector<BDD> *pv_ca;
-    vector<BDD> *pv_ca_succ;
-    BDD *pv_ca_E;
-    BDD *pv_ca_succ_E;
-    BDD *tr_ca;
-
-    vector<BDD> *pv_act;
-    BDD *pv_act_E;
-
-    unsigned int totalStateVars;
-    unsigned int totalReactions;
-    unsigned int totalRctSysStateVars;
-    unsigned int totalActions;
-    unsigned int totalCtxAutStateVars;
-
-    BDD encEntity_raw(Entity entity, bool succ) const;
-    BDD encEntity(Entity entity) const
-    {
-      return encEntity_raw(entity, false);
-    }
-    BDD encActEntity(Entity entity) const
-    {
-      assert(entity < pv_act->size());
-      return (*pv_act)[entity];
-    }
-    BDD encEntitySucc(Entity entity) const
-    {
-      return encEntity_raw(entity, true);
-    }
-    BDD encEntitiesConj_raw(const Entities &entities, bool succ);
-    BDD encEntitiesConj(const Entities &entities)
-    {
-      return encEntitiesConj_raw(entities, false);
-    }
-    BDD encEntitiesConjSucc(const Entities &entities)
-    {
-      return encEntitiesConj_raw(entities, true);
-    }
-    BDD encEntitiesDisj_raw(const Entities &entities, bool succ);
-    BDD encEntitiesDisj(const Entities &entities)
-    {
-      return encEntitiesDisj_raw(entities, false);
-    }
-    BDD encEntitiesDisjSucc(const Entities &entities)
-    {
-      return encEntitiesDisj_raw(entities, true);
-    }
-    BDD encStateActEntitiesConj(const Entities &entities);
-    BDD encStateActEntitiesDisj(const Entities &entities);
-
-    BDD encActEntitiesConj(const Entities &entities);
-
-    /**
-     * @brief Complements an encoding of a given state by negating all the variables that are not set to true
-     *
-     * @return Returns the encoded state
-     */
-    BDD compState(const BDD &state) const;
-
-    BDD compContext(const BDD &context) const;
-
-    std::string decodedRctSysStateToStr(const BDD &state);
-    void printDecodedRctSysStates(const BDD &states);
-
-    BDD encNoContext(void);
-
-    void initBDDvars(void);
-    void encodeTransitions(void);
-    void encodeTransitions_old(void);
-    void encodeInitStates(void);
-    void encodeInitStatesForCtxAut(void);
-    void encodeInitStatesNoCtxAut(void);
-    void mapStateToAct(void);
-    void encode(void);
-
-    int getMappedStateToActID(int stateID) const
-    {
-      assert(stateID < static_cast<int>(totalRctSysStateVars));
-      return stateToAct[stateID];
-    }
-
-    size_t getCtxAutStateEncodingSize(void);
-
   public:
     SymRS(RctSys *rs, Options *opts);
 
@@ -300,6 +193,122 @@ class SymRS
     {
       return tr_ca;
     }
+
+  private:
+
+    RctSys *rs;
+    Cudd *cuddMgr;
+    Options *opts;
+
+    // Mapping: entity ID -> action/context entity ID
+    StateEntityToAction stateToAct;
+
+    BDD *initStates;
+
+    vector<BDD> *pv;
+    vector<BDD> *pv_succ;
+    BDD *pv_E;
+    BDD *pv_succ_E;
+
+    vector<BDD> *pv_rs;
+    vector<BDD> *pv_rs_succ;
+    BDD *pv_rs_E;
+    BDD *pv_rs_succ_E;
+
+    vector<BDD> *partTrans;
+
+    BDD *monoTrans;
+
+    // Context automaton
+    vector<BDD> *pv_ca;
+    vector<BDD> *pv_ca_succ;
+    BDD *pv_ca_E;
+    BDD *pv_ca_succ_E;
+    BDD *tr_ca;
+
+    vector<BDD> *pv_act;
+    BDD *pv_act_E;
+
+    unsigned int totalStateVars;
+    unsigned int totalReactions;
+    unsigned int totalRctSysStateVars;
+    unsigned int totalActions;
+    unsigned int totalCtxAutStateVars;
+
+    EntitiesForProc usedEntities;
+
+    BDD encEntity_raw(Entity entity, bool succ) const;
+    BDD encEntity(Entity entity) const
+    {
+      return encEntity_raw(entity, false);
+    }
+    BDD encActEntity(Entity entity) const
+    {
+      assert(entity < pv_act->size());
+      return (*pv_act)[entity];
+    }
+    BDD encEntitySucc(Entity entity) const
+    {
+      return encEntity_raw(entity, true);
+    }
+    BDD encEntitiesConj_raw(const Entities &entities, bool succ);
+    BDD encEntitiesConj(const Entities &entities)
+    {
+      return encEntitiesConj_raw(entities, false);
+    }
+    BDD encEntitiesConjSucc(const Entities &entities)
+    {
+      return encEntitiesConj_raw(entities, true);
+    }
+    BDD encEntitiesDisj_raw(const Entities &entities, bool succ);
+    BDD encEntitiesDisj(const Entities &entities)
+    {
+      return encEntitiesDisj_raw(entities, false);
+    }
+    BDD encEntitiesDisjSucc(const Entities &entities)
+    {
+      return encEntitiesDisj_raw(entities, true);
+    }
+    BDD encStateActEntitiesConj(const Entities &entities);
+    BDD encStateActEntitiesDisj(const Entities &entities);
+
+    BDD encActEntitiesConj(const Entities &entities);
+
+    /**
+     * @brief Complements an encoding of a given state by negating all the variables that are not set to true
+     *
+     * @return Returns the encoded state
+     */
+    BDD compState(const BDD &state) const;
+
+    BDD compContext(const BDD &context) const;
+
+    std::string decodedRctSysStateToStr(const BDD &state);
+    void printDecodedRctSysStates(const BDD &states);
+
+    BDD encNoContext(void);
+
+    void initBDDvars(void);
+    void encodeTransitions(void);
+    void encodeTransitions_old(void);
+    void encodeInitStates(void);
+    void encodeInitStatesForCtxAut(void);
+    void encodeInitStatesNoCtxAut(void);
+    void mapStateToAct(void);
+    void mapProcEntities(void);
+    void encode(void);
+
+    void printUsedEntitiesPerProc(void);
+
+    int getMappedStateToActID(int stateID) const
+    {
+      assert(stateID < static_cast<int>(totalRctSysStateVars));
+      return stateToAct[stateID];
+    }
+
+    size_t getCtxAutStateEncodingSize(void);
+
+
 };
 
 #endif

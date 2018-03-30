@@ -28,6 +28,77 @@ SymRS::SymRS(RctSys *rs, Options *opts)
   encode();
 }
 
+void SymRS::encode(void)
+{
+  VERB("Encoding...");
+
+  if (opts->measure) {
+    opts->enc_time = cpuTime();
+    opts->enc_mem = memUsed();
+  }
+
+  mapStateToAct();
+
+  mapProcEntities();
+
+  initBDDvars();
+
+  if (usingContextAutomaton()) {
+    encodeCtxAutTrans();
+  }
+  else {
+    VERB_LN(3, "Not using context automata, not encoding TR for CA")
+  }
+
+  encodeTransitions();
+  encodeInitStates();
+
+  if (opts->measure) {
+    opts->enc_time = cpuTime() - opts->enc_time;
+    opts->enc_mem = memUsed() - opts->enc_mem;
+  }
+
+  VERB("Encoding done");
+}
+
+void SymRS::mapProcEntities(void)
+{
+
+  // Reactions
+
+  for (const auto &proc_rcts : rs->proc_reactions) {
+    Process proc_id = proc_rcts.first;
+
+    for (const auto &rct : proc_rcts.second) {
+
+      // collect entities that can be produced
+      // locally by the process with proc_id
+
+      SET_ADD(usedEntities[proc_id], rct.prod);
+    }
+  }
+
+  // Context automaton
+  // for ()
+
+  printUsedEntitiesPerProc();
+
+}
+
+void SymRS::printUsedEntitiesPerProc(void)
+{
+  for (const auto &proc_entities : usedEntities) {
+    std::string proc_name = rs->getProcessName(proc_entities.first);
+    cout << proc_name << ": ";
+
+    for (const auto &ent : proc_entities.second) {
+      cout << rs->getEntityName(ent) << " ";
+    }
+
+    cout << endl;
+  }
+}
+
 BDD SymRS::encEntity_raw(Entity entity, bool succ) const
 {
   BDD r;
@@ -453,37 +524,6 @@ void SymRS::mapStateToAct(void)
            stateToAct[i] << endl;
     }
   }
-}
-
-void SymRS::encode(void)
-{
-  VERB("Encoding...");
-
-  if (opts->measure) {
-    opts->enc_time = cpuTime();
-    opts->enc_mem = memUsed();
-  }
-
-  mapStateToAct();
-
-  initBDDvars();
-
-  if (usingContextAutomaton()) {
-    encodeCtxAutTrans();
-  }
-  else {
-    VERB_LN(3, "Not using context automata, not encoding TR for CA")
-  }
-
-  encodeTransitions();
-  encodeInitStates();
-
-  if (opts->measure) {
-    opts->enc_time = cpuTime() - opts->enc_time;
-    opts->enc_mem = memUsed() - opts->enc_mem;
-  }
-
-  VERB("Encoding done");
 }
 
 BDD SymRS::encActStrEntity(std::string name) const
