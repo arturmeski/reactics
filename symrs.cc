@@ -83,10 +83,9 @@ void SymRS::mapProcEntities(void)
   // for (const )
   // usedCtxEntities
 
-  rs->printEntitiesPerProc(usedProducts);
+  cout << rs->procEntitiesToStr(usedProducts) << endl;
+
 }
-
-
 
 BDD SymRS::encEntity_raw(Entity entity, bool succ) const
 {

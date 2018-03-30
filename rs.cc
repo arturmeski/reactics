@@ -119,20 +119,6 @@ std::string RctSys::getProcessName(Process processID)
   }
 }
 
-void RctSys::printEntitiesPerProc(const EntitiesForProc &proc_entities)
-{
-  for (const auto &pe : proc_entities) {
-    std::string proc_name = getProcessName(pe.first);
-    cout << proc_name << ": ";
-
-    for (const auto &ent : pe.second) {
-      cout << getEntityName(ent) << " ";
-    }
-
-    cout << endl;
-  }
-}
-
 void RctSys::pushReactant(std::string entityName)
 {
   if (!hasEntity(entityName)) {
