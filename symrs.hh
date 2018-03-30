@@ -238,6 +238,11 @@ class SymRS
     EntitiesForProc usedProducts;
     EntitiesForProc usedCtxEntities;
 
+    // Local indices for each entity (per process):
+    // separete for state/product entities and context
+    LocalIndicesForProcEntities prod_ent_local_idx;
+    LocalIndicesForProcEntities ctx_ent_local_idx;
+
     BDD encEntity_raw(Entity entity, bool succ) const;
     BDD encEntity(Entity entity) const
     {
@@ -296,6 +301,8 @@ class SymRS
     void encodeInitStatesForCtxAut(void);
     void encodeInitStatesNoCtxAut(void);
     void mapStateToAct(void);
+    LocalIndicesForProcEntities buildLocalEntitiesMap(const EntitiesForProc
+        &procEnt);
     void mapProcEntities(void);
     void encode(void);
 
@@ -306,7 +313,6 @@ class SymRS
     }
 
     size_t getCtxAutStateEncodingSize(void);
-
 
 };
 

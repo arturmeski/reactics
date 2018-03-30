@@ -114,7 +114,7 @@ void CtxAut::showTransitions(void)
   for (const auto &t : transitions) {
     cout << " * [" << getStateName(t.src_state) << " -> " << getStateName(
            t.dst_state)
-         << "]: {" << parent_rctsys->procEntitiesToStr(t.ctx) << "}" << endl;
+         << "]: { " << parent_rctsys->procEntitiesToStr(t.ctx) << "}" << endl;
   }
 }
 

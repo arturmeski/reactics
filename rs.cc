@@ -183,7 +183,7 @@ std::string RctSys::entitiesToStr(const Entities &entities)
 
 std::string RctSys::procEntitiesToStr(const EntitiesForProc &procEntities)
 {
-  std::string s = " ";
+  std::string s = "";
 
   for (auto const &p : procEntities) {
     s += getProcessName(p.first) + "={" + entitiesToStr(p.second) + "} ";

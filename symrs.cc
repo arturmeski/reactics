@@ -61,11 +61,28 @@ void SymRS::encode(void)
   VERB("Encoding done");
 }
 
+LocalIndicesForProcEntities SymRS::buildLocalEntitiesMap(
+  const EntitiesForProc &procEnt)
+{
+  LocalIndicesForProcEntities ent_map;
+  unsigned int cnt = 0;
+
+  for (const auto &proc_ent : procEnt) {
+    Process proc_id = proc_ent.first;
+
+    for (const auto &e : proc_ent.second) {
+      ent_map[proc_id][e] = cnt++;
+    }
+  }
+
+  return ent_map;
+}
+
 void SymRS::mapProcEntities(void)
 {
-
+  //
   // Reactions
-
+  //
   for (const auto &proc_rcts : rs->proc_reactions) {
     Process proc_id = proc_rcts.first;
 
@@ -78,13 +95,20 @@ void SymRS::mapProcEntities(void)
     }
   }
 
+  prod_ent_local_idx = buildLocalEntitiesMap(usedProducts);
+
+  //
   // Context automaton
+  //
+  for (const auto &tr : rs->ctx_aut->transitions) {
+    for (const auto &proc_ctx : tr.ctx) {
+      Process proc_id = proc_ctx.first;
+      SET_ADD(usedCtxEntities[proc_id], proc_ctx.second);
+    }
+  }
 
-  // for (const )
-  // usedCtxEntities
-
-  cout << rs->procEntitiesToStr(usedProducts) << endl;
-
+  ctx_ent_local_idx = buildLocalEntitiesMap(usedCtxEntities);
+  // cout << rs->procEntitiesToStr(usedCtxEntities) << endl;
 }
 
 BDD SymRS::encEntity_raw(Entity entity, bool succ) const

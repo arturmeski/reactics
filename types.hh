@@ -39,6 +39,9 @@ typedef std::map<std::string, State> StatesByName;
 
 typedef std::map<Process, Entities> EntitiesForProc;
 
+typedef std::map<Entity, unsigned int> EntiesToLocalIndex;
+typedef std::map<Process, EntiesToLocalIndex> LocalIndicesForProcEntities;
+
 struct ReactionCond {
   Entities rctt;
   Entities inhib;
