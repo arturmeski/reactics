@@ -49,6 +49,8 @@ class RctSys
     Process getProcessID(std::string processName);
     std::string getProcessName(Process processID);
 
+    void printEntitiesPerProc(const EntitiesForProc &proc_entities);
+
     void addReactionForCurrentProcess(Reaction reaction);
 
     void pushReactant(std::string entityName);

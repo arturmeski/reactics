@@ -235,7 +235,8 @@ class SymRS
     unsigned int totalActions;
     unsigned int totalCtxAutStateVars;
 
-    EntitiesForProc usedEntities;
+    EntitiesForProc usedProducts;
+    EntitiesForProc usedCtxEntities;
 
     BDD encEntity_raw(Entity entity, bool succ) const;
     BDD encEntity(Entity entity) const
@@ -297,8 +298,6 @@ class SymRS
     void mapStateToAct(void);
     void mapProcEntities(void);
     void encode(void);
-
-    void printUsedEntitiesPerProc(void);
 
     int getMappedStateToActID(int stateID) const
     {
