@@ -35,11 +35,11 @@ class SymRS
   public:
     SymRS(RctSys *rs, Options *opts);
 
-    vector<BDD> *getEncPV(void)
+    BDDvec *getEncPV(void)
     {
       return pv;
     }
-    vector<BDD> *getEncPVsucc(void)
+    BDDvec *getEncPVsucc(void)
     {
       return pv_succ;
     }
@@ -55,7 +55,7 @@ class SymRS
     {
       return pv_act_E;
     }
-    vector<BDD> *getEncPartTrans(void)
+    BDDvec *getEncPartTrans(void)
     {
       return partTrans;
     }
@@ -144,7 +144,7 @@ class SymRS
      *
      * @return Returns a vector of BDDs
      */
-    vector<BDD> *getEncCtxAutPV(void)
+    BDDvec *getEncCtxAutPV(void)
     {
       return pv_ca;
     }
@@ -154,7 +154,7 @@ class SymRS
      *
      * @return Returns a vector of BDDs
      */
-    vector<BDD> *getEncCtxAutPVsucc(void)
+    BDDvec *getEncCtxAutPVsucc(void)
     {
       return pv_ca_succ;
     }
@@ -200,48 +200,62 @@ class SymRS
     Cudd *cuddMgr;
     Options *opts;
 
-    // Mapping: entity ID -> action/context entity ID
-    StateEntityToAction stateToAct;
+    StateEntityToAction
+    stateToAct; /*!< Mapping: entity ID -> action/context entity ID */
 
-    BDD *initStates;
+    BDD *initStates;              /*!< BDD with initial states encoded */
 
-    vector<BDD> *pv;
-    vector<BDD> *pv_succ;
+    BDDvec *pv;                   /*!< PVs for the global state (all the variables, flat) */
+    BDDvec *pv_succ;
     BDD *pv_E;
     BDD *pv_succ_E;
 
-    vector<BDD> *pv_rs;
-    vector<BDD> *pv_rs_succ;
+    BDDvec *pv_proc_enab;         /*!< Variables indicating if a process is enabled */
+
+    BDDvec *pv_rs;
+    BDDvec *pv_rs_succ;
+
     BDD *pv_rs_E;
     BDD *pv_rs_succ_E;
 
-    vector<BDD> *partTrans;
+    vector<BDDvec> *pv_drs;       /*!< PVs for the product part of state
+                                       (per DRS process) */
+    vector<BDDvec> *pv_drs_succ;  /*!< PVs for the product (successor)
+                                       part of state (per DRS process) */
+
+    BDDvec *pv_drs_flat;          /*!< PVs for the DRS product part of state (flat) */
+    BDDvec *pv_drs_flat_succ;     /*!< PVs for the DRS product (successor) part of state (flat) */
+
+    BDDvec *partTrans;
 
     BDD *monoTrans;
 
     // Context automaton
-    vector<BDD> *pv_ca;
-    vector<BDD> *pv_ca_succ;
+    BDDvec *pv_ca;
+    BDDvec *pv_ca_succ;
     BDD *pv_ca_E;
     BDD *pv_ca_succ_E;
     BDD *tr_ca;
 
-    vector<BDD> *pv_act;
+    BDDvec *pv_act;
     BDD *pv_act_E;
 
+    unsigned int numberOfProc;         /*!< The number of DRS processes */
     unsigned int totalStateVars;
     unsigned int totalReactions;
-    unsigned int totalRctSysStateVars;
+    unsigned int totalRctSysStateVars; /*!< Total number of different entities produced by reactions */
+    unsigned int totalCtxEntities;     /*!< Total number of different process-context entities used */
     unsigned int totalActions;
     unsigned int totalCtxAutStateVars;
 
-    EntitiesForProc usedProducts;
-    EntitiesForProc usedCtxEntities;
+    EntitiesForProc usedProducts;     /*!< Entities used in products (per process) */
+    EntitiesForProc usedCtxEntities;  /*!< Entities used in context sets (per process) */
 
-    // Local indices for each entity (per process):
-    // separete for state/product entities and context
-    LocalIndicesForProcEntities prod_ent_local_idx;
-    LocalIndicesForProcEntities ctx_ent_local_idx;
+    LocalIndicesForProcEntities prod_ent_local_idx; /*!< Local indices for each entity (per process): product entities */
+    LocalIndicesForProcEntities ctx_ent_local_idx;  /*!< Local indices for each entity (per process): context entities */
+
+    size_t getTotalProductVariables(void);
+    size_t getTotalCtxEntitiesVariables(void);
 
     BDD encEntity_raw(Entity entity, bool succ) const;
     BDD encEntity(Entity entity) const

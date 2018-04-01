@@ -13,6 +13,9 @@
 #include <map>
 #include <vector>
 #include <string>
+#include "cudd.hh"
+
+typedef std::vector<BDD> BDDvec;
 
 typedef unsigned int Entity;
 typedef std::set<Entity> Entities;

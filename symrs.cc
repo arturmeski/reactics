@@ -10,13 +10,19 @@ SymRS::SymRS(RctSys *rs, Options *opts)
 {
   this->rs = rs;
   this->opts = opts;
-  totalRctSysStateVars = rs->getEntitiesSize();
+
+  mapProcEntities();
+
+  // TODO: remove
+  totalActions = 0;
+
+  totalRctSysStateVars = getTotalProductVariables();
   totalReactions = rs->getReactionsSize();
-  totalActions = rs->getActionsSize();
+  totalCtxEntities = getTotalCtxEntitiesVariables();
 
   totalCtxAutStateVars = getCtxAutStateEncodingSize();
-
   totalStateVars = totalRctSysStateVars + totalCtxAutStateVars;
+  numberOfProc = rs->getNumberOfProcesses();
 
   partTrans = nullptr;
   monoTrans = nullptr;
@@ -38,8 +44,6 @@ void SymRS::encode(void)
   }
 
   mapStateToAct();
-
-  mapProcEntities();
 
   initBDDvars();
 
@@ -76,6 +80,188 @@ LocalIndicesForProcEntities SymRS::buildLocalEntitiesMap(
   }
 
   return ent_map;
+}
+
+void SymRS::initBDDvars(void)
+{
+  VERB("Initialising CUDD");
+
+  cuddMgr = new Cudd(0, 0);
+
+  VERB("Preparing BDD variables");
+
+  // used for bddVar
+  unsigned int bdd_var_idx = 0;
+
+  // used for pv, pv_succ
+  unsigned int global_state_idx = 0;
+
+  // ----------------------------------------------------------
+  //                        Global state
+  // ----------------------------------------------------------
+  //
+  //  Variables for reaction system with CA (if used)
+  //
+
+  pv = new BDDvec(totalStateVars);
+  pv_succ = new BDDvec(totalStateVars);
+  pv_E = new BDD(BDD_TRUE);
+  pv_succ_E = new BDD(BDD_TRUE);
+
+  // ----------------------------------------------------------
+  //                       Distributed RS
+  // ----------------------------------------------------------
+
+  // // Reaction system (no actions, no CA)
+  // pv_rs = new BDDvec(totalRctSysStateVars);
+  // pv_rs_succ = new BDDvec(totalRctSysStateVars);
+  // pv_rs_E = new BDD(BDD_TRUE);
+  // pv_rs_succ_E = new BDD(BDD_TRUE);
+
+  pv_drs = new vector<BDDvec>(numberOfProc);
+  pv_drs_succ = new vector<BDDvec>(numberOfProc);
+
+  pv_drs_flat = new BDDvec(totalRctSysStateVars);
+  pv_drs_flat_succ = new BDDvec(totalRctSysStateVars);
+
+  pv_drs_flat_E = new BDD(BDD_TRUE);
+  pv_drs_flat_succ_E = new BDD(BDD_TRUE);
+
+  VERB_LN(3, "DRS processing");
+
+  unsigned int drs_flat_index = 0;
+
+  for (const auto &proc_ent : usedProducts) {
+
+    auto proc_id = proc_ent.first;
+    auto entities_count = proc_ent.second.size();
+
+    //
+    // The order of entities and their correspondence to the
+    // correct entities in pv (global) does not matter here.
+    //
+    // The correspondence is established in the methods
+    // returning BDD variables (encoding) of the individual
+    // enties.
+    //
+    // We only need to make sure we have the correct number of
+    // variables that are going to be used in the encoding.
+    //
+    // For efficiency, we do not introduce BDD variables for
+    // entites that are never produced in a given local component.
+    // Instead, we only select those that are. We apply the same
+    // strategy to product entities and context entities.
+    //
+
+    // First, we need to adjust the sizes of all the nested vectors
+    (*pv_drs)[proc_id].resize(entities_count);
+    (*pv_drs_succ)[proc_id].resize(entities_count);
+
+    for (unsigned int i = 0; i < entities_count; ++i) {
+
+      assert(drs_flat_index < totalRctSysStateVars);
+      assert(global_state_idx < totalStateVars);
+      assert(proc_id < numberOfProc);
+      assert(i < rs->getEntitiesSize());
+
+      // Variables for each individual process/component
+      (*pv_drs)[proc_id][i] = cuddMgr->bddVar(bdd_var_idx++);
+      (*pv_drs_succ)[proc_id][i] = cuddMgr->bddVar(bdd_var_idx++);
+
+      // The DRS part of the system (flattened): these vars do not include CA
+      (*pv_drs_flat)[drs_flat_index] = (*pv_drs)[proc_id][i];
+      (*pv_drs_flat_succ)[drs_flat_index] = (*pv_drs_succ)[proc_id][i];
+      ++drs_flat_index;
+
+      // Variables used for the global states
+      (*pv)[global_state_idx] = (*pv_drs)[proc_id][i];
+      (*pv_succ)[global_state_idx] = (*pv_drs_succ)[proc_id][i];
+      ++global_state_idx;
+    }
+  }
+
+  // ----------------------------------------------------------
+  //                      Context Automaton
+  // ----------------------------------------------------------
+
+  if (usingContextAutomaton()) {
+    VERB("Context automaton variables");
+
+    pv_ca = new BDDvec(totalCtxAutStateVars);
+    pv_ca_succ = new BDDvec(totalCtxAutStateVars);
+    pv_ca_E = new BDD(BDD_TRUE);
+    pv_ca_succ_E = new BDD(BDD_TRUE);
+
+    for (unsigned int i = 0; i < totalCtxAutStateVars; ++i) {
+      (*pv_ca)[i] = cuddMgr->bddVar(bdd_var_idx++);
+      (*pv_ca_succ)[i] = cuddMgr->bddVar(bdd_var_idx++);
+      *pv_ca_E *= (*pv_ca)[i];
+      *pv_ca_succ_E *= (*pv_ca_succ)[i];
+
+      (*pv)[global_state_idx] = (*pv_ca)[i];
+      (*pv_succ)[global_state_idx] = (*pv_ca_succ)[i];
+      ++global_state_idx;
+    }
+  }
+
+  // ----------------------------------------------------------
+  //                Enabledness of processes
+  // ----------------------------------------------------------
+  //
+  //  These variables indicate which process is
+  //  allowed to perform action
+  //
+  pv_proc_enab = new BDDvec(numberOfProc);
+
+  for (unsigned int i = 0; i < numberOfProc; ++i) {
+    (*pv_proc_enab)[i] = cuddMgr->bddVar(bdd_var_idx++);
+  }
+
+  // Actions/Contexts
+  pv_act = new BDDvec(totalActions);
+  pv_act_E = new BDD(BDD_TRUE);
+
+  // TODO
+  // Actions need also per-process PV and flattened PV
+
+  for (unsigned int i = 0; i < totalActions; ++i) {
+    (*pv_act)[i] = cuddMgr->bddVar(bdd_var_idx++);
+    *pv_act_E *= (*pv_act)[i];
+  }
+
+  // Quantification BDDs
+
+  *pv_E = *pv_rs_E;
+  *pv_succ_E = *pv_rs_succ_E;
+
+  if (usingContextAutomaton()) {
+    *pv_E *= *pv_ca_E;
+    *pv_succ_E *= *pv_ca_succ_E;
+  }
+
+  VERB("All BDD variables ready");
+}
+
+size_t SymRS::getTotalProductVariables(void)
+{
+  size_t total = 0;
+
+  for (const auto &it : usedProducts) {
+    total += it.second.size();
+  }
+
+  return total;
+}
+
+size_t SymRS::getTotalCtxEntitiesVariables(void)
+{
+  size_t total = 0;
+
+  for (const auto &it : usedCtxEntities) {
+    total += it.second.size();
+  }
+
+  return total;
 }
 
 void SymRS::mapProcEntities(void)
@@ -256,92 +442,12 @@ void SymRS::printDecodedRctSysStates(const BDD &states)
     cout << decodedRctSysStateToStr(t) << endl;
 
     if (opts->verbose > 9) {
-      t.PrintMinterm();
+      BDD_PRINT(t);
       cout << endl;
     }
 
     unproc -= t;
   }
-}
-
-void SymRS::initBDDvars(void)
-{
-  VERB("Initialising CUDD");
-
-  cuddMgr = new Cudd(0, 0);
-
-  VERB("Preparing BDD variables");
-
-  // used for bddVar
-  unsigned int bdd_var_idx = 0;
-
-  // used for pv, pv_succ
-  unsigned int global_state_idx = 0;
-
-  // Variables for reaction system with CA (if used)
-  pv = new vector<BDD>(totalStateVars);
-  pv_succ = new vector<BDD>(totalStateVars);
-  pv_E = new BDD(BDD_TRUE);
-  pv_succ_E = new BDD(BDD_TRUE);
-
-  // Reaction system (no actions, no CA)
-  pv_rs = new vector<BDD>(totalRctSysStateVars);
-  pv_rs_succ = new vector<BDD>(totalRctSysStateVars);
-  pv_rs_E = new BDD(BDD_TRUE);
-  pv_rs_succ_E = new BDD(BDD_TRUE);
-
-  for (unsigned int i = 0; i < totalRctSysStateVars; ++i) {
-    (*pv_rs)[i] = cuddMgr->bddVar(bdd_var_idx++);
-    (*pv_rs_succ)[i] = cuddMgr->bddVar(bdd_var_idx++);
-    *pv_rs_E *= (*pv_rs)[i];
-    *pv_rs_succ_E *= (*pv_rs_succ)[i];
-
-    (*pv)[global_state_idx] = (*pv_rs)[i];
-    (*pv_succ)[global_state_idx] = (*pv_rs_succ)[i];
-    ++global_state_idx;
-  }
-
-  // CA
-  if (usingContextAutomaton()) {
-    VERB("Context automaton variables");
-
-    pv_ca = new vector<BDD>(totalCtxAutStateVars);
-    pv_ca_succ = new vector<BDD>(totalCtxAutStateVars);
-    pv_ca_E = new BDD(BDD_TRUE);
-    pv_ca_succ_E = new BDD(BDD_TRUE);
-
-    for (unsigned int i = 0; i < totalCtxAutStateVars; ++i) {
-      (*pv_ca)[i] = cuddMgr->bddVar(bdd_var_idx++);
-      (*pv_ca_succ)[i] = cuddMgr->bddVar(bdd_var_idx++);
-      *pv_ca_E *= (*pv_ca)[i];
-      *pv_ca_succ_E *= (*pv_ca_succ)[i];
-
-      (*pv)[global_state_idx] = (*pv_ca)[i];
-      (*pv_succ)[global_state_idx] = (*pv_ca_succ)[i];
-      ++global_state_idx;
-    }
-  }
-
-  // Actions/Contexts
-  pv_act = new vector<BDD>(totalActions);
-  pv_act_E = new BDD(BDD_TRUE);
-
-  for (unsigned int i = 0; i < totalActions; ++i) {
-    (*pv_act)[i] = cuddMgr->bddVar(bdd_var_idx++);
-    *pv_act_E *= (*pv_act)[i];
-  }
-
-  // Quantification BDDs
-
-  *pv_E = *pv_rs_E;
-  *pv_succ_E = *pv_rs_succ_E;
-
-  if (usingContextAutomaton()) {
-    *pv_E *= *pv_ca_E;
-    *pv_succ_E *= *pv_ca_succ_E;
-  }
-
-  VERB("All BDD variables ready");
 }
 
 void SymRS::encodeTransitions(void)
@@ -365,7 +471,7 @@ void SymRS::encodeTransitions(void)
 
   if (opts->part_tr_rel) {
     VERB("Using partitioned transition relation encoding");
-    partTrans = new vector<BDD>(totalRctSysStateVars);
+    partTrans = new BDDvec(totalRctSysStateVars);
   }
   else {
     VERB("Using monolithic transition relation encoding");
@@ -575,7 +681,7 @@ size_t SymRS::getCtxAutStateEncodingSize(void)
 BDD SymRS::encCtxAutState_raw(State state_id, bool succ) const
 {
   // select appropriate BDD vector
-  vector<BDD> *enc_vec;
+  BDDvec *enc_vec;
 
   if (succ) {
     enc_vec = pv_ca_succ;

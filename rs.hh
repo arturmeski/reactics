@@ -103,6 +103,11 @@ class RctSys
       return ctx_aut != nullptr;
     }
 
+    size_t getNumberOfProcesses(void)
+    {
+      return processes_ids.size();
+    }
+
   private:
     Reactions reactions; // TODO: to be removed later
     ReactionsForProc proc_reactions;

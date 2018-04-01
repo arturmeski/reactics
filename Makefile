@@ -44,7 +44,7 @@ rsin_parser.lex.cc: rsin_parser.ll
 	mv lex.yy.c rsin_parser.lex.cc
 
 style:
-	astyle --max-code-length=78 --break-closing-brackets --convert-tabs --add-brackets --max-instatement-indent=40 -s2 -C -xG -S -f -p -H -k1 -c --style=kr --align-pointer=name *.cc *.hh	
+	astyle --max-code-length=130 --break-closing-brackets --convert-tabs --add-brackets --max-instatement-indent=40 -s2 -C -xG -S -f -p -H -k1 -c --style=kr --align-pointer=name *.cc *.hh	
 
 commit: style
 	git commit -a
