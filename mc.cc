@@ -191,7 +191,9 @@ bool ModelChecker::checkReach(const Entities testState)
     opts->ver_time = cpuTime();
   }
 
-  BDD st = srs->getEncState(testState);
+  // BDD st = srs->getEncState(testState);
+  BDD st = BDD_FALSE;
+  assert(0);
 
   BDD reach = *initStates;
   BDD reach_p = cuddMgr->bddZero();

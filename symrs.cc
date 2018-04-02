@@ -13,11 +13,12 @@ SymRS::SymRS(RctSys *rs, Options *opts)
 
   mapProcEntities();
 
+  totalEntities = rs->getEntitiesSize();
+
   // TODO: remove
   totalActions = 0;
 
   totalRctSysStateVars = getTotalProductVariables();
-  totalReactions = rs->getReactionsSize();
   totalCtxEntities = getTotalCtxEntitiesVariables();
 
   totalCtxAutStateVars = getCtxAutStateEncodingSize();
@@ -42,8 +43,6 @@ void SymRS::encode(void)
     opts->enc_time = cpuTime();
     opts->enc_mem = memUsed();
   }
-
-  mapStateToAct();
 
   initBDDvars();
 
@@ -156,7 +155,7 @@ void SymRS::initBDDvars(void)
       assert(drs_flat_index < totalRctSysStateVars);
       assert(global_state_idx < totalStateVars);
       assert(proc_id < numberOfProc);
-      assert(i < rs->getEntitiesSize());
+      assert(i < totalEntities);
 
       // Variables for each individual process/component
       (*pv_drs)[proc_id][i] = cuddMgr->bddVar(bdd_var_idx++);
@@ -250,7 +249,7 @@ void SymRS::initBDDvars(void)
     auto proc_id = proc_ent.first;
     auto entities_count = proc_ent.second.size();
 
-    assert(entities_count < rs->getEntitiesSize());
+    assert(entities_count < totalEntities);
 
     // adjust the size of the nested vector before we use an index
     (*pv_proc_ctx)[proc_id].resize(entities_count);
@@ -346,46 +345,60 @@ void SymRS::mapProcEntities(void)
   }
 }
 
-BDD SymRS::encEntity_raw(Entity entity, bool succ) const
+BDD SymRS::encEntity_raw(Process proc_id, Entity entity, bool succ) const
 {
   BDD r;
 
+  assert(proc_id < numberOfProc);
+
+  auto local_entity_id = getLocalProductEntityIndex(proc_id, entity);
+
   if (succ) {
-    r = (*pv_succ)[entity];
+    r = (*pv_drs_succ)[proc_id][local_entity_id];
   }
   else {
-    r = (*pv)[entity];
+    r = (*pv_drs)[proc_id][local_entity_id];
   }
 
   return r;
 }
 
-BDD SymRS::encEntitiesConj_raw(const Entities &entities, bool succ)
+BDD SymRS::encCtxEntity(Process proc_id, Entity entity) const
+{
+  assert(entity < totalEntities);
+  assert(proc_id < numberOfProc);
+
+  auto local_entity_id = getLocalCtxEntityIndex(proc_id, entity);
+
+  return (*pv_proc_ctx)[proc_id][local_entity_id];
+}
+
+BDD SymRS::encEntitiesConj_raw(Process proc_id, const Entities &entities, bool succ)
 {
   BDD r = BDD_TRUE;
 
   for (const auto &entity : entities) {
     if (succ) {
-      r *= encEntitySucc(entity);
+      r *= encEntitySucc(proc_id, entity);
     }
     else {
-      r *= encEntity(entity);
+      r *= encEntity(proc_id, entity);
     }
   }
 
   return r;
 }
 
-BDD SymRS::encEntitiesDisj_raw(const Entities &entities, bool succ)
+BDD SymRS::encEntitiesDisj_raw(Process proc_id, const Entities &entities, bool succ)
 {
   BDD r = BDD_FALSE;
 
   for (const auto &entity : entities) {
     if (succ) {
-      r += encEntitySucc(entity);
+      r += encEntitySucc(proc_id, entity);
     }
     else {
-      r += encEntity(entity);
+      r += encEntity(proc_id, entity);
     }
   }
 
@@ -394,8 +407,9 @@ BDD SymRS::encEntitiesDisj_raw(const Entities &entities, bool succ)
 
 BDD SymRS::encStateActEntitiesConj(const Entities &entities)
 {
+  assert(0);
   BDD r = BDD_TRUE;
-
+  /*
   for (const auto &entity : entities) {
     BDD state_act = encEntity(entity);
     int actEntity;
@@ -407,14 +421,16 @@ BDD SymRS::encStateActEntitiesConj(const Entities &entities)
 
     r *= state_act;
   }
+  */
 
   return r;
 }
 
 BDD SymRS::encStateActEntitiesDisj(const Entities &entities)
 {
+  assert(0);
   BDD r = BDD_FALSE;
-
+  /*
   for (const auto &entity : entities) {
     BDD state_act = encEntity(entity);
     int actEntity;
@@ -426,24 +442,26 @@ BDD SymRS::encStateActEntitiesDisj(const Entities &entities)
 
     r += state_act;
   }
-
+  */
   return r;
 }
 
 BDD SymRS::encActEntitiesConj(const Entities &entities)
 {
+  assert(0);
   BDD r = BDD_TRUE;
-
+  /*
   for (const auto &entity : entities) {
     Entity actEntity = getMappedStateToActID(entity);
     r *= encActEntity(actEntity);
   }
-
+  */
   return r;
 }
 
 BDD SymRS::compState(const BDD &state) const
 {
+  assert(0);
   BDD s = state;
 
   for (unsigned int i = 0; i < totalRctSysStateVars; ++i) {
@@ -457,6 +475,7 @@ BDD SymRS::compState(const BDD &state) const
 
 BDD SymRS::compContext(const BDD &context) const
 {
+  assert(0);
   BDD c = context;
 
   for (unsigned int i = 0; i < totalActions; ++i) {
@@ -470,20 +489,22 @@ BDD SymRS::compContext(const BDD &context) const
 
 std::string SymRS::decodedRctSysStateToStr(const BDD &state)
 {
+  assert(0);
   std::string s = "{ ";
-
+  /*
   for (unsigned int i = 0; i < totalRctSysStateVars; ++i) {
     if (!(encEntity(i) * state).IsZero()) {
       s += rs->entityToStr(i) + " ";
     }
   }
-
+  */
   s += "}";
   return s;
 }
 
 void SymRS::printDecodedRctSysStates(const BDD &states)
 {
+  assert(0);
   BDD unproc = states;
 
   while (!unproc.IsZero()) {
@@ -499,114 +520,51 @@ void SymRS::printDecodedRctSysStates(const BDD &states)
   }
 }
 
-void SymRS::encodeTransitions(void)
+DecompReactions SymRS::getProductionConditions(Process proc_id)
 {
   DecompReactions dr;
 
+  for (const auto &rct : rs->proc_reactions[proc_id]) {
+    ReactionCond cond;
+    cond.rctt = rct.rctt;
+    cond.inhib = rct.inhib;
+
+    for (const auto &prod : rct.prod) {
+      dr[prod].push_back(cond);
+    }
+  }
+
+  return dr;
+}
+
+void SymRS::encodeTransitions(void)
+{
   VERB("Decomposing reactions");
 
-  for (unsigned int i = 0; i < totalReactions; ++i) {
-    ReactionCond cond;
-    cond.rctt = rs->reactions[i].rctt;
-    cond.inhib = rs->reactions[i].inhib;
+  vector<DecompReactions> prod_conds(numberOfProc);
 
-    for (Entities::iterator p = rs->reactions[i].prod.begin();
-         p != rs->reactions[i].prod.end(); ++p) {
-      dr[*p].push_back(cond);
-    }
+  for (auto proc_id = 0; proc_id < numberOfProc; ++proc_id) {
+    prod_conds[proc_id] = getProductionConditions(proc_id);
   }
 
   VERB("Encoding reactions");
 
   if (opts->part_tr_rel) {
     VERB("Using partitioned transition relation encoding");
-    partTrans = new BDDvec(totalRctSysStateVars);
+    FERROR("Partitioned transition relation is currently not supported");
   }
   else {
     VERB("Using monolithic transition relation encoding");
     monoTrans = new BDD(BDD_TRUE);
   }
 
-  for (unsigned int p = 0; p < totalRctSysStateVars; ++p) {
-    VERB_L3("Encoding for successor " << p);
-
-    DecompReactions::iterator di;
-
-    if ((di = dr.find(p)) == dr.end()) {
-      // there is no reaction producing p:
-      if (opts->part_tr_rel) {
-        (*partTrans)[p] = !encEntitySucc(p);
-      }
-      else {
-        *monoTrans *= !encEntitySucc(p);
-      }
-    }
-    else {
-      // di - reactions producing p
-
-      BDD conditions = BDD_FALSE;
-
-      assert(di->second.size() > 0);
-
-      for (unsigned int j = 0; j < di->second.size(); ++j) {
-        conditions += encStateActEntitiesConj(di->second[j].rctt) *
-                      !encStateActEntitiesDisj(di->second[j].inhib);
-      }
-
-      if (opts->part_tr_rel) {
-        (*partTrans)[p] = conditions * encEntitySucc(p);
-        (*partTrans)[p] += !conditions * !encEntitySucc(p);
-      }
-      else {
-        *monoTrans *= (conditions * encEntitySucc(p)) + (!conditions * !encEntitySucc(
-                        p));
-      }
-    }
-
-    if (opts->reorder_trans) {
-      VERB_L2("Reordering");
-      Cudd_ReduceHeap(cuddMgr->getManager(), CUDD_REORDER_SIFT, 10000);
-    }
-
-  }
-
-  VERB("Reactions ready");
-
-  if (usingContextAutomaton()) {
-    VERB("Augmenting transition relation encoding with the transition relation for context automaton");
-
-    if (opts->part_tr_rel) {
-      assert(0);
-    }
-    else {
-      assert(tr_ca != nullptr);
-      *monoTrans *= *tr_ca;
-    }
-  }
-
-  VERB("Transition relation encoded")
-}
-
-BDD SymRS::getEncState(const Entities &entities)
-{
-  assert(0);
-  //BDD state = compState(encEntitiesConj(rs->initState));
-  //for (RctSys::Entities::iterator at = rs->actionEntities.begin(); at != rs->actionEntities.end(); ++at)
-  //{
-  //    state = state.ExistAbstract(encEntity(*at));
-  //}
-  return BDD_FALSE;
+  FERROR("WORK IN PROGRESS");
 }
 
 BDD SymRS::encNoContext(void)
 {
-  BDD noContextBDD = BDD_TRUE;
-
-  for (unsigned int i = 0; i < totalActions; ++i) {
-    noContextBDD *= !(*pv_act)[i];
-  }
-
-  return noContextBDD;
+  assert(0);
+  return BDD_FALSE;
 }
 
 void SymRS::encodeInitStates(void)
@@ -616,8 +574,7 @@ void SymRS::encodeInitStates(void)
     encodeInitStatesForCtxAut();
   }
   else {
-    VERB("Encoding initial states (for the action entities method -- no CA)");
-    encodeInitStatesNoCtxAut();
+    FERROR("Context automaton required");
   }
 
   VERB("Initial states encoded");
@@ -634,67 +591,9 @@ void SymRS::encodeInitStatesForCtxAut(void)
   *initStates *= getEncCtxAutInitState();
 }
 
-void SymRS::encodeInitStatesNoCtxAut(void)
-{
-#ifndef NDEBUG
-
-  if (opts->part_tr_rel) {
-    assert(partTrans != nullptr);
-  }
-
-#endif
-
-  initStates = new BDD(BDD_FALSE);
-
-  for (auto state = rs->initStates.begin();
-       state != rs->initStates.end();
-       ++state) {
-    VERB("Encoding a single inital state");
-    BDD newInitState = compState(encEntitiesConj(*state));
-    BDD q = BDD_TRUE;
-
-    if (opts->part_tr_rel) {
-      for (unsigned int i = 0; i < partTrans->size(); ++i) {
-        q *= newInitState * (*partTrans)[i] * encNoContext();
-      }
-    }
-    else {
-      q *= newInitState * *monoTrans * encNoContext();
-    }
-
-    q = (q.ExistAbstract(*pv_E)).SwapVariables(*pv_succ, *pv);
-    q = q.ExistAbstract(*pv_act_E);
-
-    *initStates += q;
-  }
-}
-
-void SymRS::mapStateToAct(void)
-{
-  VERB("Mapping state variables to action variables");
-  unsigned int j = 0;
-
-  for (unsigned int i = 0; i < totalRctSysStateVars; ++i) {
-    if (rs->isActionEntity(i)) {
-      stateToAct.push_back(j++);
-    }
-    else {
-      stateToAct.push_back(-1);
-    }
-  }
-
-  const unsigned int verbosity_level = 9;
-
-  if (opts->verbose > verbosity_level) {
-    for (unsigned int i = 0; i < stateToAct.size(); ++i) {
-      cout << "ii VERBOSE(" << verbosity_level << "): stateToAct[" << i << "] = " <<
-           stateToAct[i] << endl;
-    }
-  }
-}
-
 BDD SymRS::encActStrEntity(std::string name) const
 {
+  /*
   int id = getMappedStateToActID(rs->getEntityID(name));
 
   if (id < 0) {
@@ -704,6 +603,8 @@ BDD SymRS::encActStrEntity(std::string name) const
   else {
     return encActEntity(getMappedStateToActID(rs->getEntityID(name)));
   }
+  */
+  return BDD_FALSE;
 }
 
 size_t SymRS::getCtxAutStateEncodingSize(void)
@@ -788,7 +689,7 @@ void SymRS::encodeCtxAutTrans(void)
             << " -> " << rs->ctx_aut->getStateName(t.dst_state));
     BDD enc_src = encCtxAutState(t.src_state);
     BDD enc_dst = encCtxAutStateSucc(t.dst_state);
-    assert(0); // enc_ctx
+    // assert(0); // enc_ctx
     BDD enc_ctx = BDD_FALSE; //compContext(encActEntitiesConj(t.ctx));
 
     *tr_ca += enc_src * enc_ctx * enc_dst;

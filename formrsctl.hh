@@ -153,7 +153,8 @@ class FormRSCTL
 {
     Oper oper;
     FormRSCTL *arg[2];
-    std::string name;
+    std::string entity_name;
+    std::string proc_name;
     bool tf;
     BDD *bdd;
     ActionsVec_f *actions;
@@ -169,7 +170,7 @@ class FormRSCTL
     FormRSCTL(std::string varName)
     {
       oper = RSCTL_PV;
-      name = varName;
+      entity_name = varName;
       arg[0] = nullptr;
       arg[1] = nullptr;
       bdd = nullptr;

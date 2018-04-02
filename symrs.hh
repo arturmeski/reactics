@@ -63,7 +63,6 @@ class SymRS
     {
       return monoTrans;
     }
-    BDD getEncState(const Entities &entities);
     BDD *getEncInitStates(void)
     {
       return initStates;
@@ -80,11 +79,10 @@ class SymRS
     {
       return totalRctSysStateVars;
     }
-    BDD encEntity(std::string name) const
+    BDD encEntity(std::string proc_name, std::string entity_name) const
     {
-      return encEntity(rs->getEntityID(name));
+      return encEntity(rs->getProcessID(proc_name), rs->getEntityID(entity_name));
     }
-
     BDD encActStrEntity(std::string name) const;
     BDD getBDDtrue(void) const
     {
@@ -249,9 +247,9 @@ class SymRS
     BDDvec *pv_act;
     BDD *pv_act_E;
 
+    unsigned int totalEntities;
     unsigned int numberOfProc;         /*!< The number of DRS processes */
     unsigned int totalStateVars;
-    unsigned int totalReactions;
     unsigned int totalRctSysStateVars; /*!< Total number of different entities produced by reactions */
     unsigned int totalCtxEntities;     /*!< Total number of different process-context entities used */
     unsigned int totalActions;
@@ -266,37 +264,48 @@ class SymRS
     size_t getTotalProductVariables(void);
     size_t getTotalCtxEntitiesVariables(void);
 
-    BDD encEntity_raw(Entity entity, bool succ) const;
-    BDD encEntity(Entity entity) const
+    unsigned int getLocalProductEntityIndex(Process proc_id, Entity entity) const
     {
-      return encEntity_raw(entity, false);
+      return prod_ent_local_idx.at(proc_id).at(entity);
     }
-    BDD encActEntity(Entity entity) const
+    unsigned int getLocalCtxEntityIndex(Process proc_id, Entity entity) const
     {
-      assert(entity < pv_act->size());
-      return (*pv_act)[entity];
+      return ctx_ent_local_idx.at(proc_id).at(entity);
     }
-    BDD encEntitySucc(Entity entity) const
+
+    BDD encEntity_raw(Process proc_id, Entity entity, bool succ) const;
+    BDD encEntity(Process proc_id, Entity entity) const
     {
-      return encEntity_raw(entity, true);
+      return encEntity_raw(proc_id, entity, false);
     }
-    BDD encEntitiesConj_raw(const Entities &entities, bool succ);
-    BDD encEntitiesConj(const Entities &entities)
+    BDD encEntitySucc(Process proc_id, Entity entity) const
     {
-      return encEntitiesConj_raw(entities, false);
+      return encEntity_raw(proc_id, entity, true);
     }
-    BDD encEntitiesConjSucc(const Entities &entities)
+
+    BDD encCtxEntity(Process proc_id, Entity entity) const;
+
+    BDD encEntitiesConj_raw(Process proc_id, const Entities &entities, bool succ);
+    BDD encEntitiesConj(Process proc_id, const Entities &entities)
     {
-      return encEntitiesConj_raw(entities, true);
+      return encEntitiesConj_raw(proc_id, entities, false);
     }
-    BDD encEntitiesDisj_raw(const Entities &entities, bool succ);
-    BDD encEntitiesDisj(const Entities &entities)
+    BDD encEntitiesConjSucc(Process proc_id, const Entities &entities)
     {
-      return encEntitiesDisj_raw(entities, false);
+      return encEntitiesConj_raw(proc_id, entities, true);
     }
-    BDD encEntitiesDisjSucc(const Entities &entities)
+
+
+    // ---- TODO below:
+
+    BDD encEntitiesDisj_raw(Process proc_id, const Entities &entities, bool succ);
+    BDD encEntitiesDisj(Process proc_id, const Entities &entities)
     {
-      return encEntitiesDisj_raw(entities, true);
+      return encEntitiesDisj_raw(proc_id, entities, false);
+    }
+    BDD encEntitiesDisjSucc(Process proc_id, const Entities &entities)
+    {
+      return encEntitiesDisj_raw(proc_id, entities, true);
     }
     BDD encStateActEntitiesConj(const Entities &entities);
     BDD encStateActEntitiesDisj(const Entities &entities);
@@ -317,13 +326,12 @@ class SymRS
 
     BDD encNoContext(void);
 
+    DecompReactions getProductionConditions(Process proc_id);
+
     void initBDDvars(void);
     void encodeTransitions(void);
-    void encodeTransitions_old(void);
     void encodeInitStates(void);
     void encodeInitStatesForCtxAut(void);
-    void encodeInitStatesNoCtxAut(void);
-    void mapStateToAct(void);
     LocalIndicesForProcEntities buildLocalEntitiesMap(const EntitiesForProc &procEnt);
     void mapProcEntities(void);
     void encode(void);

@@ -76,7 +76,7 @@ BDD BoolContexts::getBDD(const SymRS *srs) const
 std::string FormRSCTL::toStr(void) const
 {
   if (oper == RSCTL_PV) {
-    return name;
+    return proc_name + ":" + entity_name;
   }
   else if (oper == RSCTL_TF) {
     if (tf) {
@@ -188,7 +188,7 @@ void FormRSCTL::encodeEntities(const SymRS *srs)
     arg[1]->encodeEntities(srs);
   }
   else if (oper == RSCTL_PV) {
-    bdd = new BDD(srs->encEntity(name));
+    bdd = new BDD(srs->encEntity(proc_name, entity_name));
   }
 }
 

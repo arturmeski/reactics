@@ -75,10 +75,6 @@ class RctSys
     {
       return entities_ids.size();
     }
-    unsigned int getReactionsSize(void)
-    {
-      return reactions.size();
-    }
     unsigned int getActionsSize(void)
     {
       return actionEntities.size();
@@ -109,7 +105,7 @@ class RctSys
     }
 
   private:
-    Reactions reactions; // TODO: to be removed later
+    // Reactions reactions; // TODO: to be removed later
     ReactionsForProc proc_reactions;
 
     EntitiesSets initStates;
