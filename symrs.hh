@@ -212,11 +212,11 @@ class SymRS
 
     BDDvec *pv_proc_enab;         /*!< Variables indicating if a process is enabled */
 
-    BDDvec *pv_rs;
-    BDDvec *pv_rs_succ;
+    BDDvec *pv_rs; // remove
+    BDDvec *pv_rs_succ; // remove
 
-    BDD *pv_rs_E;
-    BDD *pv_rs_succ_E;
+    BDD *pv_rs_E; // remove
+    BDD *pv_rs_succ_E; // remove
 
     vector<BDDvec> *pv_drs;       /*!< PVs for the product part of state
                                        (per DRS process) */
@@ -225,6 +225,9 @@ class SymRS
 
     BDDvec *pv_drs_flat;          /*!< PVs for the DRS product part of state (flat) */
     BDDvec *pv_drs_flat_succ;     /*!< PVs for the DRS product (successor) part of state (flat) */
+
+    BDD *pv_drs_flat_E;
+    BDD *pv_drs_flat_succ_E;
 
     BDDvec *partTrans;
 
@@ -237,6 +240,12 @@ class SymRS
     BDD *pv_ca_succ_E;
     BDD *tr_ca;
 
+    BDDvec *pv_ctx;
+    BDD *pv_ctx_E;
+    vector<BDDvec> *pv_proc_ctx;
+    BDDvec *pv_proc_ctx_E;
+
+    // TODO: remove
     BDDvec *pv_act;
     BDD *pv_act_E;
 
@@ -315,8 +324,7 @@ class SymRS
     void encodeInitStatesForCtxAut(void);
     void encodeInitStatesNoCtxAut(void);
     void mapStateToAct(void);
-    LocalIndicesForProcEntities buildLocalEntitiesMap(const EntitiesForProc
-        &procEnt);
+    LocalIndicesForProcEntities buildLocalEntitiesMap(const EntitiesForProc &procEnt);
     void mapProcEntities(void);
     void encode(void);
 

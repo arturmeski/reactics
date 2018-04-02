@@ -112,12 +112,6 @@ void SymRS::initBDDvars(void)
   //                       Distributed RS
   // ----------------------------------------------------------
 
-  // // Reaction system (no actions, no CA)
-  // pv_rs = new BDDvec(totalRctSysStateVars);
-  // pv_rs_succ = new BDDvec(totalRctSysStateVars);
-  // pv_rs_E = new BDD(BDD_TRUE);
-  // pv_rs_succ_E = new BDD(BDD_TRUE);
-
   pv_drs = new vector<BDDvec>(numberOfProc);
   pv_drs_succ = new vector<BDDvec>(numberOfProc);
 
@@ -127,7 +121,7 @@ void SymRS::initBDDvars(void)
   pv_drs_flat_E = new BDD(BDD_TRUE);
   pv_drs_flat_succ_E = new BDD(BDD_TRUE);
 
-  VERB_LN(3, "DRS processing");
+  VERB_LN(2, "DRS processing");
 
   unsigned int drs_flat_index = 0;
 
@@ -171,11 +165,18 @@ void SymRS::initBDDvars(void)
       // The DRS part of the system (flattened): these vars do not include CA
       (*pv_drs_flat)[drs_flat_index] = (*pv_drs)[proc_id][i];
       (*pv_drs_flat_succ)[drs_flat_index] = (*pv_drs_succ)[proc_id][i];
-      ++drs_flat_index;
+
+      *pv_drs_flat_E *= (*pv_drs_flat)[drs_flat_index];
+      *pv_drs_flat_succ_E *= (*pv_drs_flat_succ)[drs_flat_index];
 
       // Variables used for the global states
       (*pv)[global_state_idx] = (*pv_drs)[proc_id][i];
       (*pv_succ)[global_state_idx] = (*pv_drs_succ)[proc_id][i];
+
+      *pv_E *= (*pv)[global_state_idx];
+      *pv_succ_E *= (*pv_succ)[global_state_idx];
+
+      ++drs_flat_index;
       ++global_state_idx;
     }
   }
@@ -185,7 +186,7 @@ void SymRS::initBDDvars(void)
   // ----------------------------------------------------------
 
   if (usingContextAutomaton()) {
-    VERB("Context automaton variables");
+    VERB_LN(2, "Context automaton variables");
 
     pv_ca = new BDDvec(totalCtxAutStateVars);
     pv_ca_succ = new BDDvec(totalCtxAutStateVars);
@@ -211,30 +212,71 @@ void SymRS::initBDDvars(void)
   //  These variables indicate which process is
   //  allowed to perform action
   //
+  VERB_LN(2, "Variables for process enabledness/activity");
+
   pv_proc_enab = new BDDvec(numberOfProc);
 
   for (unsigned int i = 0; i < numberOfProc; ++i) {
     (*pv_proc_enab)[i] = cuddMgr->bddVar(bdd_var_idx++);
   }
 
-  // Actions/Contexts
-  pv_act = new BDDvec(totalActions);
-  pv_act_E = new BDD(BDD_TRUE);
+  // ----------------------------------------------------------
+  //                   Context Entities
+  // ----------------------------------------------------------
 
-  // TODO
-  // Actions need also per-process PV and flattened PV
+  // // Actions/Contexts
+  // pv_act = new BDDvec(totalActions);
+  // pv_act_E = new BDD(BDD_TRUE);
+  //
+  // // TODO
+  // // Actions need also per-process PV and flattened PV
+  //
+  // for (unsigned int i = 0; i < totalActions; ++i) {
+  //   (*pv_act)[i] = cuddMgr->bddVar(bdd_var_idx++);
+  //   *pv_act_E *= (*pv_act)[i];
+  // }
 
-  for (unsigned int i = 0; i < totalActions; ++i) {
-    (*pv_act)[i] = cuddMgr->bddVar(bdd_var_idx++);
-    *pv_act_E *= (*pv_act)[i];
+  VERB_LN(2, "Variables for context entities");
+
+  pv_ctx = new BDDvec(totalCtxEntities);
+  pv_ctx_E = new BDD(BDD_TRUE);
+  pv_proc_ctx = new vector<BDDvec>(numberOfProc);
+  pv_proc_ctx_E = new BDDvec(numberOfProc);
+
+  unsigned int flat_ctx_index = 0;
+
+  for (const auto &proc_ent : usedCtxEntities) {
+
+    auto proc_id = proc_ent.first;
+    auto entities_count = proc_ent.second.size();
+
+    assert(entities_count < rs->getEntitiesSize());
+
+    // adjust the size of the nested vector before we use an index
+    (*pv_proc_ctx)[proc_id].resize(entities_count);
+
+    (*pv_proc_ctx_E)[proc_id] = BDD_TRUE;
+
+    for (unsigned int i = 0; i < entities_count; ++i) {
+
+      assert(flat_ctx_index < totalCtxEntities);
+      assert(proc_id < numberOfProc);
+
+      (*pv_proc_ctx)[proc_id][i] = cuddMgr->bddVar(bdd_var_idx++);
+      (*pv_proc_ctx_E)[proc_id] *= (*pv_proc_ctx)[proc_id][i];
+
+      (*pv_ctx)[flat_ctx_index] = (*pv_proc_ctx)[proc_id][i];
+      *pv_ctx_E *= (*pv_ctx)[flat_ctx_index];
+
+      ++flat_ctx_index;
+    }
+
   }
 
-  // Quantification BDDs
-
-  *pv_E = *pv_rs_E;
-  *pv_succ_E = *pv_rs_succ_E;
-
   if (usingContextAutomaton()) {
+
+    VERB_LN(2, "Updating quantification BDDs with context automaton")
+
     *pv_E *= *pv_ca_E;
     *pv_succ_E *= *pv_ca_succ_E;
   }
@@ -294,7 +336,14 @@ void SymRS::mapProcEntities(void)
   }
 
   ctx_ent_local_idx = buildLocalEntitiesMap(usedCtxEntities);
-  // cout << rs->procEntitiesToStr(usedCtxEntities) << endl;
+
+  if (opts->verbose > 9) {
+    cout << "Used product entities:" << endl;
+    cout << rs->procEntitiesToStr(usedProducts) << endl;
+
+    cout << "Used context entities:" << endl;
+    cout << rs->procEntitiesToStr(usedCtxEntities) << endl;
+  }
 }
 
 BDD SymRS::encEntity_raw(Entity entity, bool succ) const
