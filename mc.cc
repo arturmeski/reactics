@@ -80,6 +80,10 @@ inline BDD ModelChecker::getSucc(const BDD &states)
   }
 
   q = (q.ExistAbstract(*pv_E)).SwapVariables(*pv_succ, *pv);
+
+  // we should have one BDD for cleaning up
+  // it should be calculated at the very beginning
+
   q = q.ExistAbstract(*pv_ctx_E);
   q = q.ExistAbstract(*pv_proc_enab_E);
 

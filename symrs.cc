@@ -681,8 +681,6 @@ void SymRS::encodeTransitions(void)
 
     for (const auto &prod : products) {
       *monoTrans *= encEntityProduction(proc_id, prod);
-      cout << rs->getProcessName(proc_id) << " " << rs->getEntityName(prod) << endl;
-      BDD_PRINT(encEntityProduction(proc_id, prod));
     }
   }
 
@@ -727,6 +725,7 @@ void SymRS::encodeInitStatesForCtxAut(void)
 
 BDD SymRS::encActStrEntity(std::string name) const
 {
+  assert(0); // TODO for rsCTL
   /*
   int id = getMappedStateToActID(rs->getEntityID(name));
 
