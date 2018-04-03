@@ -105,7 +105,7 @@ class RctSys
     }
 
   private:
-    // Reactions reactions; // TODO: to be removed later
+
     ReactionsForProc proc_reactions;
 
     EntitiesSets initStates;

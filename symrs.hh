@@ -236,7 +236,7 @@ class SymRS
     BDD *pv_ca_succ_E;
     BDD *tr_ca;
 
-    BDDvec *pv_ctx;
+    BDDvec *pv_ctx;               /*!< Flat */
     BDD *pv_ctx_E;
     vector<BDDvec> *pv_proc_ctx;
     BDDvec *pv_proc_ctx_E;
@@ -249,7 +249,7 @@ class SymRS
     unsigned int numberOfProc;         /*!< The number of DRS processes */
     unsigned int totalStateVars;
     unsigned int totalRctSysStateVars; /*!< Total number of different entities produced by reactions */
-    unsigned int totalCtxEntities;     /*!< Total number of different process-context entities used */
+    unsigned int totalCtxEntities;     /*!< Total number of different (process,context) entities used */
     unsigned int totalActions;
     unsigned int totalCtxAutStateVars;
 
@@ -309,7 +309,7 @@ class SymRS
 
     BDD encEntityCondition(Process proc_id, Entity entity_id);
 
-    BDD encActEntitiesConj(const Entities &entities);
+    BDD encContext(const EntitiesForProc &proc_entities);
 
     /**
      * @brief Complements an encoding of a given state by negating all the variables that are not set to true

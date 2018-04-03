@@ -470,16 +470,24 @@ BDD SymRS::encEntityCondition(Process proc_id, Entity entity_id)
   return r;
 }
 
-BDD SymRS::encActEntitiesConj(const Entities &entities)
+BDD SymRS::encContext(const EntitiesForProc &proc_entities)
 {
-  assert(0);
   BDD r = BDD_TRUE;
-  /*
-  for (const auto &entity : entities) {
-    Entity actEntity = getMappedStateToActID(entity);
-    r *= encActEntity(actEntity);
+
+  for (const auto &pe : proc_entities) {
+    auto proc_id = pe.first;
+    auto entities = pe.second;
+
+    for (const auto &entity : entities) {
+      r *= encCtxEntity(proc_id, entity);
+    }
+
+    // This check is not really requires. Just to be sure...
+    if (entities.size() > 0) {
+      r *= encProcEnabled(proc_id);
+    }
   }
-  */
+
   return r;
 }
 
@@ -499,12 +507,17 @@ BDD SymRS::compState(const BDD &state) const
 
 BDD SymRS::compContext(const BDD &context) const
 {
-  assert(0);
   BDD c = context;
 
-  for (unsigned int i = 0; i < totalActions; ++i) {
-    if (!(*pv_act)[i] * context != cuddMgr->bddZero()) {
-      c *= !(*pv_act)[i];
+  for (const auto &var : *pv_ctx) {
+    if (!var * context != cuddMgr->bddZero()) {
+      c *= !var;
+    }
+  }
+
+  for (const auto &var : *pv_proc_enab) {
+    if (!var * context != cuddMgr->bddZero()) {
+      c *= !var;
     }
   }
 
@@ -797,10 +810,11 @@ void SymRS::encodeCtxAutTrans(void)
             << " -> " << rs->ctx_aut->getStateName(t.dst_state));
     BDD enc_src = encCtxAutState(t.src_state);
     BDD enc_dst = encCtxAutStateSucc(t.dst_state);
-    // assert(0); // enc_ctx
-    BDD enc_ctx = BDD_FALSE; //compContext(encActEntitiesConj(t.ctx));
+    BDD enc_ctx = compContext(encContext(t.ctx));
 
-    *tr_ca += enc_src * enc_ctx * enc_dst;
+    BDD new_trans = enc_src * enc_ctx * enc_dst;
+
+    *tr_ca += new_trans;
   }
 }
 
