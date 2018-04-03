@@ -16,7 +16,15 @@ ModelChecker::ModelChecker(SymRS *srs, Options *opts)
   pv_succ = srs->getEncPVsucc();
   pv_E = srs->getEncPV_E();
   pv_succ_E = srs->getEncPVsucc_E();
-  pv_act_E = srs->getEncPVact_E();
+  pv_ctx_E = srs->getEncPVctx_E();
+  pv_proc_enab_E = srs->getEncPVproc_enab_E();
+
+  assert(pv != nullptr);
+  assert(pv_succ != nullptr);
+  assert(pv_E != nullptr);
+  assert(pv_succ_E != nullptr);
+  assert(pv_ctx_E != nullptr);
+  assert(pv_proc_enab_E != nullptr);
 
   //
   // Transition relations
@@ -69,10 +77,12 @@ inline BDD ModelChecker::getSucc(const BDD &states)
   }
   else {
     q *= states * *trm;
+    BDD_PRINT(q);
   }
 
   q = (q.ExistAbstract(*pv_E)).SwapVariables(*pv_succ, *pv);
-  q = q.ExistAbstract(*pv_act_E);
+  q = q.ExistAbstract(*pv_ctx_E);
+  q = q.ExistAbstract(*pv_proc_enab_E);
 
   return q;
 }
@@ -93,7 +103,7 @@ inline BDD ModelChecker::getPreE(const BDD &states)
   }
 
   q = q.ExistAbstract(*pv_succ_E);
-  q = q.ExistAbstract(*pv_act_E);
+  q = q.ExistAbstract(*pv_ctx_E);
   return q;
 }
 
@@ -113,7 +123,7 @@ inline BDD ModelChecker::getPreEctx(const BDD &states, const BDD *contexts)
   }
 
   q = q.ExistAbstract(*pv_succ_E);
-  q = q.ExistAbstract(*pv_act_E);
+  q = q.ExistAbstract(*pv_ctx_E);
   return q;
 }
 
@@ -147,9 +157,7 @@ void ModelChecker::printReach(void)
   }
 
   dropCtxAutStatePart(*reach);
-
   srs->printDecodedRctSysStates(*reach);
-
   cleanup();
 
   if (opts->measure) {

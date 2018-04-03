@@ -51,9 +51,13 @@ class SymRS
     {
       return pv_succ_E;
     }
-    BDD *getEncPVact_E(void)
+    BDD *getEncPVctx_E(void)
     {
-      return pv_act_E;
+      return pv_ctx_E;
+    }
+    BDD *getEncPVproc_enab_E(void)
+    {
+      return pv_proc_enab_E;
     }
     BDDvec *getEncPartTrans(void)
     {
@@ -206,12 +210,7 @@ class SymRS
     BDD *pv_succ_E;
 
     BDDvec *pv_proc_enab;         /*!< Variables indicating if a process is enabled */
-
-    BDDvec *pv_rs; // remove
-    BDDvec *pv_rs_succ; // remove
-
-    BDD *pv_rs_E; // remove
-    BDD *pv_rs_succ_E; // remove
+    BDD *pv_proc_enab_E;
 
     vector<BDDvec> *pv_drs;       /*!< PVs for the product part of state
                                        (per DRS process) */
@@ -322,8 +321,6 @@ class SymRS
 
     std::string decodedRctSysStateToStr(const BDD &state);
     void printDecodedRctSysStates(const BDD &states);
-
-    BDD encNoContext(void);
 
     DecompReactions getProductionConditions(Process proc_id);
 

@@ -215,26 +215,17 @@ void SymRS::initBDDvars(void)
   VERB_LN(2, "Variables for process enabledness/activity");
 
   pv_proc_enab = new BDDvec(numberOfProc);
+  pv_proc_enab_E = new BDD(BDD_TRUE);
 
   for (unsigned int i = 0; i < numberOfProc; ++i) {
-    (*pv_proc_enab)[i] = cuddMgr->bddVar(bdd_var_idx++);
+    auto bdd_var = cuddMgr->bddVar(bdd_var_idx++);
+    (*pv_proc_enab)[i] = bdd_var;
+    *pv_proc_enab_E *= bdd_var;
   }
 
   // ----------------------------------------------------------
   //                   Context Entities
   // ----------------------------------------------------------
-
-  // // Actions/Contexts
-  // pv_act = new BDDvec(totalActions);
-  // pv_act_E = new BDD(BDD_TRUE);
-  //
-  // // TODO
-  // // Actions need also per-process PV and flattened PV
-  //
-  // for (unsigned int i = 0; i < totalActions; ++i) {
-  //   (*pv_act)[i] = cuddMgr->bddVar(bdd_var_idx++);
-  //   *pv_act_E *= (*pv_act)[i];
-  // }
 
   VERB_LN(2, "Variables for context entities");
 
@@ -526,26 +517,33 @@ BDD SymRS::compContext(const BDD &context) const
 
 std::string SymRS::decodedRctSysStateToStr(const BDD &state)
 {
-  assert(0);
   std::string s = "{ ";
-  /*
-  for (unsigned int i = 0; i < totalRctSysStateVars; ++i) {
-    if (!(encEntity(i) * state).IsZero()) {
-      s += rs->entityToStr(i) + " ";
+
+  for (const auto &proc_entities : usedProducts) {
+
+    auto proc_id = proc_entities.first;
+    auto entities = proc_entities.second;
+    s += rs->getProcessName(proc_id) + "={ ";
+
+    for (const auto &entity : entities) {
+      if (!(encEntity(proc_id, entity) * state).IsZero()) {
+        s += rs->entityToStr(entity) + " ";
+      }
     }
+
+    s += "} ";
   }
-  */
+
   s += "}";
   return s;
 }
 
 void SymRS::printDecodedRctSysStates(const BDD &states)
 {
-  assert(0);
   BDD unproc = states;
 
   while (!unproc.IsZero()) {
-    BDD t = unproc.PickOneMinterm(*pv_rs);
+    BDD t = unproc.PickOneMinterm(*pv_drs_flat);
     cout << decodedRctSysStateToStr(t) << endl;
 
     if (opts->verbose > 9) {
@@ -663,7 +661,9 @@ void SymRS::encodeTransitions(void)
     auto products = proc_products.second;
 
     for (const auto &prod : products) {
-      *monoTrans = encEntityProduction(proc_id, prod);
+      *monoTrans *= encEntityProduction(proc_id, prod);
+      cout << rs->getProcessName(proc_id) << " " << rs->getEntityName(prod) << endl;
+      BDD_PRINT(encEntityProduction(proc_id, prod));
     }
   }
 
@@ -680,12 +680,6 @@ void SymRS::encodeTransitions(void)
       *monoTrans *= *tr_ca;
     }
   }
-}
-
-BDD SymRS::encNoContext(void)
-{
-  assert(0);
-  return BDD_FALSE;
 }
 
 void SymRS::encodeInitStates(void)

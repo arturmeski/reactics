@@ -25,7 +25,7 @@ class ModelChecker
     vector<BDD> *pv_succ;
     BDD *pv_E;
     BDD *pv_succ_E;
-    BDD *pv_act_E;
+    BDD *pv_ctx_E;
     BDD *reach;
     vector<BDD> *trp;
     BDD *trm;
@@ -36,6 +36,8 @@ class ModelChecker
     vector<BDD> *pv_ca_succ;
     BDD *pv_ca_E;
     BDD *pv_ca_succ_E;
+
+    BDD *pv_proc_enab_E;
 
     unsigned int trp_size;
     unsigned int totalStateVars;
