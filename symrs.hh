@@ -198,9 +198,6 @@ class SymRS
     Cudd *cuddMgr;
     Options *opts;
 
-    StateEntityToAction
-    stateToAct; /*!< Mapping: entity ID -> action/context entity ID */
-
     BDD *initStates;              /*!< BDD with initial states encoded */
 
     BDDvec *pv;                   /*!< PVs for the global state (all the variables, flat) */
@@ -227,8 +224,9 @@ class SymRS
     BDD *pv_drs_flat_E;
     BDD *pv_drs_flat_succ_E;
 
-    BDDvec *partTrans;
+    vector<DecompReactions> prod_conds; /*!< Production conditions (per process and per entity) */
 
+    BDDvec *partTrans;
     BDD *monoTrans;
 
     // Context automaton
@@ -264,14 +262,8 @@ class SymRS
     size_t getTotalProductVariables(void);
     size_t getTotalCtxEntitiesVariables(void);
 
-    unsigned int getLocalProductEntityIndex(Process proc_id, Entity entity) const
-    {
-      return prod_ent_local_idx.at(proc_id).at(entity);
-    }
-    unsigned int getLocalCtxEntityIndex(Process proc_id, Entity entity) const
-    {
-      return ctx_ent_local_idx.at(proc_id).at(entity);
-    }
+    unsigned int getLocalProductEntityIndex(Process proc_id, Entity entity) const;
+    unsigned int getLocalCtxEntityIndex(Process proc_id, Entity entity) const;
 
     BDD encEntity_raw(Process proc_id, Entity entity, bool succ) const;
     BDD encEntity(Process proc_id, Entity entity) const
@@ -285,6 +277,14 @@ class SymRS
 
     BDD encCtxEntity(Process proc_id, Entity entity) const;
 
+    bool productEntityExists(Process proc_id, Entity entity) const;
+    bool ctxEntityExists(Process proc_id, Entity entity) const;
+
+    BDD encProcEnabled(Process proc_id) const
+    {
+      return (*pv_proc_enab)[proc_id];
+    }
+
     BDD encEntitiesConj_raw(Process proc_id, const Entities &entities, bool succ);
     BDD encEntitiesConj(Process proc_id, const Entities &entities)
     {
@@ -294,7 +294,6 @@ class SymRS
     {
       return encEntitiesConj_raw(proc_id, entities, true);
     }
-
 
     // ---- TODO below:
 
@@ -307,8 +306,8 @@ class SymRS
     {
       return encEntitiesDisj_raw(proc_id, entities, true);
     }
-    BDD encStateActEntitiesConj(const Entities &entities);
-    BDD encStateActEntitiesDisj(const Entities &entities);
+
+    BDD encEntityCondition(Process proc_id, Entity entity_id);
 
     BDD encActEntitiesConj(const Entities &entities);
 
@@ -329,18 +328,17 @@ class SymRS
     DecompReactions getProductionConditions(Process proc_id);
 
     void initBDDvars(void);
+
+    BDD encEnabledness(Process proc_id, Entity entity_id);
+    BDD encEntitySameSuccessor(Process proc_id, Entity entity_id);
+    BDD encEntityProduction(Process proc_id, Entity entity_id);
+
     void encodeTransitions(void);
     void encodeInitStates(void);
     void encodeInitStatesForCtxAut(void);
     LocalIndicesForProcEntities buildLocalEntitiesMap(const EntitiesForProc &procEnt);
     void mapProcEntities(void);
     void encode(void);
-
-    int getMappedStateToActID(int stateID) const
-    {
-      assert(stateID < static_cast<int>(totalRctSysStateVars));
-      return stateToAct[stateID];
-    }
 
     size_t getCtxAutStateEncodingSize(void);
 

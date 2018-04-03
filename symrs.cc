@@ -68,10 +68,11 @@ LocalIndicesForProcEntities SymRS::buildLocalEntitiesMap(
   const EntitiesForProc &procEnt)
 {
   LocalIndicesForProcEntities ent_map;
-  unsigned int cnt = 0;
 
   for (const auto &proc_ent : procEnt) {
     Process proc_id = proc_ent.first;
+
+    unsigned int cnt = 0;
 
     for (const auto &e : proc_ent.second) {
       ent_map[proc_id][e] = cnt++;
@@ -345,11 +346,27 @@ void SymRS::mapProcEntities(void)
   }
 }
 
+unsigned int SymRS::getLocalProductEntityIndex(Process proc_id, Entity entity) const
+{
+  assert(productEntityExists(proc_id, entity));
+  auto idx = prod_ent_local_idx.at(proc_id).at(entity);
+  assert(idx < prod_ent_local_idx.at(proc_id).size());
+  return idx;
+}
+unsigned int SymRS::getLocalCtxEntityIndex(Process proc_id, Entity entity) const
+{
+  assert(ctxEntityExists(proc_id, entity));
+  auto idx = ctx_ent_local_idx.at(proc_id).at(entity);
+  assert(idx < ctx_ent_local_idx.at(proc_id).size());
+  return idx;
+}
+
 BDD SymRS::encEntity_raw(Process proc_id, Entity entity, bool succ) const
 {
   BDD r;
 
   assert(proc_id < numberOfProc);
+  assert(productEntityExists(proc_id, entity));
 
   auto local_entity_id = getLocalProductEntityIndex(proc_id, entity);
 
@@ -367,10 +384,39 @@ BDD SymRS::encCtxEntity(Process proc_id, Entity entity) const
 {
   assert(entity < totalEntities);
   assert(proc_id < numberOfProc);
+  assert(ctxEntityExists(proc_id, entity));
 
   auto local_entity_id = getLocalCtxEntityIndex(proc_id, entity);
 
   return (*pv_proc_ctx)[proc_id][local_entity_id];
+}
+
+bool SymRS::productEntityExists(Process proc_id, Entity entity) const
+{
+  if (prod_ent_local_idx.count(proc_id) == 0) {
+    return false;
+  }
+  else {
+    if (prod_ent_local_idx.at(proc_id).count(entity) == 1) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool SymRS::ctxEntityExists(Process proc_id, Entity entity) const
+{
+  if (ctx_ent_local_idx.count(proc_id) == 0) {
+    return false;
+  }
+  else {
+    if (ctx_ent_local_idx.at(proc_id).count(entity) == 1) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 BDD SymRS::encEntitiesConj_raw(Process proc_id, const Entities &entities, bool succ)
@@ -405,44 +451,22 @@ BDD SymRS::encEntitiesDisj_raw(Process proc_id, const Entities &entities, bool s
   return r;
 }
 
-BDD SymRS::encStateActEntitiesConj(const Entities &entities)
+BDD SymRS::encEntityCondition(Process proc_id, Entity entity_id)
 {
-  assert(0);
-  BDD r = BDD_TRUE;
-  /*
-  for (const auto &entity : entities) {
-    BDD state_act = encEntity(entity);
-    int actEntity;
-
-    // if entity is also an action entity, we include it in the encoding
-    if ((actEntity = getMappedStateToActID(entity)) >= 0) {
-      state_act += encActEntity(actEntity);
-    }
-
-    r *= state_act;
-  }
-  */
-
-  return r;
-}
-
-BDD SymRS::encStateActEntitiesDisj(const Entities &entities)
-{
-  assert(0);
+  //
+  // Here we encode an entity-based condition which uses
+  // the entity appearing as a product or a context entity.
+  //
   BDD r = BDD_FALSE;
-  /*
-  for (const auto &entity : entities) {
-    BDD state_act = encEntity(entity);
-    int actEntity;
 
-    // if entity is also an aciton entity, we include it in the encoding
-    if ((actEntity = getMappedStateToActID(entity)) >= 0) {
-      state_act += encActEntity(actEntity);
-    }
-
-    r += state_act;
+  if (productEntityExists(proc_id, entity_id)) {
+    r += encEntity(proc_id, entity_id);
   }
-  */
+
+  if (ctxEntityExists(proc_id, entity_id)) {
+    r += encCtxEntity(proc_id, entity_id);
+  }
+
   return r;
 }
 
@@ -537,11 +561,72 @@ DecompReactions SymRS::getProductionConditions(Process proc_id)
   return dr;
 }
 
+BDD SymRS::encEnabledness(Process proc_id, Entity entity_id)
+{
+  assert(prod_conds.size() > proc_id);
+
+  BDD enab = BDD_FALSE;
+
+  auto production_conditions = prod_conds[proc_id][entity_id];
+
+  for (const auto &cond : production_conditions) {
+
+    BDD reactants = BDD_TRUE;
+    BDD inhibitors = BDD_TRUE;
+
+    for (const auto &reactant : cond.rctt) {
+      BDD proc_reactants = BDD_FALSE;
+
+      for (unsigned int proc_id = 0; proc_id < numberOfProc; ++proc_id) {
+        proc_reactants += encProcEnabled(proc_id) * encEntityCondition(proc_id, reactant);
+      } // END FOR: prod_id
+
+      reactants *= proc_reactants;
+    } // END FOR: reactant
+
+    // For inhibitors, we take all the processes first and then we iterate over the inhibitors
+    for (unsigned int proc_id = 0; proc_id < numberOfProc; ++proc_id) {
+      BDD proc_inhibitors = encProcEnabled(proc_id);
+
+      for (const auto &inhibitor : cond.inhib) {
+        proc_inhibitors *= !encEntityCondition(proc_id, inhibitor);
+      }
+
+      inhibitors *= proc_inhibitors;
+    }
+
+    enab += reactants * inhibitors;
+
+  } // END FOR: cond
+
+  return enab;
+}
+
+BDD SymRS::encEntitySameSuccessor(Process proc_id, Entity entity_id)
+{
+  return BDD_IFF(encEntity(proc_id, entity_id), encEntitySucc(proc_id, entity_id));
+}
+
+BDD SymRS::encEntityProduction(Process proc_id, Entity entity_id)
+{
+  BDD enabled = encEnabledness(proc_id, entity_id);
+
+  BDD when_produced = enabled * encEntitySucc(proc_id, entity_id);
+  BDD when_not_produced = !enabled * !encEntitySucc(proc_id, entity_id);
+
+  BDD proc_enabled = encProcEnabled(proc_id) * (when_produced + when_not_produced);
+  BDD proc_disabled = !encProcEnabled(proc_id) * encEntitySameSuccessor(proc_id, entity_id);
+
+  BDD result = proc_enabled + proc_disabled;
+
+  return result;
+}
+
 void SymRS::encodeTransitions(void)
 {
   VERB("Decomposing reactions");
 
-  vector<DecompReactions> prod_conds(numberOfProc);
+  prod_conds.resize(numberOfProc);
 
   for (auto proc_id = 0; proc_id < numberOfProc; ++proc_id) {
     prod_conds[proc_id] = getProductionConditions(proc_id);
@@ -558,7 +643,30 @@ void SymRS::encodeTransitions(void)
     monoTrans = new BDD(BDD_TRUE);
   }
 
-  FERROR("WORK IN PROGRESS");
+  VERB_LN(3, "Entity production encoding for all the processes and their products");
+
+  for (const auto &proc_products : usedProducts) {
+    auto proc_id = proc_products.first;
+    auto products = proc_products.second;
+
+    for (const auto &prod : products) {
+      *monoTrans = encEntityProduction(proc_id, prod);
+    }
+  }
+
+  VERB("Reactions ready");
+
+  if (usingContextAutomaton()) {
+    VERB("Augmenting transition relation encoding with the transition relation for context automaton");
+
+    if (opts->part_tr_rel) {
+      FERROR("Partitioned transition relation is currently not supported");
+    }
+    else {
+      assert(tr_ca != nullptr);
+      *monoTrans *= *tr_ca;
+    }
+  }
 }
 
 BDD SymRS::encNoContext(void)
