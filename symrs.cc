@@ -410,6 +410,15 @@ bool SymRS::ctxEntityExists(Process proc_id, Entity entity) const
   return false;
 }
 
+bool SymRS::processUsesEntity(Process proc_id, Entity entity_id) const
+{
+  if (productEntityExists(proc_id, entity_id) || ctxEntityExists(proc_id, entity_id)) {
+    return true;
+  }
+
+  return false;
+}
+
 BDD SymRS::encEntitiesConj_raw(Process proc_id, const Entities &entities, bool succ)
 {
   BDD r = BDD_TRUE;
@@ -457,6 +466,9 @@ BDD SymRS::encEntityCondition(Process proc_id, Entity entity_id)
   if (ctxEntityExists(proc_id, entity_id)) {
     r += encCtxEntity(proc_id, entity_id);
   }
+
+  // pointless call to this function -- we should have prevented it:
+  assert(r != BDD_FALSE);
 
   return r;
 }
@@ -589,7 +601,9 @@ BDD SymRS::encEnabledness(Process proc_id, Entity entity_id)
       BDD proc_reactants = BDD_FALSE;
 
       for (unsigned int proc_id = 0; proc_id < numberOfProc; ++proc_id) {
-        proc_reactants += encProcEnabled(proc_id) * encEntityCondition(proc_id, reactant);
+        if (processUsesEntity(proc_id, reactant)) {
+          proc_reactants += encProcEnabled(proc_id) * encEntityCondition(proc_id, reactant);
+        }
       } // END FOR: prod_id
 
       reactants *= proc_reactants;
@@ -597,13 +611,18 @@ BDD SymRS::encEnabledness(Process proc_id, Entity entity_id)
 
     // For inhibitors, we take all the processes first and then we iterate over the inhibitors
     for (unsigned int proc_id = 0; proc_id < numberOfProc; ++proc_id) {
-      BDD proc_inhibitors = encProcEnabled(proc_id);
+      BDD proc_inhibitors = BDD_TRUE;
 
       for (const auto &inhibitor : cond.inhib) {
-        proc_inhibitors *= !encEntityCondition(proc_id, inhibitor);
+        if (processUsesEntity(proc_id, inhibitor)) {
+          proc_inhibitors *= !encEntityCondition(proc_id, inhibitor);
+        }
       }
 
-      inhibitors *= proc_inhibitors;
+      if (proc_inhibitors != BDD_TRUE) { // just an optimisation
+        proc_inhibitors += !encProcEnabled(proc_id);
+        inhibitors *= proc_inhibitors;
+      }
     }
 
     enab += reactants * inhibitors;

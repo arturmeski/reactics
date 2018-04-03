@@ -77,7 +77,6 @@ inline BDD ModelChecker::getSucc(const BDD &states)
   }
   else {
     q *= states * *trm;
-    BDD_PRINT(q);
   }
 
   q = (q.ExistAbstract(*pv_E)).SwapVariables(*pv_succ, *pv);

@@ -278,6 +278,7 @@ class SymRS
 
     bool productEntityExists(Process proc_id, Entity entity) const;
     bool ctxEntityExists(Process proc_id, Entity entity) const;
+    bool processUsesEntity(Process proc_id, Entity entity_id) const;
 
     BDD encProcEnabled(Process proc_id) const
     {
@@ -293,8 +294,6 @@ class SymRS
     {
       return encEntitiesConj_raw(proc_id, entities, true);
     }
-
-    // ---- TODO below:
 
     BDD encEntitiesDisj_raw(Process proc_id, const Entities &entities, bool succ);
     BDD encEntitiesDisj(Process proc_id, const Entities &entities)
