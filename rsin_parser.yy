@@ -47,7 +47,7 @@ class rsin_driver;
 %token OPTIONS USE_CTX_AUT USE_CONCENTRATIONS
 %token REACTIONS INITIALCONTEXTS CONTEXTENTITIES RSCTLFORM
 %token CONTEXTAUTOMATON STATES INITSTATE TRANSITIONS
-%token EQ LCB RCB LRB RRB LSB RSB LAB RAB COL SEMICOL COMMA RARR
+%token EQ LCB RCB LRB RRB LSB RSB LAB RAB COL SEMICOL DOT COMMA RARR
 %token AND OR XOR IMPLIES NOT
 %token EX EU EF EG AX AU AF AG E A X U F G EMPTY
 
@@ -259,9 +259,10 @@ ctxentity: IDENTIFIER {
 
 /* formulae */
 	
-bool_contexts: IDENTIFIER {
-        $$ = new BoolContexts(*$1);
+bool_contexts: IDENTIFIER DOT IDENTIFIER {
+        $$ = new BoolContexts(*$1, *$3);
         free($1);
+        free($3);
     }
     | NOT bool_contexts {
         $$ = new BoolContexts(BCTX_NOT, $2);
@@ -315,9 +316,10 @@ f_entity: IDENTIFIER {
     }
     ;
 
-rsctl_form: IDENTIFIER {
-        $$ = new FormRSCTL(*$1);
+rsctl_form: IDENTIFIER DOT IDENTIFIER {
+        $$ = new FormRSCTL(*$1, *$3);
         free($1);
+        free($3);
     }
     | NOT rsctl_form {
         $$ = new FormRSCTL(RSCTL_NOT, $2);

@@ -74,14 +74,16 @@ class BoolContexts
     Oper oper;
     BoolContexts *arg[2];
     std::string name;
+    std::string proc_name;
     bool tf;
 
   public:
 
-    BoolContexts(std::string varName)
+    BoolContexts(std::string procName, std::string varName)
     {
       oper = BCTX_PV;
       name = varName;
+      proc_name = procName;
       arg[0] = nullptr;
       arg[1] = nullptr;
     }
@@ -167,9 +169,10 @@ class FormRSCTL
      * @param   varName variable name used mostly for printing the variable.
      * @param   varBDD  the BDD describing the set where the variable holds.
      */
-    FormRSCTL(std::string varName)
+    FormRSCTL(std::string procName, std::string varName)
     {
       oper = RSCTL_PV;
+      proc_name = procName;
       entity_name = varName;
       arg[0] = nullptr;
       arg[1] = nullptr;

@@ -60,6 +60,7 @@ blank [ \t]
 ">"						          return token::RAB;
 ":"						          return token::COL;
 ";"                     return token::SEMICOL;
+"."                     return token::DOT;
 ","                     return token::COMMA;
 "->"                    return token::RARR;
 "AND"                   return token::AND;
