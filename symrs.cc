@@ -118,6 +118,8 @@ void SymRS::initBDDvars(void)
   pv_drs_flat = new BDDvec(totalRctSysStateVars);
   pv_drs_flat_succ = new BDDvec(totalRctSysStateVars);
 
+  pv_drs_E = new BDDvec(numberOfProc);
+
   pv_drs_flat_E = new BDD(BDD_TRUE);
   pv_drs_flat_succ_E = new BDD(BDD_TRUE);
 
@@ -151,6 +153,8 @@ void SymRS::initBDDvars(void)
     (*pv_drs)[proc_id].resize(entities_count);
     (*pv_drs_succ)[proc_id].resize(entities_count);
 
+    (*pv_drs_E)[proc_id] = BDD_TRUE;
+
     for (unsigned int i = 0; i < entities_count; ++i) {
 
       assert(drs_flat_index < totalRctSysStateVars);
@@ -161,6 +165,8 @@ void SymRS::initBDDvars(void)
       // Variables for each individual process/component
       (*pv_drs)[proc_id][i] = cuddMgr->bddVar(bdd_var_idx++);
       (*pv_drs_succ)[proc_id][i] = cuddMgr->bddVar(bdd_var_idx++);
+
+      (*pv_drs_E)[proc_id] *= (*pv_drs)[proc_id][i];
 
       // The DRS part of the system (flattened): these vars do not include CA
       (*pv_drs_flat)[drs_flat_index] = (*pv_drs)[proc_id][i];

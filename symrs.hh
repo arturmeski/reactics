@@ -216,6 +216,8 @@ class SymRS
                                        (per DRS process) */
     vector<BDDvec> *pv_drs_succ;  /*!< PVs for the product (successor)
                                        part of state (per DRS process) */
+      
+    BDDvec *pv_drs_E;             /*!< Quantification BDDs for each process */
 
     BDDvec *pv_drs_flat;          /*!< PVs for the DRS product part of state (flat) */
     BDDvec *pv_drs_flat_succ;     /*!< PVs for the DRS product (successor) part of state (flat) */
