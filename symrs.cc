@@ -166,6 +166,7 @@ void SymRS::initBDDvars(void)
       (*pv_drs)[proc_id][i] = cuddMgr->bddVar(bdd_var_idx++);
       (*pv_drs_succ)[proc_id][i] = cuddMgr->bddVar(bdd_var_idx++);
 
+      // Quantification (per proc)
       (*pv_drs_E)[proc_id] *= (*pv_drs)[proc_id][i];
 
       // The DRS part of the system (flattened): these vars do not include CA

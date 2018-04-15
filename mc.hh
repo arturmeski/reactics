@@ -26,6 +26,7 @@ class ModelChecker
     BDD *pv_E;
     BDD *pv_succ_E;
     BDD *pv_ctx_E;
+    BDDvec *pv_drs_E;
     BDD *reach;
     vector<BDD> *trp;
     BDD *trm;

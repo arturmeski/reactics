@@ -82,6 +82,14 @@ blank [ \t]
 "U"                     return token::U;
 "F"                     return token::F;
 "G"                     return token::G;
+"UK"                    return token::UK;
+"UC"                    return token::UC;
+"UD"                    return token::UD;
+"UE"                    return token::UE;
+"NK"                    return token::NK;
+"NC"                    return token::NC;
+"ND"                    return token::ND;
+"NE"                    return token::NE;
 "empty"                 return token::EMPTY;
 "#".*                   ;
 

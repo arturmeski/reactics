@@ -18,6 +18,7 @@ ModelChecker::ModelChecker(SymRS *srs, Options *opts)
   pv_succ_E = srs->getEncPVsucc_E();
   pv_ctx_E = srs->getEncPVctx_E();
   pv_proc_enab_E = srs->getEncPVproc_enab_E();
+  pv_drs_E = srs->getEncPVdrs_E();
 
   assert(pv != nullptr);
   assert(pv_succ != nullptr);
@@ -25,6 +26,7 @@ ModelChecker::ModelChecker(SymRS *srs, Options *opts)
   assert(pv_succ_E != nullptr);
   assert(pv_ctx_E != nullptr);
   assert(pv_proc_enab_E != nullptr);
+  assert(pv_drs_E != nullptr);
 
   //
   // Transition relations

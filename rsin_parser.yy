@@ -49,14 +49,14 @@ class rsin_driver;
 %token CONTEXTAUTOMATON STATES INITSTATE TRANSITIONS
 %token EQ LCB RCB LRB RRB LSB RSB LAB RAB COL SEMICOL DOT COMMA RARR
 %token AND OR XOR IMPLIES NOT
-%token EX EU EF EG AX AU AF AG E A X U F G EMPTY
+%token EX EU EF EG AX AU AF AG E A X U F G UK UC UD UE NK NC ND NE EMPTY
 
 %token        END      0 "end of file"
 %token <sval> IDENTIFIER "identifier"
 %token <ival> NUMBER     "number"
 
 %left AND OR XOR IMPLIES NOT
-%left EX EU EF EG AX AU AF AG E A X U F G
+%left EX EU EF EG AX AU AF AG E A X U F G UK UC UD UE NK NC ND NE
 
 //%right SRB
 
