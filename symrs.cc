@@ -723,21 +723,10 @@ void SymRS::encodeInitStatesForCtxAut(void)
   *initStates *= getEncCtxAutInitState();
 }
 
-BDD SymRS::encActStrEntity(std::string name) const
+BDD SymRS::encActStrEntity(std::string proc_name, std::string entity_name) const
 {
-  assert(0); // TODO for rsCTL
-  /*
-  int id = getMappedStateToActID(rs->getEntityID(name));
-
-  if (id < 0) {
-    FERROR("Entity \"" << name << "\" not defined as context entity");
-    return BDD_FALSE;
-  }
-  else {
-    return encActEntity(getMappedStateToActID(rs->getEntityID(name)));
-  }
-  */
-  return BDD_FALSE;
+  auto enc_entity = encCtxEntity(rs->getProcessID(proc_name), rs->getEntityID(entity_name));
+  return enc_entity;
 }
 
 size_t SymRS::getCtxAutStateEncodingSize(void)

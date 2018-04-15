@@ -107,6 +107,7 @@ inline BDD ModelChecker::getPreE(const BDD &states)
 
   q = q.ExistAbstract(*pv_succ_E);
   q = q.ExistAbstract(*pv_ctx_E);
+  q = q.ExistAbstract(*pv_proc_enab_E);
   return q;
 }
 
@@ -127,6 +128,7 @@ inline BDD ModelChecker::getPreEctx(const BDD &states, const BDD *contexts)
 
   q = q.ExistAbstract(*pv_succ_E);
   q = q.ExistAbstract(*pv_ctx_E);
+  q = q.ExistAbstract(*pv_proc_enab_E);
   return q;
 }
 

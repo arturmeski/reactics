@@ -73,7 +73,7 @@ class BoolContexts
 {
     Oper oper;
     BoolContexts *arg[2];
-    std::string name;
+    std::string entity_name;
     std::string proc_name;
     bool tf;
 
@@ -82,7 +82,7 @@ class BoolContexts
     BoolContexts(std::string procName, std::string varName)
     {
       oper = BCTX_PV;
-      name = varName;
+      entity_name = varName;
       proc_name = procName;
       arg[0] = nullptr;
       arg[1] = nullptr;

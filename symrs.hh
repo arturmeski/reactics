@@ -87,7 +87,7 @@ class SymRS
     {
       return encEntity(rs->getProcessID(proc_name), rs->getEntityID(entity_name));
     }
-    BDD encActStrEntity(std::string name) const;
+    BDD encActStrEntity(std::string proc_name, std::string entity_name) const;
     BDD getBDDtrue(void) const
     {
       return BDD_TRUE;

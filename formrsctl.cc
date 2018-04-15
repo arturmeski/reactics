@@ -12,7 +12,7 @@
 std::string BoolContexts::toStr(void) const
 {
   if (oper == BCTX_PV) {
-    return name;
+    return proc_name + "." + entity_name;
   }
   else if (oper == BCTX_TF) {
     if (tf) {
@@ -44,7 +44,7 @@ std::string BoolContexts::toStr(void) const
 BDD BoolContexts::getBDD(const SymRS *srs) const
 {
   if (oper == BCTX_PV) {
-    return srs->encActStrEntity(name);
+    return srs->encActStrEntity(proc_name, entity_name);
   }
   else if (oper == BCTX_TF) {
     if (tf) {
@@ -76,7 +76,7 @@ BDD BoolContexts::getBDD(const SymRS *srs) const
 std::string FormRSCTL::toStr(void) const
 {
   if (oper == RSCTL_PV) {
-    return proc_name + ":" + entity_name;
+    return proc_name + "." + entity_name;
   }
   else if (oper == RSCTL_TF) {
     if (tf) {
