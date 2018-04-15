@@ -316,7 +316,8 @@ bool_contexts: IDENTIFIER DOT IDENTIFIER {
 //     }
 //     ;
 
-rsctl_form: IDENTIFIER DOT IDENTIFIER {
+rsctl_form: 
+    IDENTIFIER DOT IDENTIFIER {
         $$ = new FormRSCTL(*$1, *$3);
         free($1);
         free($3);
@@ -362,6 +363,12 @@ rsctl_form: IDENTIFIER DOT IDENTIFIER {
     }
     | AG rsctl_form {
         $$ = new FormRSCTL(RSCTL_AG, $2);
+    } 
+    | UK LSB IDENTIFIER RSB LRB rsctl_form RRB {
+        Agents_f agents;
+        agents.insert(*$3);
+        $$ = new FormRSCTL(RSCTL_UK, agents, $6);
+        free($3);
     }
 
     // | E LSB actions RSB X rsctl_form {
@@ -389,7 +396,7 @@ rsctl_form: IDENTIFIER DOT IDENTIFIER {
     //     $$ = new FormRSCTL(RSCTL_AG_ACT, $3, $6);
     // }
 
-	/* contexts as boolean formulae  */
+	  /* contexts as boolean formulae  */
     | E LAB bool_contexts RAB X rsctl_form { 
         $$ = new FormRSCTL(RSCTL_EX_ACT, $3, $6);
     }

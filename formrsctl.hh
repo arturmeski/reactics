@@ -40,16 +40,19 @@
 #define RSCTL_AF_ACT  44
 #define RSCTL_TF      50 // true/false
 
+#define RSCTL_UK      60 // Epistemic operators
+#define RSCTL_NK      61
+
 /* For Boolean contexts: */
-#define BCTX_PV   60
-#define BCTX_AND  61
-#define BCTX_OR   62
-#define BCTX_XOR  63
-#define BCTX_NOT  64
-#define BCTX_TF   70
+#define BCTX_PV   80
+#define BCTX_AND  81
+#define BCTX_OR   82
+#define BCTX_XOR  83
+#define BCTX_NOT  84
+#define BCTX_TF   90
 
 
-#define RSCTL_COND_1ARG(a) ((a) == RSCTL_NOT || (a) == RSCTL_EG || (a) == RSCTL_EF || (a) == RSCTL_EX || (a) == RSCTL_AG || (a) == RSCTL_AF || (a) == RSCTL_AX || (a) == RSCTL_EG_ACT || (a) == RSCTL_EF_ACT || (a) == RSCTL_EX_ACT || (a) == RSCTL_AG_ACT || (a) == RSCTL_AF_ACT || (a) == RSCTL_AX_ACT)
+#define RSCTL_COND_1ARG(a) ((a) == RSCTL_NOT || (a) == RSCTL_EG || (a) == RSCTL_EF || (a) == RSCTL_EX || (a) == RSCTL_AG || (a) == RSCTL_AF || (a) == RSCTL_AX || (a) == RSCTL_EG_ACT || (a) == RSCTL_EF_ACT || (a) == RSCTL_EX_ACT || (a) == RSCTL_AG_ACT || (a) == RSCTL_AF_ACT || (a) == RSCTL_AX_ACT || (a) == RSCTL_UK || (a) == RSCTL_NK)
 #define RSCTL_COND_2ARG(a) ((a) == RSCTL_AND || (a) == RSCTL_OR || (a) == RSCTL_XOR || (a) == RSCTL_IMPL || (a) == RSCTL_EU || (a) == RSCTL_AU || (a) == RSCTL_EU_ACT || (a) == RSCTL_AU_ACT)
 #define RSCTL_COND_ACT(a) ((a) > 30 && (a) < 45)
 #define RSCTL_IS_VALID(a) (RSCTL_COND_1ARG(a) || RSCTL_COND_2ARG(a) || (a) == RSCTL_PV || (a) == RSCTL_TF)
@@ -68,6 +71,7 @@ typedef unsigned char Oper;
 // typedef std::string Entity_f;
 // typedef std::set<Entity_f> Action_f;
 // typedef vector<Action_f> ActionsVec_f;
+typedef std::set<std::string> Agents_f;
 
 class BoolContexts
 {
@@ -162,6 +166,7 @@ class FormRSCTL
     // ActionsVec_f *actions;
     BDD *actions_bdd;
     BoolContexts *boolCtx;
+    Agents_f agents;
   public:
     /**
      * @brief Constructor for propositional variable.
@@ -297,6 +302,17 @@ class FormRSCTL
       // actions = nullptr;
       actions_bdd = nullptr;
       boolCtx = bctx;
+    }
+
+    FormRSCTL(Oper op, Agents_f agents_set, FormRSCTL *form1)
+    {
+      assert(RSCTL_COND_1ARG(op));
+      oper = op;
+      arg[0] = form1;
+      arg[1] = nullptr;
+      bdd = nullptr;
+      actions_bdd = nullptr;
+      agents = agents_set;
     }
 
     /**
