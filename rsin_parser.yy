@@ -34,9 +34,9 @@ class rsin_driver;
     int ival;
     std::string *sval;
     FormRSCTL *frsctl;
-    Entity_f *ent;
-    Action_f *act;
-    ActionsVec_f *actionsVec;
+    // Entity_f *ent;
+    // Action_f *act;
+    // ActionsVec_f *actionsVec;
 	BoolContexts *fboolctx;
 };
 
@@ -61,9 +61,9 @@ class rsin_driver;
 //%right SRB
 
 %type <frsctl> rsctl_form
-%type <ent> f_entity
-%type <act> action
-%type <actionsVec> actions
+// %type <ent> f_entity
+// %type <act> action
+// %type <actionsVec> actions
 %type <fboolctx> bool_contexts
 
 //%printer    { yyoutput << *$$; } "identifier"
@@ -281,40 +281,40 @@ bool_contexts: IDENTIFIER DOT IDENTIFIER {
     }
 	;
 
-actions:
-    LCB action RCB {
-        $$ = new ActionsVec_f;
-        $$->push_back(*$2);
-        free($2);
-    }
-    | actions COMMA LCB action RCB {
-        $$ = $1;
-        $$->push_back(*$4);
-        free($4);
-    }
-    ;
+// actions:
+//     LCB action RCB {
+//         $$ = new ActionsVec_f;
+//         $$->push_back(*$2);
+//         free($2);
+//     }
+//     | actions COMMA LCB action RCB {
+//         $$ = $1;
+//         $$->push_back(*$4);
+//         free($4);
+//     }
+//     ;
 
-action:
-    { 
-        $$ = new Action_f;
-    } 
-    | f_entity {
-        $$ = new Action_f;
-        $$->insert(*$1);
-        free($1);
-    }
-    | action COMMA f_entity {
-        $$ = $1;        
-        $$->insert(*$3);
-        free($3);
-    }
-    ;
+// action:
+//     {
+//         $$ = new Action_f;
+//     }
+//     | f_entity {
+//         $$ = new Action_f;
+//         $$->insert(*$1);
+//         free($1);
+//     }
+//     | action COMMA f_entity {
+//         $$ = $1;
+//         $$->insert(*$3);
+//         free($3);
+//     }
+//     ;
 
-f_entity: IDENTIFIER {
-        $$ = new Entity_f(*$1);
-        free($1);
-    }
-    ;
+// f_entity: IDENTIFIER {
+//         $$ = new Entity_f(*$1);
+//         free($1);
+//     }
+//     ;
 
 rsctl_form: IDENTIFIER DOT IDENTIFIER {
         $$ = new FormRSCTL(*$1, *$3);
@@ -363,30 +363,32 @@ rsctl_form: IDENTIFIER DOT IDENTIFIER {
     | AG rsctl_form {
         $$ = new FormRSCTL(RSCTL_AG, $2);
     }
-    | E LSB actions RSB X rsctl_form {
-        $$ = new FormRSCTL(RSCTL_EX_ACT, $3, $6);
-    }
-    | E LSB actions RSB U LRB rsctl_form COMMA rsctl_form RRB {
-        $$ = new FormRSCTL(RSCTL_EU_ACT, $3, $7, $9);
-    }
-    | E LSB actions RSB F rsctl_form {
-        $$ = new FormRSCTL(RSCTL_EF_ACT, $3, $6);
-    }
-    | E LSB actions RSB G rsctl_form {
-        $$ = new FormRSCTL(RSCTL_EG_ACT, $3, $6);
-    }
-    | A LSB actions RSB X rsctl_form {
-        $$ = new FormRSCTL(RSCTL_AX_ACT, $3, $6);
-    }
-    | A LSB actions RSB U LRB rsctl_form COMMA rsctl_form RRB {
-        $$ = new FormRSCTL(RSCTL_AU_ACT, $3, $7, $9);
-    }
-    | A LSB actions RSB F rsctl_form {
-        $$ = new FormRSCTL(RSCTL_AF_ACT, $3, $6);
-    }
-    | A LSB actions RSB G rsctl_form {
-        $$ = new FormRSCTL(RSCTL_AG_ACT, $3, $6);
-    }
+
+    // | E LSB actions RSB X rsctl_form {
+    //     $$ = new FormRSCTL(RSCTL_EX_ACT, $3, $6);
+    // }
+    // | E LSB actions RSB U LRB rsctl_form COMMA rsctl_form RRB {
+    //     $$ = new FormRSCTL(RSCTL_EU_ACT, $3, $7, $9);
+    // }
+    // | E LSB actions RSB F rsctl_form {
+    //     $$ = new FormRSCTL(RSCTL_EF_ACT, $3, $6);
+    // }
+    // | E LSB actions RSB G rsctl_form {
+    //     $$ = new FormRSCTL(RSCTL_EG_ACT, $3, $6);
+    // }
+    // | A LSB actions RSB X rsctl_form {
+    //     $$ = new FormRSCTL(RSCTL_AX_ACT, $3, $6);
+    // }
+    // | A LSB actions RSB U LRB rsctl_form COMMA rsctl_form RRB {
+    //     $$ = new FormRSCTL(RSCTL_AU_ACT, $3, $7, $9);
+    // }
+    // | A LSB actions RSB F rsctl_form {
+    //     $$ = new FormRSCTL(RSCTL_AF_ACT, $3, $6);
+    // }
+    // | A LSB actions RSB G rsctl_form {
+    //     $$ = new FormRSCTL(RSCTL_AG_ACT, $3, $6);
+    // }
+
 	/* contexts as boolean formulae  */
     | E LAB bool_contexts RAB X rsctl_form { 
         $$ = new FormRSCTL(RSCTL_EX_ACT, $3, $6);

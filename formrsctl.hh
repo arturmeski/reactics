@@ -65,9 +65,9 @@ using std::endl;
 
 typedef unsigned char Oper;
 
-typedef std::string Entity_f;
-typedef std::set<Entity_f> Action_f;
-typedef vector<Action_f> ActionsVec_f;
+// typedef std::string Entity_f;
+// typedef std::set<Entity_f> Action_f;
+// typedef vector<Action_f> ActionsVec_f;
 
 class BoolContexts
 {
@@ -159,7 +159,7 @@ class FormRSCTL
     std::string proc_name;
     bool tf;
     BDD *bdd;
-    ActionsVec_f *actions;
+    // ActionsVec_f *actions;
     BDD *actions_bdd;
     BoolContexts *boolCtx;
   public:
@@ -177,7 +177,7 @@ class FormRSCTL
       arg[0] = nullptr;
       arg[1] = nullptr;
       bdd = nullptr;
-      actions = nullptr;
+      // actions = nullptr;
       actions_bdd = nullptr;
       boolCtx = nullptr;
     }
@@ -194,7 +194,7 @@ class FormRSCTL
       arg[0] = nullptr;
       arg[1] = nullptr;
       bdd = nullptr;
-      actions = nullptr;
+      // actions = nullptr;
       actions_bdd = nullptr;
       boolCtx = nullptr;
     }
@@ -210,7 +210,7 @@ class FormRSCTL
       arg[0] = form1;
       arg[1] = form2;
       bdd = nullptr;
-      actions = nullptr;
+      // actions = nullptr;
       actions_bdd = nullptr;
       boolCtx = nullptr;
     }
@@ -218,19 +218,19 @@ class FormRSCTL
     /**
      * @brief Constructor for two-argument formula with action restrictions.
      */
-    FormRSCTL(Oper op, ActionsVec_f *acts, FormRSCTL *form1, FormRSCTL *form2)
-    {
-      assert(acts != nullptr);
-      assert(RSCTL_COND_2ARG(op));
-      assert(RSCTL_COND_ACT(op));
-      oper = op;
-      arg[0] = form1;
-      arg[1] = form2;
-      bdd = nullptr;
-      actions = acts;
-      actions_bdd = nullptr;
-      boolCtx = nullptr;
-    }
+    // FormRSCTL(Oper op, ActionsVec_f *acts, FormRSCTL *form1, FormRSCTL *form2)
+    // {
+    //   assert(acts != nullptr);
+    //   assert(RSCTL_COND_2ARG(op));
+    //   assert(RSCTL_COND_ACT(op));
+    //   oper = op;
+    //   arg[0] = form1;
+    //   arg[1] = form2;
+    //   bdd = nullptr;
+    //   actions = acts;
+    //   actions_bdd = nullptr;
+    //   boolCtx = nullptr;
+    // }
 
     /**
      * @brief Constructor for two-argument formula with Boolean context restrictions.
@@ -244,7 +244,7 @@ class FormRSCTL
       arg[0] = form1;
       arg[1] = form2;
       bdd = nullptr;
-      actions = nullptr;
+      // actions = nullptr;
       actions_bdd = nullptr;
       boolCtx = bctx;
     }
@@ -260,7 +260,7 @@ class FormRSCTL
       arg[0] = form1;
       arg[1] = nullptr;
       bdd = nullptr;
-      actions = nullptr;
+      // actions = nullptr;
       actions_bdd = nullptr;
       boolCtx = nullptr;
     }
@@ -268,19 +268,19 @@ class FormRSCTL
     /**
      * @brief Constructor for one-argument formula with action restrictions.
      */
-    FormRSCTL(Oper op, ActionsVec_f *acts, FormRSCTL *form1)
-    {
-      assert(acts != nullptr);
-      assert(RSCTL_COND_1ARG(op));
-      assert(RSCTL_COND_ACT(op));
-      oper = op;
-      arg[0] = form1;
-      arg[1] = nullptr;
-      bdd = nullptr;
-      actions = acts;
-      actions_bdd = nullptr;
-      boolCtx = nullptr;
-    }
+    // FormRSCTL(Oper op, ActionsVec_f *acts, FormRSCTL *form1)
+    // {
+    //   assert(acts != nullptr);
+    //   assert(RSCTL_COND_1ARG(op));
+    //   assert(RSCTL_COND_ACT(op));
+    //   oper = op;
+    //   arg[0] = form1;
+    //   arg[1] = nullptr;
+    //   bdd = nullptr;
+    //   // actions = acts;
+    //   actions_bdd = nullptr;
+    //   boolCtx = nullptr;
+    // }
 
     /**
      * @brief Constructor for one-argument formula with Boolean context restrictions.
@@ -294,7 +294,7 @@ class FormRSCTL
       arg[0] = form1;
       arg[1] = nullptr;
       bdd = nullptr;
-      actions = nullptr;
+      // actions = nullptr;
       actions_bdd = nullptr;
       boolCtx = bctx;
     }
@@ -307,7 +307,7 @@ class FormRSCTL
       delete arg[0];
       delete arg[1];
       delete bdd;
-      delete actions;
+      // delete actions;
       delete actions_bdd;
       delete boolCtx;
     }
