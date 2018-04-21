@@ -151,6 +151,12 @@ std::string FormRSCTLK::toStr(void) const
   else if (oper == RSCTLK_AF_ACT) {
     return "A" + getActionsStr() + "F(" + arg[0]->toStr() + ")";
   }
+  else if (oper == RSCTLK_NK) {
+    return "NK[" + getSingleAgent() + "](" + arg[0]->toStr() + ")";
+  }
+  else if (oper == RSCTLK_UK) {
+    return "UK[" + getSingleAgent() + "](" + arg[0]->toStr() + ")";
+  }
 
   else {
     return "??";

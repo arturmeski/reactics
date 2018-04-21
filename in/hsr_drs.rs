@@ -44,21 +44,21 @@ context-automaton {
 }
 
 # P1
-rsctl-property { A<mainA.stress XOR mainA.nostress>G(mainA.hse OR mainA.hsf3:hse IMPLIES A<mainA.stress XOR mainA.nostress>X(mainA.hse OR mainA.hsf3:hse)) }
+rsctlk-property { A<mainA.stress XOR mainA.nostress>G(mainA.hse OR mainA.hsf3:hse IMPLIES A<mainA.stress XOR mainA.nostress>X(mainA.hse OR NK[mainA]( mainA.hsf3:hse ))) }
 
 # P2
-#rsctl-property { A[{stress},{nostress}]G(~(hse AND hsf3:hse) IMPLIES A[{stress},{nostress}]X(~(hse AND hsf3:hse))) }
+#rsctlk-property { A[{stress},{nostress}]G(~(hse AND hsf3:hse) IMPLIES A[{stress},{nostress}]X(~(hse AND hsf3:hse))) }
 
 # P3
-#rsctl-property { A[{stress},{nostress}]G(prot IMPLIES A[{stress},{nostress}]X(prot)) }
+#rsctlk-property { A[{stress},{nostress}]G(prot IMPLIES A[{stress},{nostress}]X(prot)) }
 
 # P4
-#rsctl-property { A[{stress},{nostress}]G(mfp IMPLIES A[{stress},{nostress}]X(mfp OR hsp:mfp)) }
-#rsctl-property { A< stress XOR nostress >G(mfp IMPLIES A[{stress},{nostress}]X(mfp OR hsp:mfp)) }
+#rsctlk-property { A[{stress},{nostress}]G(mfp IMPLIES A[{stress},{nostress}]X(mfp OR hsp:mfp)) }
+#rsctlk-property { A< stress XOR nostress >G(mfp IMPLIES A[{stress},{nostress}]X(mfp OR hsp:mfp)) }
 
 # P5
-#rsctl-property { A[{stress},{nostress}]G( ((hsf XOR hsf3 XOR hsf3:hse XOR hsp:hsf) OR ~(hsf OR hsf3 OR hsf3:hse OR hsp:hsf)) IMPLIES A[{stress},{nostress}]X( (hsf XOR hsf3 XOR hsf3:hse XOR hsp:hsf) OR ~(hsf OR hsf3 OR hsf3:hse OR hsp:hsf) ) )  }
+#rsctlk-property { A[{stress},{nostress}]G( ((hsf XOR hsf3 XOR hsf3:hse XOR hsp:hsf) OR ~(hsf OR hsf3 OR hsf3:hse OR hsp:hsf)) IMPLIES A[{stress},{nostress}]X( (hsf XOR hsf3 XOR hsf3:hse XOR hsp:hsf) OR ~(hsf OR hsf3 OR hsf3:hse OR hsp:hsf) ) )  }
 
 # P6
-#rsctl-property { A[{nostress}]G(hsp:hsf IMPLIES A[{nostress}]X (hsp:hsf)) }
+#rsctlk-property { A[{nostress}]G(hsp:hsf IMPLIES A[{nostress}]X (hsp:hsf)) }
 

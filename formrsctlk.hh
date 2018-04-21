@@ -372,6 +372,15 @@ class FormRSCTLK
       }
     }
     bool isERSCTLK(void) const;
+    Agents_f getAgents(void) const
+    {
+      return agents;
+    }
+    std::string getSingleAgent(void) const
+    {
+      assert(oper == RSCTLK_NK || oper == RSCTLK_UK);
+      return *(agents.begin());
+    }
 };
 
 #endif

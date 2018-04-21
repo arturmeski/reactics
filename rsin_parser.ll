@@ -68,6 +68,8 @@ blank [ \t]
 "XOR"					          return token::XOR;
 "IMPLIES"               return token::IMPLIES;
 "~"                     return token::NOT;
+"A"                     return token::A;
+"E"                     return token::E;
 "EX"                    return token::EX;
 "EU"                    return token::EU;
 "EF"                    return token::EF;
@@ -83,7 +85,7 @@ blank [ \t]
 "K"                     return token::UK;
 "C"                     return token::UC;
 "D"                     return token::UD;
-"E"                     return token::UE;
+"UE"                    return token::UE;
 "NK"                    return token::NK;
 "NC"                    return token::NC;
 "ND"                    return token::ND;

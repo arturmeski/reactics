@@ -370,6 +370,12 @@ rsctlk_form:
         $$ = new FormRSCTLK(RSCTLK_UK, agents, $6);
         free($3);
     }
+    | NK LSB IDENTIFIER RSB LRB rsctlk_form RRB {
+        Agents_f agents;
+        agents.insert(*$3);
+        $$ = new FormRSCTLK(RSCTLK_NK, agents, $6);
+        free($3);
+    }
 
     // | E LSB actions RSB X rsctlk_form {
     //     $$ = new FormRSCTLK(RSCTLK_EX_ACT, $3, $6);
