@@ -430,6 +430,30 @@ BDD ModelChecker::statesEFctx(const BDD *contexts, const BDD &states)
   return x;
 }
 
+BDD ModelChecker::getIthOnly(Process proc_id)
+{
+  /* if possible, we return the BDD from cache */
+  if (ith_only_E.count(proc_id) == 1) {
+    return ith_only_E[proc_id];
+  }
+
+  /* nothing has been found in the cache */
+  BDD bdd = BDD_TRUE;
+
+  for (auto i = 0; i < pv_drs_E->size(); ++i) {
+
+    if (i == proc_id) {
+      continue;
+    }
+
+    bdd *= (*pv_drs_E)[i];
+  }
+
+  ith_only_E[proc_id] = bdd;
+
+  return bdd;
+}
+
 bool ModelChecker::checkRSCTL(FormRSCTL *form)
 {
   if (form->isERSCTL()) {

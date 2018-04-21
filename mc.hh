@@ -31,6 +31,8 @@ class ModelChecker
     vector<BDD> *trp;
     BDD *trm;
 
+    std::map<Process, BDD> ith_only_E;
+
     // Context Automaton
     bool using_ctx_aut;
     vector<BDD> *pv_ca;
@@ -58,6 +60,9 @@ class ModelChecker
     BDD statesEGctx(const BDD *contexts, const BDD &states);
     BDD statesEUctx(const BDD *contexts, const BDD &statesA, const BDD &statesB);
     BDD statesEFctx(const BDD *contexts, const BDD &states);
+
+    BDD getIthOnly(Process proc_id);
+
     void cleanup(void);
 
   public:
