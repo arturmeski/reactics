@@ -6,7 +6,7 @@
     without the author's permission is strictly prohibited.
 */
 
-#include "formrsctl.hh"
+#include "formrsctlk.hh"
 
 
 std::string BoolContexts::toStr(void) const
@@ -73,12 +73,12 @@ BDD BoolContexts::getBDD(const SymRS *srs) const
   }
 }
 
-std::string FormRSCTL::toStr(void) const
+std::string FormRSCTLK::toStr(void) const
 {
-  if (oper == RSCTL_PV) {
+  if (oper == RSCTLK_PV) {
     return proc_name + "." + entity_name;
   }
-  else if (oper == RSCTL_TF) {
+  else if (oper == RSCTLK_TF) {
     if (tf) {
       return "true";
     }
@@ -86,69 +86,69 @@ std::string FormRSCTL::toStr(void) const
       return "false";
     }
   }
-  else if (oper == RSCTL_AND) {
+  else if (oper == RSCTLK_AND) {
     return "(" + arg[0]->toStr() + " AND " + arg[1]->toStr() + ")";
   }
-  else if (oper == RSCTL_OR) {
+  else if (oper == RSCTLK_OR) {
     return "(" + arg[0]->toStr() + " OR " + arg[1]->toStr() + ")";
   }
-  else if (oper == RSCTL_XOR) {
+  else if (oper == RSCTLK_XOR) {
     return "(" + arg[0]->toStr() + " XOR " + arg[1]->toStr() + ")";
   }
-  else if (oper == RSCTL_IMPL) {
+  else if (oper == RSCTLK_IMPL) {
     return "(" + arg[0]->toStr() + " IMPLIES " + arg[1]->toStr() + ")";
   }
-  else if (oper == RSCTL_NOT) {
+  else if (oper == RSCTLK_NOT) {
     return "~" + arg[0]->toStr();
   }
-  else if (oper == RSCTL_EX) {
+  else if (oper == RSCTLK_EX) {
     return "EX(" + arg[0]->toStr() + ")";
   }
-  else if (oper == RSCTL_EG) {
+  else if (oper == RSCTLK_EG) {
     return "EG(" + arg[0]->toStr() + ")";
   }
-  else if (oper == RSCTL_EU) {
+  else if (oper == RSCTLK_EU) {
     return "EU(" + arg[0]->toStr() + "," + arg[1]->toStr() + ")";
   }
-  else if (oper == RSCTL_EF) {
+  else if (oper == RSCTLK_EF) {
     return "EF(" + arg[0]->toStr() + ")";
   }
-  else if (oper == RSCTL_AX) {
+  else if (oper == RSCTLK_AX) {
     return "AX(" + arg[0]->toStr() + ")";
   }
-  else if (oper == RSCTL_AG) {
+  else if (oper == RSCTLK_AG) {
     return "AG(" + arg[0]->toStr() + ")";
   }
-  else if (oper == RSCTL_AU) {
+  else if (oper == RSCTLK_AU) {
     return "AU(" + arg[0]->toStr() + "," + arg[1]->toStr() + ")";
   }
-  else if (oper == RSCTL_AF) {
+  else if (oper == RSCTLK_AF) {
     return "AF(" + arg[0]->toStr() + ")";
   }
-  else if (oper == RSCTL_EX_ACT) {
+  else if (oper == RSCTLK_EX_ACT) {
     return "E" + getActionsStr() + "X(" + arg[0]->toStr() + ")";
   }
-  else if (oper == RSCTL_EG_ACT) {
+  else if (oper == RSCTLK_EG_ACT) {
     return "E" + getActionsStr() + "G(" + arg[0]->toStr() + ")";
   }
-  else if (oper == RSCTL_EU_ACT) {
+  else if (oper == RSCTLK_EU_ACT) {
     return "E" + getActionsStr() + "U(" + arg[0]->toStr() + "," + arg[1]->toStr()
            + ")";
   }
-  else if (oper == RSCTL_EF_ACT) {
+  else if (oper == RSCTLK_EF_ACT) {
     return "E" + getActionsStr() + "F(" + arg[0]->toStr() + ")";
   }
-  else if (oper == RSCTL_AX_ACT) {
+  else if (oper == RSCTLK_AX_ACT) {
     return "A" + getActionsStr() + "X(" + arg[0]->toStr() + ")";
   }
-  else if (oper == RSCTL_AG_ACT) {
+  else if (oper == RSCTLK_AG_ACT) {
     return "A" + getActionsStr() + "G(" + arg[0]->toStr() + ")";
   }
-  else if (oper == RSCTL_AU_ACT) {
+  else if (oper == RSCTLK_AU_ACT) {
     return "A" + getActionsStr() + "U(" + arg[0]->toStr() + "," + arg[1]->toStr()
            + ")";
   }
-  else if (oper == RSCTL_AF_ACT) {
+  else if (oper == RSCTLK_AF_ACT) {
     return "A" + getActionsStr() + "F(" + arg[0]->toStr() + ")";
   }
 
@@ -158,7 +158,7 @@ std::string FormRSCTL::toStr(void) const
   }
 }
 
-bool FormRSCTL::hasOper(Oper op) const
+bool FormRSCTLK::hasOper(Oper op) const
 {
   if (oper == op) {
     return true;
@@ -178,28 +178,28 @@ bool FormRSCTL::hasOper(Oper op) const
   }
 }
 
-void FormRSCTL::encodeEntities(const SymRS *srs)
+void FormRSCTLK::encodeEntities(const SymRS *srs)
 {
-  if (RSCTL_COND_1ARG(oper)) {
+  if (RSCTLK_COND_1ARG(oper)) {
     arg[0]->encodeEntities(srs);
   }
-  else if (RSCTL_COND_2ARG(oper)) {
+  else if (RSCTLK_COND_2ARG(oper)) {
     arg[0]->encodeEntities(srs);
     arg[1]->encodeEntities(srs);
   }
-  else if (oper == RSCTL_PV) {
+  else if (oper == RSCTLK_PV) {
     bdd = new BDD(srs->encEntity(proc_name, entity_name));
   }
 }
 
-bool FormRSCTL::isERSCTL(void) const
+bool FormRSCTLK::isERSCTLK(void) const
 {
-  if (oper == RSCTL_PV) {
+  if (oper == RSCTLK_PV) {
     return true;
   }
 
-  if (oper == RSCTL_NOT) {
-    if (arg[0]->getOper() == RSCTL_PV || arg[0]->getOper() == RSCTL_TF) {
+  if (oper == RSCTLK_NOT) {
+    if (arg[0]->getOper() == RSCTLK_PV || arg[0]->getOper() == RSCTLK_TF) {
       return true;
     }
     else {
@@ -207,16 +207,16 @@ bool FormRSCTL::isERSCTL(void) const
     }
   }
 
-  if (RSCTL_COND_IS_UNIVERSAL(oper)) {
+  if (RSCTLK_COND_IS_UNIVERSAL(oper)) {
     return false;
   }
 
-  if (RSCTL_COND_1ARG(oper)) {
-    return arg[0]->isERSCTL();
+  if (RSCTLK_COND_1ARG(oper)) {
+    return arg[0]->isERSCTLK();
   }
 
-  if (RSCTL_COND_2ARG(oper)) {
-    return arg[0]->isERSCTL() && arg[1]->isERSCTL();
+  if (RSCTLK_COND_2ARG(oper)) {
+    return arg[0]->isERSCTLK() && arg[1]->isERSCTLK();
   }
 
   assert(0);
@@ -224,7 +224,7 @@ bool FormRSCTL::isERSCTL(void) const
   return false;
 }
 
-std::string FormRSCTL::getActionsStr(void) const
+std::string FormRSCTLK::getActionsStr(void) const
 {
   // if (actions != nullptr) {
   //   std::string r = "[ ";
@@ -267,9 +267,9 @@ std::string FormRSCTL::getActionsStr(void) const
   }
 }
 
-void FormRSCTL::encodeActions(const SymRS *srs)
+void FormRSCTLK::encodeActions(const SymRS *srs)
 {
-  if (RSCTL_COND_ACT(oper)) {
+  if (RSCTLK_COND_ACT(oper)) {
     if (actions_bdd != nullptr) {
       forgetActionsBDD();
     }
@@ -300,11 +300,11 @@ void FormRSCTL::encodeActions(const SymRS *srs)
     }
   }
 
-  if (RSCTL_COND_1ARG(oper)) {
+  if (RSCTLK_COND_1ARG(oper)) {
     arg[0]->encodeActions(srs);
   }
 
-  if (RSCTL_COND_2ARG(oper)) {
+  if (RSCTLK_COND_2ARG(oper)) {
     arg[0]->encodeActions(srs);
     arg[1]->encodeActions(srs);
   }

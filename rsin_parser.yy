@@ -6,7 +6,7 @@
 %code requires {
 #include <string>
 #include <set>
-#include "formrsctl.hh"
+#include "formrsctlk.hh"
 
 using std::set;
 using std::string;
@@ -33,7 +33,7 @@ class rsin_driver;
 {
     int ival;
     std::string *sval;
-    FormRSCTL *frsctl;
+    FormRSCTLK *frsctlk;
     // Entity_f *ent;
     // Action_f *act;
     // ActionsVec_f *actionsVec;
@@ -45,7 +45,7 @@ class rsin_driver;
 }
 
 %token OPTIONS USE_CTX_AUT USE_CONCENTRATIONS
-%token REACTIONS INITIALCONTEXTS CONTEXTENTITIES RSCTLFORM
+%token REACTIONS INITIALCONTEXTS CONTEXTENTITIES RSCTLKFORM
 %token CONTEXTAUTOMATON STATES INITSTATE TRANSITIONS
 %token EQ LCB RCB LRB RRB LSB RSB LAB RAB COL SEMICOL DOT COMMA RARR
 %token AND OR XOR IMPLIES NOT
@@ -60,7 +60,7 @@ class rsin_driver;
 
 //%right SRB
 
-%type <frsctl> rsctl_form
+%type <frsctlk> rsctlk_form
 // %type <ent> f_entity
 // %type <act> action
 // %type <actionsVec> actions
@@ -81,8 +81,8 @@ system:
     | INITIALCONTEXTS LCB initstates RCB system
     | CONTEXTENTITIES LCB actionentities RCB system
 	| CONTEXTAUTOMATON LCB ctxaut RCB system
-    | RSCTLFORM LCB rsctl_form RCB system {
-        driver.addFormRSCTL($3);
+    | RSCTLKFORM LCB rsctlk_form RCB system {
+        driver.addFormRSCTLK($3);
     }
     ;
 
@@ -316,110 +316,110 @@ bool_contexts: IDENTIFIER DOT IDENTIFIER {
 //     }
 //     ;
 
-rsctl_form: 
+rsctlk_form: 
     IDENTIFIER DOT IDENTIFIER {
-        $$ = new FormRSCTL(*$1, *$3);
+        $$ = new FormRSCTLK(*$1, *$3);
         free($1);
         free($3);
     }
-    | NOT rsctl_form {
-        $$ = new FormRSCTL(RSCTL_NOT, $2);
+    | NOT rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_NOT, $2);
     }
-    | LRB rsctl_form RRB {
+    | LRB rsctlk_form RRB {
         $$ = $2;
     }
-    | rsctl_form AND rsctl_form {
-        $$ = new FormRSCTL(RSCTL_AND, $1, $3);
+    | rsctlk_form AND rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_AND, $1, $3);
     }
-    | rsctl_form OR rsctl_form {
-        $$ = new FormRSCTL(RSCTL_OR, $1, $3);
+    | rsctlk_form OR rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_OR, $1, $3);
     }
-    | rsctl_form XOR rsctl_form {
-        $$ = new FormRSCTL(RSCTL_XOR, $1, $3);
+    | rsctlk_form XOR rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_XOR, $1, $3);
     }
-    | rsctl_form IMPLIES rsctl_form {
-        $$ = new FormRSCTL(RSCTL_IMPL, $1, $3);
+    | rsctlk_form IMPLIES rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_IMPL, $1, $3);
     }
-    | EX rsctl_form {
-        $$ = new FormRSCTL(RSCTL_EX, $2);
+    | EX rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_EX, $2);
     }
-    | EU LRB rsctl_form COMMA rsctl_form RRB {
-        $$ = new FormRSCTL(RSCTL_EU, $3, $5);
+    | EU LRB rsctlk_form COMMA rsctlk_form RRB {
+        $$ = new FormRSCTLK(RSCTLK_EU, $3, $5);
     }
-    | EF rsctl_form {
-        $$ = new FormRSCTL(RSCTL_EF, $2);
+    | EF rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_EF, $2);
     }
-    | EG rsctl_form {
-        $$ = new FormRSCTL(RSCTL_EG, $2);
+    | EG rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_EG, $2);
     }
-    | AX rsctl_form {
-        $$ = new FormRSCTL(RSCTL_AX, $2);
+    | AX rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_AX, $2);
     }
-    | AU LRB rsctl_form COMMA rsctl_form RRB {
-        $$ = new FormRSCTL(RSCTL_AU, $3, $5);
+    | AU LRB rsctlk_form COMMA rsctlk_form RRB {
+        $$ = new FormRSCTLK(RSCTLK_AU, $3, $5);
     }
-    | AF rsctl_form {
-        $$ = new FormRSCTL(RSCTL_AF, $2);
+    | AF rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_AF, $2);
     }
-    | AG rsctl_form {
-        $$ = new FormRSCTL(RSCTL_AG, $2);
+    | AG rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_AG, $2);
     } 
-    | UK LSB IDENTIFIER RSB LRB rsctl_form RRB {
+    | UK LSB IDENTIFIER RSB LRB rsctlk_form RRB {
         Agents_f agents;
         agents.insert(*$3);
-        $$ = new FormRSCTL(RSCTL_UK, agents, $6);
+        $$ = new FormRSCTLK(RSCTLK_UK, agents, $6);
         free($3);
     }
 
-    // | E LSB actions RSB X rsctl_form {
-    //     $$ = new FormRSCTL(RSCTL_EX_ACT, $3, $6);
+    // | E LSB actions RSB X rsctlk_form {
+    //     $$ = new FormRSCTLK(RSCTLK_EX_ACT, $3, $6);
     // }
-    // | E LSB actions RSB U LRB rsctl_form COMMA rsctl_form RRB {
-    //     $$ = new FormRSCTL(RSCTL_EU_ACT, $3, $7, $9);
+    // | E LSB actions RSB U LRB rsctlk_form COMMA rsctlk_form RRB {
+    //     $$ = new FormRSCTLK(RSCTLK_EU_ACT, $3, $7, $9);
     // }
-    // | E LSB actions RSB F rsctl_form {
-    //     $$ = new FormRSCTL(RSCTL_EF_ACT, $3, $6);
+    // | E LSB actions RSB F rsctlk_form {
+    //     $$ = new FormRSCTLK(RSCTLK_EF_ACT, $3, $6);
     // }
-    // | E LSB actions RSB G rsctl_form {
-    //     $$ = new FormRSCTL(RSCTL_EG_ACT, $3, $6);
+    // | E LSB actions RSB G rsctlk_form {
+    //     $$ = new FormRSCTLK(RSCTLK_EG_ACT, $3, $6);
     // }
-    // | A LSB actions RSB X rsctl_form {
-    //     $$ = new FormRSCTL(RSCTL_AX_ACT, $3, $6);
+    // | A LSB actions RSB X rsctlk_form {
+    //     $$ = new FormRSCTLK(RSCTLK_AX_ACT, $3, $6);
     // }
-    // | A LSB actions RSB U LRB rsctl_form COMMA rsctl_form RRB {
-    //     $$ = new FormRSCTL(RSCTL_AU_ACT, $3, $7, $9);
+    // | A LSB actions RSB U LRB rsctlk_form COMMA rsctlk_form RRB {
+    //     $$ = new FormRSCTLK(RSCTLK_AU_ACT, $3, $7, $9);
     // }
-    // | A LSB actions RSB F rsctl_form {
-    //     $$ = new FormRSCTL(RSCTL_AF_ACT, $3, $6);
+    // | A LSB actions RSB F rsctlk_form {
+    //     $$ = new FormRSCTLK(RSCTLK_AF_ACT, $3, $6);
     // }
-    // | A LSB actions RSB G rsctl_form {
-    //     $$ = new FormRSCTL(RSCTL_AG_ACT, $3, $6);
+    // | A LSB actions RSB G rsctlk_form {
+    //     $$ = new FormRSCTLK(RSCTLK_AG_ACT, $3, $6);
     // }
 
 	  /* contexts as boolean formulae  */
-    | E LAB bool_contexts RAB X rsctl_form { 
-        $$ = new FormRSCTL(RSCTL_EX_ACT, $3, $6);
+    | E LAB bool_contexts RAB X rsctlk_form { 
+        $$ = new FormRSCTLK(RSCTLK_EX_ACT, $3, $6);
     }
-    | E LAB bool_contexts RAB U LRB rsctl_form COMMA rsctl_form RRB {
-        $$ = new FormRSCTL(RSCTL_EU_ACT, $3, $7, $9);
+    | E LAB bool_contexts RAB U LRB rsctlk_form COMMA rsctlk_form RRB {
+        $$ = new FormRSCTLK(RSCTLK_EU_ACT, $3, $7, $9);
     }
-    | E LAB bool_contexts RAB F rsctl_form {
-        $$ = new FormRSCTL(RSCTL_EF_ACT, $3, $6);
+    | E LAB bool_contexts RAB F rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_EF_ACT, $3, $6);
     }
-    | E LAB bool_contexts RAB G rsctl_form {
-        $$ = new FormRSCTL(RSCTL_EG_ACT, $3, $6);
+    | E LAB bool_contexts RAB G rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_EG_ACT, $3, $6);
     }
-    | A LAB bool_contexts RAB X rsctl_form {
-        $$ = new FormRSCTL(RSCTL_AX_ACT, $3, $6);
+    | A LAB bool_contexts RAB X rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_AX_ACT, $3, $6);
     }
-    | A LAB bool_contexts RAB U LRB rsctl_form COMMA rsctl_form RRB {
-        $$ = new FormRSCTL(RSCTL_AU_ACT, $3, $7, $9);
+    | A LAB bool_contexts RAB U LRB rsctlk_form COMMA rsctlk_form RRB {
+        $$ = new FormRSCTLK(RSCTLK_AU_ACT, $3, $7, $9);
     }
-    | A LAB bool_contexts RAB F rsctl_form {
-        $$ = new FormRSCTL(RSCTL_AF_ACT, $3, $6);
+    | A LAB bool_contexts RAB F rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_AF_ACT, $3, $6);
     }
-    | A LAB bool_contexts RAB G rsctl_form {
-        $$ = new FormRSCTL(RSCTL_AG_ACT, $3, $6);
+    | A LAB bool_contexts RAB G rsctlk_form {
+        $$ = new FormRSCTLK(RSCTLK_AG_ACT, $3, $6);
     }
     ;
 %%

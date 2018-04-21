@@ -4,7 +4,7 @@
 #include "cudd.hh"
 #include "rs.hh"
 #include "symrs.hh"
-#include "formrsctl.hh"
+#include "formrsctlk.hh"
 #include "macro.hh"
 #include "bdd_macro.hh"
 #include "options.hh"
@@ -53,7 +53,7 @@ class ModelChecker
     BDD getSucc(const BDD &states);
     BDD getPreE(const BDD &states);
     BDD getPreEctx(const BDD &states, const BDD *contexts);
-    BDD getStatesRSCTL(const FormRSCTL *form);
+    BDD getStatesRSCTLK(const FormRSCTLK *form);
     BDD statesEG(const BDD &states);
     BDD statesEU(const BDD &statesA, const BDD &statesB);
     BDD statesEF(const BDD &states);
@@ -71,9 +71,9 @@ class ModelChecker
     void printReach(void);
     void printReachWithSucc(void);
     bool checkReach(const Entities testState);
-    bool checkRSCTL(FormRSCTL *form);
-    bool checkRSCTLfull(FormRSCTL *form);
-    bool checkRSCTLbmc(FormRSCTL *form);
+    bool checkRSCTLK(FormRSCTLK *form);
+    bool checkRSCTLKfull(FormRSCTLK *form);
+    bool checkRSCTLKbmc(FormRSCTLK *form);
 };
 
 #endif

@@ -4,7 +4,7 @@
 #include <map>
 #include "rsin_parser.hh"
 #include "rs.hh"
-#include "formrsctl.hh"
+#include "formrsctlk.hh"
 #include "options.hh"
 
 // Tell Flex the lexer's prototype ...
@@ -25,7 +25,7 @@ class rsin_driver
     virtual ~rsin_driver();
 
     //std::map<std::string, int> variables;
-    FormRSCTL *rsctlform;
+    FormRSCTLK *rsctlkform;
     Options *opts;
 
     // options in configuration file:
@@ -45,11 +45,11 @@ class rsin_driver
     {
       this->opts = opts;
     };
-    void addFormRSCTL(FormRSCTL *f)
+    void addFormRSCTLK(FormRSCTLK *f)
     {
-      rsctlform = f;
+      rsctlkform = f;
     };
-    FormRSCTL *getFormRSCTL(void);
+    FormRSCTLK *getFormRSCTLK(void);
 
     void ensureOptionsAllowed(void);
     void useContextAutomaton(void);

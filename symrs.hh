@@ -30,7 +30,7 @@ using std::map;
 class SymRS
 {
     friend class ModelChecker;
-    friend class FormRSCTL;
+    friend class FormRSCTLK;
 
   public:
     SymRS(RctSys *rs, Options *opts);

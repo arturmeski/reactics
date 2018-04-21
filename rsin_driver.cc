@@ -17,7 +17,7 @@ rsin_driver::rsin_driver(RctSys *rs)
 void rsin_driver::initialise(void)
 {
   rs = nullptr;
-  rsctlform = nullptr;
+  rsctlkform = nullptr;
   opts = nullptr;
   use_ctx_aut = false;
   use_concentrations = false;
@@ -49,13 +49,13 @@ void rsin_driver::error(const std::string &m)
   std::cerr << m << std::endl;
 }
 
-FormRSCTL *rsin_driver::getFormRSCTL(void)
+FormRSCTLK *rsin_driver::getFormRSCTLK(void)
 {
-  if (rsctlform == nullptr) {
-    FERROR("RSCTL formula was not supplied!");
+  if (rsctlkform == nullptr) {
+    FERROR("RSCTLK formula was not supplied!");
   }
 
-  return rsctlform;
+  return rsctlkform;
 }
 
 //

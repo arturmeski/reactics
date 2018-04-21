@@ -182,10 +182,10 @@ int main(int argc, char **argv)
     if (rstl_model_checking) {
       if (bmc) {
         cout << "Using BDD-based Bounded Model Checking" << endl;
-        mc.checkRSCTL(driver.getFormRSCTL());
+        mc.checkRSCTLK(driver.getFormRSCTLK());
       }
       else {
-        mc.checkRSCTLfull(driver.getFormRSCTL());
+        mc.checkRSCTLKfull(driver.getFormRSCTLK());
       }
     }
   }
@@ -233,7 +233,7 @@ void print_help(std::string path_str)
 #endif
        << " Usage: " << path_str << " [options] <inputfile>" << endl << endl
        << " TASKS:" << endl
-       << "  -c   -- perform RSCTL model checking" << endl
+       << "  -c   -- perform RSCTLK model checking" << endl
        //<< " -f K -- generate SMT input for the depth K" << endl
        << "  -P   -- print parsed system" << endl
        << "  -r   -- print reactions" << endl

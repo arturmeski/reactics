@@ -6,8 +6,8 @@
     without the author's permission is strictly prohibited.
 */
 
-#ifndef RS_FORMRSCTL_HH
-#define RS_FORMRSCTL_HH
+#ifndef RS_FORMRSCTLK_HH
+#define RS_FORMRSCTLK_HH
 
 #include <iostream>
 #include <string>
@@ -16,32 +16,32 @@
 #include "symrs.hh"
 #include "cudd.hh"
 
-#define RSCTL_PV      0 // propositional variable
-#define RSCTL_AND     1
-#define RSCTL_OR      2
-#define RSCTL_XOR  3
-#define RSCTL_NOT     4
-#define RSCTL_IMPL    5
-#define RSCTL_EG      11 // Existential...
-#define RSCTL_EU      12
-#define RSCTL_EX      13
-#define RSCTL_EF      14
-#define RSCTL_AG      21 // Universal...
-#define RSCTL_AU      22
-#define RSCTL_AX      23
-#define RSCTL_AF      24
-#define RSCTL_EG_ACT  31 // Existential...
-#define RSCTL_EU_ACT  32
-#define RSCTL_EX_ACT  33
-#define RSCTL_EF_ACT  34
-#define RSCTL_AG_ACT  41 // Universal...
-#define RSCTL_AU_ACT  42
-#define RSCTL_AX_ACT  43
-#define RSCTL_AF_ACT  44
-#define RSCTL_TF      50 // true/false
+#define RSCTLK_PV      0 // propositional variable
+#define RSCTLK_AND     1
+#define RSCTLK_OR      2
+#define RSCTLK_XOR  3
+#define RSCTLK_NOT     4
+#define RSCTLK_IMPL    5
+#define RSCTLK_EG      11 // Existential...
+#define RSCTLK_EU      12
+#define RSCTLK_EX      13
+#define RSCTLK_EF      14
+#define RSCTLK_AG      21 // Universal...
+#define RSCTLK_AU      22
+#define RSCTLK_AX      23
+#define RSCTLK_AF      24
+#define RSCTLK_EG_ACT  31 // Existential...
+#define RSCTLK_EU_ACT  32
+#define RSCTLK_EX_ACT  33
+#define RSCTLK_EF_ACT  34
+#define RSCTLK_AG_ACT  41 // Universal...
+#define RSCTLK_AU_ACT  42
+#define RSCTLK_AX_ACT  43
+#define RSCTLK_AF_ACT  44
+#define RSCTLK_TF      50 // true/false
 
-#define RSCTL_UK      60 // Epistemic operators
-#define RSCTL_NK      61
+#define RSCTLK_UK      60 // Epistemic operators
+#define RSCTLK_NK      61
 
 /* For Boolean contexts: */
 #define BCTX_PV   80
@@ -52,12 +52,12 @@
 #define BCTX_TF   90
 
 
-#define RSCTL_COND_1ARG(a) ((a) == RSCTL_NOT || (a) == RSCTL_EG || (a) == RSCTL_EF || (a) == RSCTL_EX || (a) == RSCTL_AG || (a) == RSCTL_AF || (a) == RSCTL_AX || (a) == RSCTL_EG_ACT || (a) == RSCTL_EF_ACT || (a) == RSCTL_EX_ACT || (a) == RSCTL_AG_ACT || (a) == RSCTL_AF_ACT || (a) == RSCTL_AX_ACT || (a) == RSCTL_UK || (a) == RSCTL_NK)
-#define RSCTL_COND_2ARG(a) ((a) == RSCTL_AND || (a) == RSCTL_OR || (a) == RSCTL_XOR || (a) == RSCTL_IMPL || (a) == RSCTL_EU || (a) == RSCTL_AU || (a) == RSCTL_EU_ACT || (a) == RSCTL_AU_ACT)
-#define RSCTL_COND_ACT(a) ((a) > 30 && (a) < 45)
-#define RSCTL_IS_VALID(a) (RSCTL_COND_1ARG(a) || RSCTL_COND_2ARG(a) || (a) == RSCTL_PV || (a) == RSCTL_TF)
+#define RSCTLK_COND_1ARG(a) ((a) == RSCTLK_NOT || (a) == RSCTLK_EG || (a) == RSCTLK_EF || (a) == RSCTLK_EX || (a) == RSCTLK_AG || (a) == RSCTLK_AF || (a) == RSCTLK_AX || (a) == RSCTLK_EG_ACT || (a) == RSCTLK_EF_ACT || (a) == RSCTLK_EX_ACT || (a) == RSCTLK_AG_ACT || (a) == RSCTLK_AF_ACT || (a) == RSCTLK_AX_ACT || (a) == RSCTLK_UK || (a) == RSCTLK_NK)
+#define RSCTLK_COND_2ARG(a) ((a) == RSCTLK_AND || (a) == RSCTLK_OR || (a) == RSCTLK_XOR || (a) == RSCTLK_IMPL || (a) == RSCTLK_EU || (a) == RSCTLK_AU || (a) == RSCTLK_EU_ACT || (a) == RSCTLK_AU_ACT)
+#define RSCTLK_COND_ACT(a) ((a) > 30 && (a) < 45)
+#define RSCTLK_IS_VALID(a) (RSCTLK_COND_1ARG(a) || RSCTLK_COND_2ARG(a) || (a) == RSCTLK_PV || (a) == RSCTLK_TF)
 
-#define RSCTL_COND_IS_UNIVERSAL(a) (((a) > 20 && (a) < 25) || ((a) > 40 && (a) < 45))
+#define RSCTLK_COND_IS_UNIVERSAL(a) (((a) > 20 && (a) < 25) || ((a) > 40 && (a) < 45))
 
 #define BCTX_COND_1ARG(a) ((a) == BCTX_NOT)
 #define BCTX_COND_2ARG(a) ((a) == BCTX_AND || (a) == BCTX_OR || (a) == BCTX_XOR)
@@ -155,10 +155,10 @@ class BoolContexts
     }
 };
 
-class FormRSCTL
+class FormRSCTLK
 {
     Oper oper;
-    FormRSCTL *arg[2];
+    FormRSCTLK *arg[2];
     std::string entity_name;
     std::string proc_name;
     bool tf;
@@ -174,9 +174,9 @@ class FormRSCTL
      * @param   varName variable name used mostly for printing the variable.
      * @param   varBDD  the BDD describing the set where the variable holds.
      */
-    FormRSCTL(std::string procName, std::string varName)
+    FormRSCTLK(std::string procName, std::string varName)
     {
-      oper = RSCTL_PV;
+      oper = RSCTLK_PV;
       proc_name = procName;
       entity_name = varName;
       arg[0] = nullptr;
@@ -192,9 +192,9 @@ class FormRSCTL
      *
      * @param   val value of the logical constant
      */
-    FormRSCTL(bool val)
+    FormRSCTLK(bool val)
     {
-      oper = RSCTL_TF;
+      oper = RSCTLK_TF;
       tf = val;
       arg[0] = nullptr;
       arg[1] = nullptr;
@@ -207,10 +207,10 @@ class FormRSCTL
     /**
      * @brief Constructor for two-argument formula.
      */
-    FormRSCTL(Oper op, FormRSCTL *form1, FormRSCTL *form2)
+    FormRSCTLK(Oper op, FormRSCTLK *form1, FormRSCTLK *form2)
     {
-      assert(RSCTL_COND_2ARG(op));
-      assert(!RSCTL_COND_ACT(op));
+      assert(RSCTLK_COND_2ARG(op));
+      assert(!RSCTLK_COND_ACT(op));
       oper = op;
       arg[0] = form1;
       arg[1] = form2;
@@ -223,11 +223,11 @@ class FormRSCTL
     /**
      * @brief Constructor for two-argument formula with action restrictions.
      */
-    // FormRSCTL(Oper op, ActionsVec_f *acts, FormRSCTL *form1, FormRSCTL *form2)
+    // FormRSCTLK(Oper op, ActionsVec_f *acts, FormRSCTLK *form1, FormRSCTLK *form2)
     // {
     //   assert(acts != nullptr);
-    //   assert(RSCTL_COND_2ARG(op));
-    //   assert(RSCTL_COND_ACT(op));
+    //   assert(RSCTLK_COND_2ARG(op));
+    //   assert(RSCTLK_COND_ACT(op));
     //   oper = op;
     //   arg[0] = form1;
     //   arg[1] = form2;
@@ -240,11 +240,11 @@ class FormRSCTL
     /**
      * @brief Constructor for two-argument formula with Boolean context restrictions.
      */
-    FormRSCTL(Oper op, BoolContexts *bctx, FormRSCTL *form1, FormRSCTL *form2)
+    FormRSCTLK(Oper op, BoolContexts *bctx, FormRSCTLK *form1, FormRSCTLK *form2)
     {
       assert(bctx != nullptr);
-      assert(RSCTL_COND_2ARG(op));
-      assert(RSCTL_COND_ACT(op));
+      assert(RSCTLK_COND_2ARG(op));
+      assert(RSCTLK_COND_ACT(op));
       oper = op;
       arg[0] = form1;
       arg[1] = form2;
@@ -257,10 +257,10 @@ class FormRSCTL
     /**
      * @brief Constructor for one-argument formula.
      */
-    FormRSCTL(Oper op, FormRSCTL *form1)
+    FormRSCTLK(Oper op, FormRSCTLK *form1)
     {
-      assert(RSCTL_COND_1ARG(op));
-      assert(!RSCTL_COND_ACT(op));
+      assert(RSCTLK_COND_1ARG(op));
+      assert(!RSCTLK_COND_ACT(op));
       oper = op;
       arg[0] = form1;
       arg[1] = nullptr;
@@ -273,11 +273,11 @@ class FormRSCTL
     /**
      * @brief Constructor for one-argument formula with action restrictions.
      */
-    // FormRSCTL(Oper op, ActionsVec_f *acts, FormRSCTL *form1)
+    // FormRSCTLK(Oper op, ActionsVec_f *acts, FormRSCTLK *form1)
     // {
     //   assert(acts != nullptr);
-    //   assert(RSCTL_COND_1ARG(op));
-    //   assert(RSCTL_COND_ACT(op));
+    //   assert(RSCTLK_COND_1ARG(op));
+    //   assert(RSCTLK_COND_ACT(op));
     //   oper = op;
     //   arg[0] = form1;
     //   arg[1] = nullptr;
@@ -290,11 +290,11 @@ class FormRSCTL
     /**
      * @brief Constructor for one-argument formula with Boolean context restrictions.
      */
-    FormRSCTL(Oper op, BoolContexts *bctx, FormRSCTL *form1)
+    FormRSCTLK(Oper op, BoolContexts *bctx, FormRSCTLK *form1)
     {
       assert(bctx != nullptr);
-      assert(RSCTL_COND_1ARG(op));
-      assert(RSCTL_COND_ACT(op));
+      assert(RSCTLK_COND_1ARG(op));
+      assert(RSCTLK_COND_ACT(op));
       oper = op;
       arg[0] = form1;
       arg[1] = nullptr;
@@ -304,9 +304,9 @@ class FormRSCTL
       boolCtx = bctx;
     }
 
-    FormRSCTL(Oper op, Agents_f agents_set, FormRSCTL *form1)
+    FormRSCTLK(Oper op, Agents_f agents_set, FormRSCTLK *form1)
     {
-      assert(RSCTL_COND_1ARG(op));
+      assert(RSCTLK_COND_1ARG(op));
       oper = op;
       arg[0] = form1;
       arg[1] = nullptr;
@@ -318,7 +318,7 @@ class FormRSCTL
     /**
      * @brief Destructor.
      */
-    ~FormRSCTL()
+    ~FormRSCTLK()
     {
       delete arg[0];
       delete arg[1];
@@ -331,36 +331,36 @@ class FormRSCTL
     bool hasOper(Oper op) const;
     const BDD *getBDD(void) const
     {
-      assert(oper == RSCTL_PV);
+      assert(oper == RSCTLK_PV);
       assert(bdd != nullptr);
       return bdd;
     }
     const BDD *getActionsBDD(void) const
     {
-      assert(RSCTL_COND_ACT(oper));
+      assert(RSCTLK_COND_ACT(oper));
       assert(actions_bdd != nullptr);
       return actions_bdd;
     }
     Oper getOper(void) const
     {
-      assert(RSCTL_IS_VALID(oper));
+      assert(RSCTLK_IS_VALID(oper));
       return oper;
     }
-    FormRSCTL *getLeftSF(void) const
+    FormRSCTLK *getLeftSF(void) const
     {
       assert(arg[0] != nullptr);
       return arg[0];
     }
-    FormRSCTL *getRightSF(void) const
+    FormRSCTLK *getRightSF(void) const
     {
-      assert(RSCTL_COND_2ARG(oper));
+      assert(RSCTLK_COND_2ARG(oper));
       assert(arg[1] != nullptr);
       return arg[1];
     }
     std::string getActionsStr(void) const;
     bool getTF(void) const
     {
-      assert(oper == RSCTL_TF);
+      assert(oper == RSCTLK_TF);
       return tf;
     }
     void encodeEntities(const SymRS *srs);
@@ -371,7 +371,7 @@ class FormRSCTL
         delete actions_bdd;
       }
     }
-    bool isERSCTL(void) const;
+    bool isERSCTLK(void) const;
 };
 
 #endif

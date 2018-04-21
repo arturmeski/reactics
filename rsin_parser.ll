@@ -48,7 +48,7 @@ blank [ \t]
 "transitions"			      return token::TRANSITIONS;
 "states"				        return token::STATES;
 "init-state"			      return token::INITSTATE;
-"rsctl-property"        return token::RSCTLFORM;
+"rsctlk-property"        return token::RSCTLKFORM;
 "{"                     return token::LCB;
 "}"                     return token::RCB;
 "("                     return token::LRB;

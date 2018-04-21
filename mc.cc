@@ -233,15 +233,15 @@ bool ModelChecker::checkReach(const Entities testState)
   return false;
 }
 
-BDD ModelChecker::getStatesRSCTL(const FormRSCTL *form)
+BDD ModelChecker::getStatesRSCTLK(const FormRSCTLK *form)
 {
   assert(reach != nullptr);
   Oper oper = form->getOper();
 
-  if (oper == RSCTL_PV) {
+  if (oper == RSCTLK_PV) {
     return *form->getBDD() * *reach;
   }
-  else if (oper == RSCTL_TF) {
+  else if (oper == RSCTLK_TF) {
     if (form->getTF() == true) {
       return *reach;
     }
@@ -249,47 +249,47 @@ BDD ModelChecker::getStatesRSCTL(const FormRSCTL *form)
       return cuddMgr->bddZero();
     }
   }
-  else if (oper == RSCTL_AND) {
-    return getStatesRSCTL(form->getLeftSF()) * getStatesRSCTL(form->getRightSF());
+  else if (oper == RSCTLK_AND) {
+    return getStatesRSCTLK(form->getLeftSF()) * getStatesRSCTLK(form->getRightSF());
   }
-  else if (oper == RSCTL_OR) {
-    return getStatesRSCTL(form->getLeftSF()) + getStatesRSCTL(form->getRightSF());
+  else if (oper == RSCTLK_OR) {
+    return getStatesRSCTLK(form->getLeftSF()) + getStatesRSCTLK(form->getRightSF());
   }
-  else if (oper == RSCTL_XOR) {
-    return getStatesRSCTL(form->getLeftSF()) ^ getStatesRSCTL(form->getRightSF());
+  else if (oper == RSCTLK_XOR) {
+    return getStatesRSCTLK(form->getLeftSF()) ^ getStatesRSCTLK(form->getRightSF());
   }
-  else if (oper == RSCTL_IMPL) {
-    return (!getStatesRSCTL(form->getLeftSF()) * *reach) + getStatesRSCTL(
+  else if (oper == RSCTLK_IMPL) {
+    return (!getStatesRSCTLK(form->getLeftSF()) * *reach) + getStatesRSCTLK(
              form->getRightSF());
   }
-  else if (oper == RSCTL_NOT) {
-    return !getStatesRSCTL(form->getLeftSF()) * *reach;
+  else if (oper == RSCTLK_NOT) {
+    return !getStatesRSCTLK(form->getLeftSF()) * *reach;
   }
-  else if (oper == RSCTL_EX) {
-    return getPreE(getStatesRSCTL(form->getLeftSF())) * *reach;
+  else if (oper == RSCTLK_EX) {
+    return getPreE(getStatesRSCTLK(form->getLeftSF())) * *reach;
   }
-  else if (oper == RSCTL_EG) {
-    return statesEG(getStatesRSCTL(form->getLeftSF()));
+  else if (oper == RSCTLK_EG) {
+    return statesEG(getStatesRSCTLK(form->getLeftSF()));
   }
-  else if (oper == RSCTL_EU) {
+  else if (oper == RSCTLK_EU) {
     return statesEU(
-             getStatesRSCTL(form->getLeftSF()),
-             getStatesRSCTL(form->getRightSF())
+             getStatesRSCTLK(form->getLeftSF()),
+             getStatesRSCTLK(form->getRightSF())
            );
   }
-  else if (oper == RSCTL_EF) {
-    return statesEF(getStatesRSCTL(form->getLeftSF()));
+  else if (oper == RSCTLK_EF) {
+    return statesEF(getStatesRSCTLK(form->getLeftSF()));
   }
-  else if (oper == RSCTL_AX) {
-    return !getPreE(!getStatesRSCTL(form->getLeftSF()) * *reach) * *reach;
+  else if (oper == RSCTLK_AX) {
+    return !getPreE(!getStatesRSCTLK(form->getLeftSF()) * *reach) * *reach;
   }
-  else if (oper == RSCTL_AG) {
+  else if (oper == RSCTLK_AG) {
     return !statesEF(
-             !getStatesRSCTL(form->getLeftSF()) * *reach) * *reach;
+             !getStatesRSCTLK(form->getLeftSF()) * *reach) * *reach;
   }
-  else if (oper == RSCTL_AU) {
-    BDD ng = !getStatesRSCTL(form->getRightSF()) * *reach;
-    BDD nf = !getStatesRSCTL(form->getLeftSF()) * *reach;
+  else if (oper == RSCTLK_AU) {
+    BDD ng = !getStatesRSCTLK(form->getRightSF()) * *reach;
+    BDD nf = !getStatesRSCTLK(form->getLeftSF()) * *reach;
 
     BDD x = !statesEU(ng, ng * nf) * *reach;
 
@@ -299,40 +299,40 @@ BDD ModelChecker::getStatesRSCTL(const FormRSCTL *form)
 
     return x;
   }
-  else if (oper == RSCTL_AF) {
+  else if (oper == RSCTLK_AF) {
     return !statesEG(
-             !getStatesRSCTL(form->getLeftSF()) * *reach) * *reach;
+             !getStatesRSCTLK(form->getLeftSF()) * *reach) * *reach;
   }
   /***** CONTEXT RESTRICTIONS: ******/
-  else if (oper == RSCTL_EX_ACT) {
-    return getPreEctx(getStatesRSCTL(form->getLeftSF()),
+  else if (oper == RSCTLK_EX_ACT) {
+    return getPreEctx(getStatesRSCTLK(form->getLeftSF()),
                       form->getActionsBDD()) * *reach;
   }
-  else if (oper == RSCTL_EG_ACT) {
+  else if (oper == RSCTLK_EG_ACT) {
     return statesEGctx(form->getActionsBDD(),
-                       getStatesRSCTL(form->getLeftSF())); /***** EG? *****/
+                       getStatesRSCTLK(form->getLeftSF())); /***** EG? *****/
   }
-  else if (oper == RSCTL_EU_ACT) {
+  else if (oper == RSCTLK_EU_ACT) {
     return statesEUctx(
              form->getActionsBDD(),
-             getStatesRSCTL(form->getLeftSF()),
-             getStatesRSCTL(form->getRightSF())
+             getStatesRSCTLK(form->getLeftSF()),
+             getStatesRSCTLK(form->getRightSF())
            );
   }
-  else if (oper == RSCTL_EF_ACT) {
-    return statesEFctx(form->getActionsBDD(), getStatesRSCTL(form->getLeftSF()));
+  else if (oper == RSCTLK_EF_ACT) {
+    return statesEFctx(form->getActionsBDD(), getStatesRSCTLK(form->getLeftSF()));
   }
-  else if (oper == RSCTL_AX_ACT) {
-    return !getPreEctx(!getStatesRSCTL(form->getLeftSF()) * *reach,
+  else if (oper == RSCTLK_AX_ACT) {
+    return !getPreEctx(!getStatesRSCTLK(form->getLeftSF()) * *reach,
                        form->getActionsBDD()) * *reach;
   }
-  else if (oper == RSCTL_AG_ACT) {
+  else if (oper == RSCTLK_AG_ACT) {
     return !statesEFctx(form->getActionsBDD(),
-                        !getStatesRSCTL(form->getLeftSF()) * *reach) * *reach;
+                        !getStatesRSCTLK(form->getLeftSF()) * *reach) * *reach;
   }
-  else if (oper == RSCTL_AU_ACT) {
-    BDD ng = !getStatesRSCTL(form->getRightSF()) * *reach;
-    BDD nf = !getStatesRSCTL(form->getLeftSF()) * *reach;
+  else if (oper == RSCTLK_AU_ACT) {
+    BDD ng = !getStatesRSCTLK(form->getRightSF()) * *reach;
+    BDD nf = !getStatesRSCTLK(form->getLeftSF()) * *reach;
 
     BDD x = !statesEUctx(form->getActionsBDD(), ng, ng * nf) * *reach;
 
@@ -342,9 +342,9 @@ BDD ModelChecker::getStatesRSCTL(const FormRSCTL *form)
 
     return x;
   }
-  else if (oper == RSCTL_AF_ACT) {
+  else if (oper == RSCTLK_AF_ACT) {
     return !statesEGctx(form->getActionsBDD(),
-                        !getStatesRSCTL(form->getLeftSF()) * *reach) * *reach;
+                        !getStatesRSCTLK(form->getLeftSF()) * *reach) * *reach;
   }
 
   assert(0); // Should never happen
@@ -454,17 +454,17 @@ BDD ModelChecker::getIthOnly(Process proc_id)
   return bdd;
 }
 
-bool ModelChecker::checkRSCTL(FormRSCTL *form)
+bool ModelChecker::checkRSCTLK(FormRSCTLK *form)
 {
-  if (form->isERSCTL()) {
-    return checkRSCTLbmc(form);
+  if (form->isERSCTLK()) {
+    return checkRSCTLKbmc(form);
   }
   else {
-    return checkRSCTLfull(form);
+    return checkRSCTLKfull(form);
   }
 }
 
-bool ModelChecker::checkRSCTLfull(FormRSCTL *form)
+bool ModelChecker::checkRSCTLKfull(FormRSCTLK *form)
 {
   if (opts->measure) {
     opts->ver_time = cpuTime();
@@ -474,7 +474,7 @@ bool ModelChecker::checkRSCTLfull(FormRSCTL *form)
 
   bool result = false;
 
-  VERB("Model checking for RSCTL formula: " << form->toStr());
+  VERB("Model checking for RSCTLK formula: " << form->toStr());
 
   VERB("Processing the formula: encoding entities");
   form->encodeEntities(srs);
@@ -514,8 +514,8 @@ bool ModelChecker::checkRSCTLfull(FormRSCTL *form)
 
   VERB("Checking the formula");
 
-  //if (*initStates * getStatesRSCTL(form) != cuddMgr->bddZero())
-  if (*initStates * getStatesRSCTL(form) == *initStates) {
+  //if (*initStates * getStatesRSCTLK(form) != cuddMgr->bddZero())
+  if (*initStates * getStatesRSCTLK(form) == *initStates) {
     result = true;
   }
   else {
@@ -535,7 +535,7 @@ bool ModelChecker::checkRSCTLfull(FormRSCTL *form)
   return result;
 }
 
-bool ModelChecker::checkRSCTLbmc(FormRSCTL *form)
+bool ModelChecker::checkRSCTLKbmc(FormRSCTLK *form)
 {
   if (opts->measure) {
     opts->ver_time = cpuTime();
@@ -543,14 +543,14 @@ bool ModelChecker::checkRSCTLbmc(FormRSCTL *form)
 
   assert(form != nullptr);
 
-  if (!form->isERSCTL()) {
+  if (!form->isERSCTLK()) {
     FERROR("Formula " << form->toStr() <<
-           " is not syntactically an ERSCTL formula");
+           " is not syntactically an ERSCTLK formula");
   }
 
   bool result = false;
 
-  VERB("Bounded model checking for RSCTL formula: " << form->toStr());
+  VERB("Bounded model checking for RSCTLK formula: " << form->toStr());
 
   VERB("Processing the formula: encoding entities");
   form->encodeEntities(srs);
@@ -572,8 +572,8 @@ bool ModelChecker::checkRSCTLbmc(FormRSCTL *form)
       cout << "\rIteration " << ++k << flush;
     }
 
-    //if (*initStates * getStatesRSCTL(form) != cuddMgr->bddZero())
-    if (*initStates * getStatesRSCTL(form) == *initStates) {
+    //if (*initStates * getStatesRSCTLK(form) != cuddMgr->bddZero())
+    if (*initStates * getStatesRSCTLK(form) == *initStates) {
       result = true;
       break;
     }
