@@ -102,7 +102,8 @@ void CtxAut::addTransition(std::string srcStateName, std::string dstStateName)
 
   new_transition.src_state = getStateID(srcStateName);
   new_transition.ctx = tmpProcEntities;
-  tmpEntities.clear();
+  // tmpEntities.clear();
+  tmpProcEntities.clear();
   new_transition.dst_state = getStateID(dstStateName);
   transitions.push_back(new_transition);
 }

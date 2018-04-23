@@ -492,10 +492,7 @@ BDD SymRS::encContext(const EntitiesForProc &proc_entities)
       r *= encCtxEntity(proc_id, entity);
     }
 
-    // This check is not really requires. Just to be sure...
-    if (entities.size() > 0) {
-      r *= encProcEnabled(proc_id);
-    }
+    r *= encProcEnabled(proc_id);
   }
 
   return r;
@@ -591,13 +588,16 @@ DecompReactions SymRS::getProductionConditions(Process proc_id)
   return dr;
 }
 
-BDD SymRS::encEnabledness(Process proc_id, Entity entity_id)
+BDD SymRS::encEnabledness(Process prod_proc_id, Entity entity_id)
 {
-  assert(prod_conds.size() > proc_id);
+  assert(prod_conds.size() > prod_proc_id);
 
   BDD enab = BDD_FALSE;
 
-  auto production_conditions = prod_conds[proc_id][entity_id];
+  auto production_conditions = prod_conds[prod_proc_id][entity_id];
+
+
+  VERB_LN(5, "| Produce " << rs->getEntityName(entity_id) << " in " << rs->getProcessName(prod_proc_id) << ":");
 
   for (const auto &cond : production_conditions) {
 
@@ -610,6 +610,9 @@ BDD SymRS::encEnabledness(Process proc_id, Entity entity_id)
       for (unsigned int proc_id = 0; proc_id < numberOfProc; ++proc_id) {
         if (processUsesEntity(proc_id, reactant)) {
           proc_reactants += encProcEnabled(proc_id) * encEntityCondition(proc_id, reactant);
+
+          VERB_LN(5, "| - if process " << rs->getProcessName(proc_id) << " is enabled and has " << rs->getEntityName(reactant));
+
         }
       } // END FOR: prod_id
 
@@ -748,7 +751,7 @@ size_t SymRS::getCtxAutStateEncodingSize(void)
   size_t bitCountMaxVal = 1;
   size_t numStates = rs->ctx_aut->statesCount();
 
-  while (bitCountMaxVal <= numStates) {
+  while (bitCountMaxVal < numStates) {
     bitCount++;
     bitCountMaxVal *= 2;
   }
