@@ -74,9 +74,5 @@ out += PROPERTY_STR
 
 print(out)
 
-        # { ct={} proc1={out} }: s0 -> s1;
-        # { ct={} proc2={out} }: s0 -> s1;
-        
-        # { ct={} proc1={} }: s1 -> s1;
-        # { ct={} proc2={} }: s1 -> s1;
+
 
