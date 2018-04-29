@@ -596,7 +596,6 @@ BDD SymRS::encEnabledness(Process prod_proc_id, Entity entity_id)
 
   auto production_conditions = prod_conds[prod_proc_id][entity_id];
 
-
   VERB_LN(5, "| Produce " << rs->getEntityName(entity_id) << " in " << rs->getProcessName(prod_proc_id) << ":");
 
   for (const auto &cond : production_conditions) {
@@ -638,6 +637,11 @@ BDD SymRS::encEnabledness(Process prod_proc_id, Entity entity_id)
     enab += reactants * inhibitors;
 
   } // END FOR: cond
+
+  if (opts->reorder_trans) {
+    VERB_L2("Reordering");
+    Cudd_ReduceHeap(cuddMgr->getManager(), CUDD_REORDER_SIFT, 10000);
+  }
 
   return enab;
 }

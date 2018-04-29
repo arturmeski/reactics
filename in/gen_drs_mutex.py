@@ -34,17 +34,20 @@ context-automaton {{
 """
 
 PROPERTY_STR = """
-rsctlk-property { AG(proc0.in IMPLIES K[proc0](~proc1.in) ) }
+rsctlk-property {{ {:s} }}
 """
 
 
 #################################################################
 
 if len(argv) < 2:
-    print("Usage: {:s} <number of modules>".format(argv[0]))
+    print("Usage: {:s} <number of processes> <property number>".format(argv[0]))
     exit(100)
 
 n = int(argv[1])
+f = int(argv[2])
+
+assert n > 1, "number of proc must be > 1"
 
 out = ""
 
@@ -70,9 +73,13 @@ for i in range(n):
 
 out += CA_STR.format(transitions)
 
-out += PROPERTY_STR
+if f == 1:
+    subf = "~proc1.in"
+    for i in range(2, n):
+        subf += " AND ~proc{:d}.in".format(i)
+    formula = "AG( proc0.in IMPLIES K[proc0]({:s}) )".format(subf)
+
+out += PROPERTY_STR.format(formula)
 
 print(out)
-
-
 
