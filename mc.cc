@@ -350,6 +350,10 @@ BDD ModelChecker::getStatesRSCTLK(const FormRSCTLK *form)
     auto proc_id = srs->rs->getProcessID(form->getSingleAgent());
     return statesNK(getStatesRSCTLK(form->getLeftSF()) * *reach, proc_id) * *reach;
   }
+  else if (oper == RSCTLK_UK) {
+    auto proc_id = srs->rs->getProcessID(form->getSingleAgent());
+    return *reach - (statesNK(*reach - getStatesRSCTLK(form->getLeftSF()), proc_id) * *reach);
+  }
 
   assert(0); // Should never happen
   return BDD_FALSE;
