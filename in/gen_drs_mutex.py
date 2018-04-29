@@ -78,6 +78,8 @@ if f == 1:
     for i in range(2, n):
         subf += " AND ~proc{:d}.in".format(i)
     formula = "AG( proc0.in IMPLIES K[proc0]({:s}) )".format(subf)
+else:
+    assert False, "No such formula"
 
 out += PROPERTY_STR.format(formula)
 
