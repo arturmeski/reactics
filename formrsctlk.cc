@@ -155,7 +155,7 @@ std::string FormRSCTLK::toStr(void) const
     return "NK[" + getSingleAgent() + "](" + arg[0]->toStr() + ")";
   }
   else if (oper == RSCTLK_UK) {
-    return "UK[" + getSingleAgent() + "](" + arg[0]->toStr() + ")";
+    return "K[" + getSingleAgent() + "](" + arg[0]->toStr() + ")";
   }
 
   else {
