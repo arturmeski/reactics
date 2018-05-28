@@ -598,17 +598,32 @@ BDD SymRS::encEnabledness(Process prod_proc_id, Entity entity_id)
 
   VERB_LN(5, "| Produce " << rs->getEntityName(entity_id) << " in " << rs->getProcessName(prod_proc_id) << ":");
 
+  // Iterate through production conditions for the entity (entity_id) that
+  // belongs to the process prod_proc_id which contain:
+  //  - reactants
+  //  - inhibitors
+  //
+  // Here we are building an alternative for the enab BDD,
+  // for all the possible production conditions
+  //
   for (const auto &cond : production_conditions) {
 
+    // Take all the reactants... (conjuntion)
     BDD reactants = BDD_TRUE;
-    BDD inhibitors = BDD_TRUE;
 
     for (const auto &reactant : cond.rctt) {
+
+      // Disjunction for all the processes
       BDD proc_reactants = BDD_FALSE;
 
+      if (ctxEntityExists(prod_proc_id, reactant)) {
+        proc_reactants += encCtxEntity(prod_proc_id, reactant);
+      }
+
       for (unsigned int proc_id = 0; proc_id < numberOfProc; ++proc_id) {
-        if (processUsesEntity(proc_id, reactant)) {
-          proc_reactants += encProcEnabled(proc_id) * encEntityCondition(proc_id, reactant);
+        if (productEntityExists(proc_id, reactant)) {
+
+          proc_reactants += encProcEnabled(proc_id) * encEntity(proc_id, reactant);
 
           VERB_LN(5, "| - if process " << rs->getProcessName(proc_id) << " is enabled and has " << rs->getEntityName(reactant));
 
@@ -618,20 +633,27 @@ BDD SymRS::encEnabledness(Process prod_proc_id, Entity entity_id)
       reactants *= proc_reactants;
     } // END FOR: reactant
 
-    // For inhibitors, we take all the processes first and then we iterate over the inhibitors
-    for (unsigned int proc_id = 0; proc_id < numberOfProc; ++proc_id) {
+
+    // Take all the inhibitors... (conjunction)
+    BDD inhibitors = BDD_TRUE;
+
+    for (const auto &inhibitor : cond.inhib) {
+
+      // Conjunction for all the processes
       BDD proc_inhibitors = BDD_TRUE;
 
-      for (const auto &inhibitor : cond.inhib) {
-        if (processUsesEntity(proc_id, inhibitor)) {
-          proc_inhibitors *= !encEntityCondition(proc_id, inhibitor);
+      if (ctxEntityExists(prod_proc_id, inhibitor)) {
+        proc_inhibitors *= !encCtxEntity(prod_proc_id, inhibitor);
+      }
+
+      for (unsigned int proc_id = 0; proc_id < numberOfProc; ++proc_id) {
+        if (productEntityExists(proc_id, inhibitor)) {
+          proc_inhibitors *= !encEntity(proc_id, inhibitor) + !encProcEnabled(proc_id);
         }
       }
 
-      if (proc_inhibitors != BDD_TRUE) { // just an optimisation
-        proc_inhibitors += !encProcEnabled(proc_id);
-        inhibitors *= proc_inhibitors;
-      }
+      inhibitors *= proc_inhibitors;
+
     }
 
     enab += reactants * inhibitors;
@@ -639,12 +661,72 @@ BDD SymRS::encEnabledness(Process prod_proc_id, Entity entity_id)
   } // END FOR: cond
 
   if (opts->reorder_trans) {
-    VERB_L2("Reordering");
+    VERB_L2("Reordering START");
     Cudd_ReduceHeap(cuddMgr->getManager(), CUDD_REORDER_SIFT, 10000);
+    VERB_L2("Reordering DONE");
   }
 
   return enab;
 }
+
+// BDD SymRS::encEnabledness(Process prod_proc_id, Entity entity_id)
+// {
+//   assert(prod_conds.size() > prod_proc_id);
+
+//   BDD enab = BDD_FALSE;
+
+//   auto production_conditions = prod_conds[prod_proc_id][entity_id];
+
+//   VERB_LN(5, "| Produce " << rs->getEntityName(entity_id) << " in " << rs->getProcessName(prod_proc_id) << ":");
+
+//   for (const auto &cond : production_conditions) {
+
+//     BDD reactants = BDD_TRUE;
+//     BDD inhibitors = BDD_TRUE;
+
+//     for (const auto &reactant : cond.rctt) {
+//       BDD proc_reactants = BDD_FALSE;
+
+//       for (unsigned int proc_id = 0; proc_id < numberOfProc; ++proc_id) {
+//         if (processUsesEntity(proc_id, reactant)) {
+//           proc_reactants += encProcEnabled(proc_id) * encEntityCondition(proc_id, reactant);
+
+//           VERB_LN(5, "| - if process " << rs->getProcessName(proc_id) << " is enabled and has " << rs->getEntityName(reactant));
+
+//         }
+//       } // END FOR: prod_id
+
+//       reactants *= proc_reactants;
+//     } // END FOR: reactant
+
+//     // For inhibitors, we take all the processes first and then we iterate over the inhibitors
+//     for (unsigned int proc_id = 0; proc_id < numberOfProc; ++proc_id) {
+//       BDD proc_inhibitors = BDD_TRUE;
+
+//       for (const auto &inhibitor : cond.inhib) {
+//         if (processUsesEntity(proc_id, inhibitor)) {
+//           proc_inhibitors *= !encEntityCondition(proc_id, inhibitor);
+//         }
+//       }
+
+//       if (proc_inhibitors != BDD_TRUE) { // just an optimisation
+//         proc_inhibitors += !encProcEnabled(proc_id);
+//         inhibitors *= proc_inhibitors;
+//       }
+//     }
+
+//     enab += reactants * inhibitors;
+
+//   } // END FOR: cond
+
+//   if (opts->reorder_trans) {
+//     VERB_L2("Reordering");
+//     Cudd_ReduceHeap(cuddMgr->getManager(), CUDD_REORDER_SIFT, 10000);
+//   }
+
+//   return enab;
+// }
+
 
 BDD SymRS::encEntitySameSuccessor(Process proc_id, Entity entity_id)
 {
