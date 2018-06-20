@@ -7,19 +7,18 @@ options { use-context-automaton; }
 """
 CONTROLLER_STR = """
     ct {
-        {{lock},{release} -> {lock}};
+        {{lock},{leave} -> {lock}};
         {{req},{} -> {lock}};
     };
 """
 
 PROC_STR = """
     proc{:d} {{
-        {{{{out, busy}}, {{}} -> {{req}}}};
-        {{{{out}}, {{}} -> {{req}}}};
+        {{{{out}}, {{}} -> {{approach}}}};
+        {{{{approach}}, {{req}} -> {{req}}}};
         {{{{req}}, {{lock}} -> {{in}}}};
-        {{{{in}}, {{busy}} -> {{out, release}}}};
-        {{{{in, busy}}, {{}} -> {{in}}}};
-        {{{{in, lock}}, {{}} -> {{req}}}};
+        {{{{in}}, {{}} -> {{out,leave}}}};
+        {{{{req}}, {{in}} -> {{req}}}};
     }};
 """
 
