@@ -45,7 +45,7 @@ class rsin_driver
     {
       this->opts = opts;
     };
-    void addFormRSCTLK(std::string *propertyName, FormRSCTLK *f)
+    void addFormRSCTLK(std::string propertyName, FormRSCTLK *f)
     {
       rsctlkform = f;
     };

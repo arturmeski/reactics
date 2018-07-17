@@ -32,7 +32,7 @@ class rsin_driver;
 %union
 {
     int ival;
-    std::string sval;
+    std::string *sval;
     FormRSCTLK *frsctlk;
     // Entity_f *ent;
     // Action_f *act;
@@ -82,7 +82,8 @@ system:
     | CONTEXTENTITIES LCB actionentities RCB system
 	| CONTEXTAUTOMATON LCB ctxaut RCB system
     | RSCTLKFORM LCB IDENTIFIER COL rsctlk_form RCB system {
-        driver.addFormRSCTLK($3, $5);
+        driver.addFormRSCTLK(*$3, $5);
+        free($3);
     }
     ;
 
