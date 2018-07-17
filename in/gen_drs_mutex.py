@@ -33,7 +33,7 @@ context-automaton {{
 """
 
 PROPERTY_STR = """
-rsctlk-property {{ {:s} }}
+rsctlk-property {{ default : {:s} }}
 """
 
 
