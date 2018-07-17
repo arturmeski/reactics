@@ -17,7 +17,6 @@ rsin_driver::rsin_driver(RctSys *rs)
 void rsin_driver::initialise(void)
 {
   rs = nullptr;
-  rsctlkform = nullptr;
   opts = nullptr;
   use_ctx_aut = false;
   use_concentrations = false;
@@ -49,13 +48,18 @@ void rsin_driver::error(const std::string &m)
   std::cerr << m << std::endl;
 }
 
-FormRSCTLK *rsin_driver::getFormRSCTLK(void)
+void rsin_driver::addFormRSCTLK(std::string propertyName, FormRSCTLK *f)
 {
-  if (rsctlkform == nullptr) {
-    FERROR("RSCTLK formula was not supplied!");
+  properties[propertyName] = f;
+};
+
+FormRSCTLK *rsin_driver::getFormRSCTLK(std::string propertyName)
+{
+  if (properties.count(propertyName) == 0) {
+    FERROR("Property/formula label does not exist: " << propertyName);
   }
 
-  return rsctlkform;
+  return properties[propertyName];
 }
 
 //

@@ -25,8 +25,9 @@ class rsin_driver
     virtual ~rsin_driver();
 
     //std::map<std::string, int> variables;
-    FormRSCTLK *rsctlkform;
     Options *opts;
+
+    std::map<std::string, FormRSCTLK *> properties;
 
     // options in configuration file:
     bool use_ctx_aut;
@@ -45,11 +46,9 @@ class rsin_driver
     {
       this->opts = opts;
     };
-    void addFormRSCTLK(std::string propertyName, FormRSCTLK *f)
-    {
-      rsctlkform = f;
-    };
-    FormRSCTLK *getFormRSCTLK(void);
+    void addFormRSCTLK(std::string propertyName, FormRSCTLK *f);
+
+    FormRSCTLK *getFormRSCTLK(std::string propertyName);
 
     void ensureOptionsAllowed(void);
     void useContextAutomaton(void);

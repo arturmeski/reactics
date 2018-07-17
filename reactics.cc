@@ -23,6 +23,7 @@ int main(int argc, char **argv)
   bool benchmarking = false;
   bool usage_error = false;
   bool print_parsed_sys = false;
+  std::string property_name = "default";
 
   static struct option long_options[] = {
     {"trace-parsing",   no_argument,    0, 0   },
@@ -33,7 +34,7 @@ int main(int argc, char **argv)
   int c;
   int option_index = 0;
 
-  while ((c = getopt_long(argc, argv, "cbBmpPrsStTvxzh", long_options,
+  while ((c = getopt_long(argc, argv, "c:bBmpPrsStTvxzh", long_options,
                           &option_index)) != -1) {
     switch (c) {
       case 0:
@@ -75,6 +76,7 @@ int main(int argc, char **argv)
 
       case 'c':
         rstl_model_checking = true;
+        property_name = optarg;
         break;
 
       case 'm':
@@ -182,10 +184,10 @@ int main(int argc, char **argv)
     if (rstl_model_checking) {
       if (bmc) {
         cout << "Using BDD-based Bounded Model Checking" << endl;
-        mc.checkRSCTLK(driver.getFormRSCTLK());
+        mc.checkRSCTLK(driver.getFormRSCTLK(property_name));
       }
       else {
-        mc.checkRSCTLKfull(driver.getFormRSCTLK());
+        mc.checkRSCTLKfull(driver.getFormRSCTLK(property_name));
       }
     }
   }
