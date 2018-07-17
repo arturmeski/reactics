@@ -12,13 +12,13 @@ LDLIBS = $(CUDD_INCLUDE)
 
 OBJ = rs.o ctx_aut.o symrs.o mc.o rsin_driver.o rsin_parser.o rsin_parser.lex.o formrsctlk.o 
 
-all: main
+all: reactics
 
 cleanly:
 	rm -f *.lex.cc *.lex.o location.hh stack.hh position.hh rsin_parser.cc rsin_parser.hh
 
 clean: cleanly
-	rm -f *.o main *.orig *~ makefile.dep tags
+	rm -f *.o reactics *.orig *~ makefile.dep tags
 
 cleanall: clean
 
@@ -27,7 +27,7 @@ makefile.dep: *.cc *.hh
 
 include makefile.dep
 
-main: main.o $(OBJ)
+reactics: reactics.o $(OBJ)
 
 rsin_parser.hh: rsin_parser.cc
 

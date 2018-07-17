@@ -6,7 +6,7 @@
     without the author's permission is strictly prohibited.
 */
 
-#include "main.hh"
+#include "reactics.hh"
 
 int main(int argc, char **argv)
 {
@@ -217,9 +217,9 @@ int main(int argc, char **argv)
 void print_help(std::string path_str)
 {
   cout << endl
-       << " ------------------------------------" << endl
-       << " -- Reaction Systems Model Checker --" << endl
-       << " ------------------------------------" << endl
+       << " ------------------------------------------------" << endl
+       << " -- ReactICS -- Reaction Systems Model Checker --" << endl
+       << " ------------------------------------------------" << endl
        << endl
        << "   Version:   " << VERSION << endl
        << "   Contact:   " << AUTHOR << endl

@@ -3,8 +3,8 @@
     Artur Meski <meski@ipipan.waw.pl>
 */
 
-#ifndef RS_MAIN_HH
-#define RS_MAIN_HH
+#ifndef REACTICS_HH
+#define REACTICS_HH
 
 #include <iostream>
 #include <string>
@@ -20,7 +20,7 @@
 #include "memtime.hh"
 
 #define VERSION     "2.0 ALPHA"
-#define AUTHOR      "Artur Meski <meski@ipipan.waw.pl>"
+#define AUTHOR      "Artur Meski <artur.meski@gmail.com>"
 using std::cout;
 using std::endl;
 
