@@ -22,7 +22,7 @@ for i in `seq 2 20`;do
 
 		echo "[.] Finished. time:$time, mem:$mem"
 
-		echo "$i $time $mem"  >> results_f$f.out
+		echo "$i $time $mem" >> bench_drs_mutex_f$f.dat
 
 	done
 
