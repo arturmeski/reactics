@@ -2,7 +2,7 @@
 
 TMPINPUT="tmp_$RANDOM$RANDOM.rs"
 
-CMD="./reactics -b -B"
+CMD="./reactics -z -b -B"
 
 for i in `seq 2 20`;do
 

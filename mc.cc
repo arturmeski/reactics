@@ -73,8 +73,8 @@ inline BDD ModelChecker::getSucc(const BDD &states)
   VERB_L2("Computing successors");
 
   if (opts->part_tr_rel) {
-    for (unsigned int i = 0; i < trp_size; ++i) {
-      q *= states * (*trp)[i];
+    for (const auto &trans : *trp) {
+      q *= states * trans;
     }
   }
   else {
@@ -99,8 +99,8 @@ inline BDD ModelChecker::getPreE(const BDD &states)
   BDD x = states.SwapVariables(*pv, *pv_succ);
 
   if (opts->part_tr_rel) {
-    for (unsigned int i = 0; i < trp_size; ++i) {
-      q *= x * (*trp)[i];
+    for (const auto &trans : *trp) {
+      q *= x * trans;
     }
   }
   else {
@@ -110,6 +110,7 @@ inline BDD ModelChecker::getPreE(const BDD &states)
   q = q.ExistAbstract(*pv_succ_E);
   q = q.ExistAbstract(*pv_ctx_E);
   q = q.ExistAbstract(*pv_proc_enab_E);
+
   return q;
 }
 
@@ -120,9 +121,10 @@ inline BDD ModelChecker::getPreEctx(const BDD &states, const BDD *contexts)
   BDD x = states.SwapVariables(*pv, *pv_succ);
 
   if (opts->part_tr_rel) {
-    for (unsigned int i = 0; i < trp_size; ++i) {
-      q *= x * (*trp)[i] * *contexts;
+    for (const auto &trans : *trp) {
+      q *= x * trans;
     }
+    q *= *contexts;
   }
   else {
     q *= x * *trm * *contexts;

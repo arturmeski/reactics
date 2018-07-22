@@ -344,6 +344,8 @@ class SymRS
 
     size_t getCtxAutStateEncodingSize(void);
 
+    void reorder(void);
+
 };
 
 #endif

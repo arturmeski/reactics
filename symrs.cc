@@ -660,11 +660,7 @@ BDD SymRS::encEnabledness(Process prod_proc_id, Entity entity_id)
 
   } // END FOR: cond
 
-  if (opts->reorder_trans) {
-    VERB_L2("Reordering START");
-    Cudd_ReduceHeap(cuddMgr->getManager(), CUDD_REORDER_SIFT, 10000);
-    VERB_L2("Reordering DONE");
-  }
+  reorder();
 
   return enab;
 }
@@ -762,22 +758,51 @@ void SymRS::encodeTransitions(void)
 
   if (opts->part_tr_rel) {
     VERB("Using partitioned transition relation encoding");
-    FERROR("Partitioned transition relation is currently not supported");
+
+    if (usingContextAutomaton()) {
+      partTrans = new BDDvec(numberOfProc+1);
+    }
+    else {
+      partTrans = new BDDvec(numberOfProc);
+    }
+
   }
   else {
+
     VERB("Using monolithic transition relation encoding");
     monoTrans = new BDD(BDD_TRUE);
+
   }
 
   VERB_LN(3, "Entity production encoding for all the processes and their products");
 
-  for (const auto &proc_products : usedProducts) {
-    auto proc_id = proc_products.first;
-    auto products = proc_products.second;
+  if (opts->part_tr_rel)
+  {
 
-    for (const auto &prod : products) {
-      *monoTrans *= encEntityProduction(proc_id, prod);
+    for (const auto &proc_products : usedProducts) {
+      auto proc_id = proc_products.first;
+      auto products = proc_products.second;
+
+      (*partTrans)[proc_id] = BDD_TRUE;
+
+      for (const auto &prod : products) {
+        (*partTrans)[proc_id] *= encEntityProduction(proc_id, prod);
+      }
     }
+
+
+  }
+  else {
+
+    for (const auto &proc_products : usedProducts) {
+      auto proc_id = proc_products.first;
+      auto products = proc_products.second;
+
+      for (const auto &prod : products) {
+        *monoTrans *= encEntityProduction(proc_id, prod);
+      }
+    }
+
   }
 
   VERB("Reactions ready");
@@ -785,8 +810,9 @@ void SymRS::encodeTransitions(void)
   if (usingContextAutomaton()) {
     VERB("Augmenting transition relation encoding with the transition relation for context automaton");
 
-    if (opts->part_tr_rel) {
-      FERROR("Partitioned transition relation is currently not supported");
+    if (opts->part_tr_rel) {  
+      auto last_index = numberOfProc;
+      (*partTrans)[last_index] = *tr_ca;
     }
     else {
       assert(tr_ca != nullptr);
@@ -912,6 +938,16 @@ void SymRS::encodeCtxAutTrans(void)
     BDD new_trans = enc_src * enc_ctx * enc_dst;
 
     *tr_ca += new_trans;
+  }
+}
+
+
+void SymRS::reorder(void)
+{
+  if (opts->reorder_trans) {
+    VERB_L2("Reordering START");
+    Cudd_ReduceHeap(cuddMgr->getManager(), CUDD_REORDER_SIFT, 10000);
+    VERB_L2("Reordering DONE");
   }
 }
 
