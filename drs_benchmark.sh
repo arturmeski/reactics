@@ -4,7 +4,7 @@ TMPINPUT="tmp_$RANDOM$RANDOM.rs"
 
 CMD="./reactics -b -B"
 
-for i in `seq 2 10`;do
+for i in `seq 2 20`;do
 
 	echo "[i] n=$i; generating input file"
 	in/gen_drs_mutex.py $i > $TMPINPUT
