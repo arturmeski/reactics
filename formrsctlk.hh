@@ -40,8 +40,8 @@
 #define RSCTLK_AF_ACT  44
 #define RSCTLK_TF      50 // true/false
 
-#define RSCTLK_UK      60 // Epistemic operators
-#define RSCTLK_NK      61
+#define RSCTLK_NK      61 // Epistemic operators
+#define RSCTLK_UK      71
 
 /* For Boolean contexts: */
 #define BCTX_PV   80
@@ -57,7 +57,7 @@
 #define RSCTLK_COND_ACT(a) ((a) > 30 && (a) < 45)
 #define RSCTLK_IS_VALID(a) (RSCTLK_COND_1ARG(a) || RSCTLK_COND_2ARG(a) || (a) == RSCTLK_PV || (a) == RSCTLK_TF)
 
-#define RSCTLK_COND_IS_UNIVERSAL(a) (((a) > 20 && (a) < 25) || ((a) > 40 && (a) < 45))
+#define RSCTLK_COND_IS_UNIVERSAL(a) (((a) > 20 && (a) < 25) || ((a) > 40 && (a) < 45) || ((a) > 70 && (a) < 75))
 
 #define BCTX_COND_1ARG(a) ((a) == BCTX_NOT)
 #define BCTX_COND_2ARG(a) ((a) == BCTX_AND || (a) == BCTX_OR || (a) == BCTX_XOR)

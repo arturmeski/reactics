@@ -66,6 +66,8 @@ class ModelChecker
 
     void cleanup(void);
 
+    void reorder(void);
+    
   public:
     ModelChecker(SymRS *srs, Options *opts);
 

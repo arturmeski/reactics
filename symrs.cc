@@ -946,7 +946,8 @@ void SymRS::reorder(void)
 {
   if (opts->reorder_trans) {
     VERB_L2("Reordering START");
-    Cudd_ReduceHeap(cuddMgr->getManager(), CUDD_REORDER_SIFT, 10000);
+    // Cudd_ReduceHeap(cuddMgr->getManager(), CUDD_REORDER_SIFT, 10000);
+    cuddMgr->ReduceHeap(CUDD_REORDER_GROUP_SIFT);
     VERB_L2("Reordering DONE");
   }
 }

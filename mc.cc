@@ -75,6 +75,7 @@ inline BDD ModelChecker::getSucc(const BDD &states)
   if (opts->part_tr_rel) {
     for (const auto &trans : *trp) {
       q *= states * trans;
+      reorder();
     }
   }
   else {
@@ -101,6 +102,7 @@ inline BDD ModelChecker::getPreE(const BDD &states)
   if (opts->part_tr_rel) {
     for (const auto &trans : *trp) {
       q *= x * trans;
+      reorder();
     }
   }
   else {
@@ -123,6 +125,7 @@ inline BDD ModelChecker::getPreEctx(const BDD &states, const BDD *contexts)
   if (opts->part_tr_rel) {
     for (const auto &trans : *trp) {
       q *= x * trans;
+      reorder();
     }
     q *= *contexts;
   }
@@ -617,6 +620,16 @@ bool ModelChecker::checkRSCTLKbmc(FormRSCTLK *form)
   }
 
   return result;
+}
+
+void ModelChecker::reorder(void)
+{
+  if (opts->reorder_trans) {
+    VERB_L2("Reordering START");
+    // Cudd_ReduceHeap(cuddMgr->getManager(), CUDD_REORDER_SIFT, 100000);
+    cuddMgr->ReduceHeap(CUDD_REORDER_GROUP_SIFT);
+    VERB_L2("Reordering DONE");
+  }
 }
 
 void ModelChecker::cleanup(void)
