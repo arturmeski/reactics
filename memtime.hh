@@ -21,6 +21,9 @@
 
 #include <sys/time.h>
 #include <sys/resource.h>
+#if defined(__APPLE__)
+#include <malloc/malloc.h>
+#endif
 #include <stdio.h>
 #include <unistd.h>
 #include "macro.hh"
@@ -62,9 +65,21 @@ static inline int64 memUsedInt64()
   return (int64)memReadStat() * (int64)getpagesize();
 }
 
+#if defined(__APPLE__)
+
+static inline double memUsed() {
+    malloc_statistics_t t;
+    malloc_zone_statistics(NULL, &t);
+    return (double)t.max_size_in_use / (1024*1024); }
+
+#else
+
 static inline double memUsed()
 {
-  return memUsedInt64() / 1048576.0;
+  return memUsedInt64() / (1024*1024);
 }
 
 #endif
+
+#endif
+
