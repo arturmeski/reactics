@@ -7,6 +7,10 @@
 */
 
 #include "stateconstr.hh"
+#include "types.hh"
+#include "cudd.hh"
+#include "bdd_macro.hh"
+#include "symrs.hh"
 
 std::string StateConstr::toStr(void) const
 {
@@ -40,7 +44,13 @@ std::string StateConstr::toStr(void) const
   }
 }
 
-BDD StateConstr::getBDD(const SymRS *srs) const
+BDD StateConstr::getBDDforState(const SymRS *srs) const
+{
+  assert(0);
+  // return BDD_FALSE;
+}
+
+BDD StateConstr::getBDDforContext(const SymRS *srs) const
 {
   if (oper == STC_PV) {
     return srs->encActStrEntity(proc_name, entity_name);
@@ -71,4 +81,3 @@ BDD StateConstr::getBDD(const SymRS *srs) const
     return srs->getBDDfalse();
   }
 }
-

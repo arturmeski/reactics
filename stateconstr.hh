@@ -11,7 +11,7 @@
 
 #include "types.hh"
 
-/* For Boolean contexts: */
+/* For state constraints: */
 #define STC_PV   80
 #define STC_AND  81
 #define STC_OR   82
@@ -87,7 +87,11 @@ class StateConstr
 
     std::string toStr(void) const;
 
-    BDD getBDD(const SymRS *srs) const;
+    BDD getBDD(const SymRS *srs) const {
+      return getBDDforContext(srs);
+    }
+    BDD getBDDforContext(const SymRS *srs) const;
+    BDD getBDDforState(const SymRS *srs) const;
 
     Oper getOper(void) const
     {
