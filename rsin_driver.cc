@@ -1,6 +1,8 @@
 #include "rsin_driver.hh"
 #include "rsin_parser.hh"
 
+#include "rs.hh"
+
 rsin_driver::rsin_driver(void)
   : trace_scanning(false), trace_parsing(false)
 {

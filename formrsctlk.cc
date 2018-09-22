@@ -9,12 +9,12 @@
 #include "formrsctlk.hh"
 
 
-std::string BoolContexts::toStr(void) const
+std::string StateConstr::toStr(void) const
 {
-  if (oper == BCTX_PV) {
+  if (oper == STC_PV) {
     return proc_name + "." + entity_name;
   }
-  else if (oper == BCTX_TF) {
+  else if (oper == STC_TF) {
     if (tf) {
       return "true";
     }
@@ -22,16 +22,16 @@ std::string BoolContexts::toStr(void) const
       return "false";
     }
   }
-  else if (oper == BCTX_AND) {
+  else if (oper == STC_AND) {
     return "(" + arg[0]->toStr() + " AND " + arg[1]->toStr() + ")";
   }
-  else if (oper == BCTX_OR) {
+  else if (oper == STC_OR) {
     return "(" + arg[0]->toStr() + " OR " + arg[1]->toStr() + ")";
   }
-  else if (oper == BCTX_XOR) {
+  else if (oper == STC_XOR) {
     return "(" + arg[0]->toStr() + " XOR " + arg[1]->toStr() + ")";
   }
-  else if (oper == BCTX_NOT) {
+  else if (oper == STC_NOT) {
     return "~" + arg[0]->toStr();
   }
 
@@ -41,12 +41,12 @@ std::string BoolContexts::toStr(void) const
   }
 }
 
-BDD BoolContexts::getBDD(const SymRS *srs) const
+BDD StateConstr::getBDD(const SymRS *srs) const
 {
-  if (oper == BCTX_PV) {
+  if (oper == STC_PV) {
     return srs->encActStrEntity(proc_name, entity_name);
   }
-  else if (oper == BCTX_TF) {
+  else if (oper == STC_TF) {
     if (tf) {
       return srs->getBDDtrue();
     }
@@ -54,16 +54,16 @@ BDD BoolContexts::getBDD(const SymRS *srs) const
       return srs->getBDDfalse();
     }
   }
-  else if (oper == BCTX_AND) {
+  else if (oper == STC_AND) {
     return arg[0]->getBDD(srs) * arg[1]->getBDD(srs);
   }
-  else if (oper == BCTX_OR) {
+  else if (oper == STC_OR) {
     return arg[0]->getBDD(srs) + arg[1]->getBDD(srs);
   }
-  else if (oper == BCTX_XOR) {
+  else if (oper == STC_XOR) {
     return arg[0]->getBDD(srs) ^ arg[1]->getBDD(srs);
   }
-  else if (oper == BCTX_NOT) {
+  else if (oper == STC_NOT) {
     return !arg[0]->getBDD(srs);
   }
   else {

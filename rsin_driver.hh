@@ -3,7 +3,7 @@
 #include <string>
 #include <map>
 #include "rsin_parser.hh"
-#include "rs.hh"
+// #include "rs.hh"
 #include "formrsctlk.hh"
 #include "options.hh"
 
@@ -15,6 +15,9 @@
          rsin_driver& driver)
 // ... and declare it for the parser's sake.
 YY_DECL;
+
+class RctSys;
+class CtxAut;
 
 // Conducting the whole scanning an parsing of RS
 class rsin_driver

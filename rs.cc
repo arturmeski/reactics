@@ -322,7 +322,14 @@ void RctSys::ctxAutAddTransition(std::string srcStateName,
                                  std::string dstStateName)
 {
   assert(ctx_aut != nullptr);
-  ctx_aut->addTransition(srcStateName, dstStateName);
+  ctx_aut->addTransition(srcStateName, dstStateName, nullptr);
+}
+
+void RctSys::ctxAutAddTransition(std::string srcStateName,
+                                 std::string dstStateName, StateConstr *stateConstr)
+{
+  assert(ctx_aut != nullptr);
+  ctx_aut->addTransition(srcStateName, dstStateName, stateConstr);
 }
 
 void RctSys::ctxAutPushNamedContextEntity(std::string entityName)

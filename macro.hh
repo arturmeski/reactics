@@ -2,6 +2,8 @@
 #define __MY_MACROS__
 
 #include <cassert>
+#include <iostream>
+
 
 #define LINENUM std::cout << __FILE__ <<  " (function " << __func__ << "), line " << __LINE__ << std::endl;
 /* Fatal error */

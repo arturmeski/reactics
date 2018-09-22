@@ -13,11 +13,12 @@
 #include <algorithm>
 #include <map>
 #include <cassert>
+#include <iostream>
 #include "cudd.hh"
 #include "types.hh"
 #include "macro.hh"
 #include "bdd_macro.hh"
-#include "rs.hh"
+// #include "rs.hh"
 #include "options.hh"
 #include "memtime.hh"
 
@@ -26,6 +27,8 @@ using std::cerr;
 using std::endl;
 using std::vector;
 using std::map;
+
+class RctSys;
 
 class SymRS
 {
@@ -87,10 +90,7 @@ class SymRS
     {
       return totalRctSysStateVars;
     }
-    BDD encEntity(std::string proc_name, std::string entity_name) const
-    {
-      return encEntity(rs->getProcessID(proc_name), rs->getEntityID(entity_name));
-    }
+    BDD encEntity(std::string proc_name, std::string entity_name) const;
     BDD encActStrEntity(std::string proc_name, std::string entity_name) const;
     BDD getBDDtrue(void) const
     {
@@ -106,10 +106,7 @@ class SymRS
      *
      * @return True if CA is used
      */
-    bool usingContextAutomaton(void)
-    {
-      return rs->ctx_aut != nullptr;
-    }
+    bool usingContextAutomaton(void);
 
     /**
      * @brief Encodes a context automaton's state

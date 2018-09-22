@@ -12,15 +12,17 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
-#include "rs.hh"
+// #include "rs.hh"
 #include "types.hh"
-#include "macro.hh"
-#include "options.hh"
+// #include "options.hh"
+// #include "stateconstr.hh"
 
 using std::cout;
 using std::endl;
 
 class RctSys;
+class Options;
+class StateConstr;
 
 class CtxAut
 {
@@ -36,7 +38,7 @@ class CtxAut
     std::string getStateName(State state_id);
     void printAutomaton(void);
     void showStates(void);
-    void addTransition(std::string srcStateName, std::string dstStateName);
+    void addTransition(std::string srcStateName, std::string dstStateName, StateConstr *stateConstr);
     void showTransitions(void);
     void pushContextEntity(Entity entity_id);
     void saveCurrentContextSet(Process proc_id);

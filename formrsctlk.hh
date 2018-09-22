@@ -12,9 +12,11 @@
 #include <iostream>
 #include <string>
 #include <cassert>
-#include "rs.hh"
+// #include "rs.hh"
 #include "symrs.hh"
 #include "cudd.hh"
+#include "types.hh"
+#include "stateconstr.hh"
 
 #define RSCTLK_PV      0 // propositional variable
 #define RSCTLK_AND     1
@@ -43,15 +45,6 @@
 #define RSCTLK_NK      61 // Epistemic operators
 #define RSCTLK_UK      71
 
-/* For Boolean contexts: */
-#define BCTX_PV   80
-#define BCTX_AND  81
-#define BCTX_OR   82
-#define BCTX_XOR  83
-#define BCTX_NOT  84
-#define BCTX_TF   90
-
-
 #define RSCTLK_COND_1ARG(a) ((a) == RSCTLK_NOT || (a) == RSCTLK_EG || (a) == RSCTLK_EF || (a) == RSCTLK_EX || (a) == RSCTLK_AG || (a) == RSCTLK_AF || (a) == RSCTLK_AX || (a) == RSCTLK_EG_ACT || (a) == RSCTLK_EF_ACT || (a) == RSCTLK_EX_ACT || (a) == RSCTLK_AG_ACT || (a) == RSCTLK_AF_ACT || (a) == RSCTLK_AX_ACT || (a) == RSCTLK_UK || (a) == RSCTLK_NK)
 #define RSCTLK_COND_2ARG(a) ((a) == RSCTLK_AND || (a) == RSCTLK_OR || (a) == RSCTLK_XOR || (a) == RSCTLK_IMPL || (a) == RSCTLK_EU || (a) == RSCTLK_AU || (a) == RSCTLK_EU_ACT || (a) == RSCTLK_AU_ACT)
 #define RSCTLK_COND_ACT(a) ((a) > 30 && (a) < 45)
@@ -59,101 +52,15 @@
 
 #define RSCTLK_COND_IS_UNIVERSAL(a) (((a) > 20 && (a) < 25) || ((a) > 40 && (a) < 45) || ((a) > 70 && (a) < 75))
 
-#define BCTX_COND_1ARG(a) ((a) == BCTX_NOT)
-#define BCTX_COND_2ARG(a) ((a) == BCTX_AND || (a) == BCTX_OR || (a) == BCTX_XOR)
-#define BCTX_IS_VALID(a) (BCTX_COND_1ARG(a) || BCTX_COND_2ARG(a) || (a) == BCTX_PV || (a) == BCTX_TF)
-
 using std::cout;
 using std::endl;
-
-typedef unsigned char Oper;
 
 // typedef std::string Entity_f;
 // typedef std::set<Entity_f> Action_f;
 // typedef vector<Action_f> ActionsVec_f;
 typedef std::set<std::string> Agents_f;
 
-class BoolContexts
-{
-    Oper oper;
-    BoolContexts *arg[2];
-    std::string entity_name;
-    std::string proc_name;
-    bool tf;
-
-  public:
-
-    BoolContexts(std::string procName, std::string varName)
-    {
-      oper = BCTX_PV;
-      entity_name = varName;
-      proc_name = procName;
-      arg[0] = nullptr;
-      arg[1] = nullptr;
-    }
-
-    /**
-     * @brief Constructor for true/false.
-     *
-     * @param   val value of the logical constant
-     */
-    BoolContexts(bool val)
-    {
-      oper = BCTX_TF;
-      tf = val;
-      arg[0] = nullptr;
-      arg[1] = nullptr;
-    }
-
-    /**
-     * @brief Constructor for one-argument formula.
-     */
-    BoolContexts(Oper op, BoolContexts *form1)
-    {
-      assert(op == BCTX_NOT);
-      oper = op;
-      arg[0] = form1;
-      arg[1] = nullptr;
-    }
-
-    /**
-     * @brief Constructor for two-argument formula.
-     */
-    BoolContexts(Oper op, BoolContexts *form1, BoolContexts *form2)
-    {
-      assert(BCTX_COND_2ARG(op));
-      oper = op;
-      arg[0] = form1;
-      arg[1] = form2;
-    }
-
-    ~BoolContexts()
-    {
-      delete arg[0];
-      delete arg[1];
-    }
-
-    std::string toStr(void) const;
-
-    BDD getBDD(const SymRS *srs) const;
-
-    Oper getOper(void) const
-    {
-      assert(BCTX_IS_VALID(oper));
-      return oper;
-    }
-    BoolContexts *getLeftSF(void) const
-    {
-      assert(arg[0] != nullptr);
-      return arg[0];
-    }
-    BoolContexts *getRightSF(void) const
-    {
-      assert(BCTX_COND_2ARG(oper));
-      assert(arg[1] != nullptr);
-      return arg[1];
-    }
-};
+class StateConstr;
 
 class FormRSCTLK
 {
@@ -165,7 +72,7 @@ class FormRSCTLK
     BDD *bdd;
     // ActionsVec_f *actions;
     BDD *actions_bdd;
-    BoolContexts *boolCtx;
+    StateConstr *boolCtx;
     Agents_f agents;
   public:
     /**
@@ -240,7 +147,7 @@ class FormRSCTLK
     /**
      * @brief Constructor for two-argument formula with Boolean context restrictions.
      */
-    FormRSCTLK(Oper op, BoolContexts *bctx, FormRSCTLK *form1, FormRSCTLK *form2)
+    FormRSCTLK(Oper op, StateConstr *bctx, FormRSCTLK *form1, FormRSCTLK *form2)
     {
       assert(bctx != nullptr);
       assert(RSCTLK_COND_2ARG(op));
@@ -290,7 +197,7 @@ class FormRSCTLK
     /**
      * @brief Constructor for one-argument formula with Boolean context restrictions.
      */
-    FormRSCTLK(Oper op, BoolContexts *bctx, FormRSCTLK *form1)
+    FormRSCTLK(Oper op, StateConstr *bctx, FormRSCTLK *form1)
     {
       assert(bctx != nullptr);
       assert(RSCTLK_COND_1ARG(op));

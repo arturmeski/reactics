@@ -1,5 +1,8 @@
 
 #include "ctx_aut.hh"
+#include "rs.hh"
+#include "macro.hh"
+#include "stateconstr.hh"
 
 CtxAut::CtxAut(Options *opts, RctSys *parent_rctsys)
 {
@@ -94,7 +97,7 @@ void CtxAut::saveCurrentContextSet(Process proc_id)
   tmpEntities.clear();
 }
 
-void CtxAut::addTransition(std::string srcStateName, std::string dstStateName)
+void CtxAut::addTransition(std::string srcStateName, std::string dstStateName, StateConstr *stateConstr)
 {
   VERB_L3("Saving transition");
 

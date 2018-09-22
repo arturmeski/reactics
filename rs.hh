@@ -25,6 +25,7 @@ using std::cout;
 using std::endl;
 
 class CtxAut;
+class StateConstr;
 
 class RctSys
 {
@@ -87,6 +88,7 @@ class RctSys
     void ctxAutAddState(std::string stateName);
     void ctxAutSetInitState(std::string stateName);
     void ctxAutAddTransition(std::string srcStateName, std::string dstStateName);
+    void ctxAutAddTransition(std::string srcStateName, std::string dstStateName, StateConstr *stateConstr);
     void ctxAutPushNamedContextEntity(std::string entity_name);
     void ctxAutSaveCurrentContextSet(std::string processName);
 

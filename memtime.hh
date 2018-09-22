@@ -28,6 +28,8 @@
 #include <unistd.h>
 #include "macro.hh"
 
+using namespace std;
+
 typedef long long int64;
 
 static inline double cpuTime(void)
@@ -52,7 +54,7 @@ static inline int memReadStat(void)
 
   for (int field = 0; field >= 0; --field) {
     if (fscanf(in, "%d", &value) == EOF) {
-      FERROR("EOF");
+      FERROR("EOF")
     }
   }
 

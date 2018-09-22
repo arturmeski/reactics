@@ -15,6 +15,8 @@
 #include <string>
 #include "cudd.hh"
 
+typedef unsigned char Oper;
+
 typedef std::vector<BDD> BDDvec;
 
 typedef unsigned int Entity;

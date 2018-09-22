@@ -7,6 +7,8 @@
 #include <string>
 #include <set>
 #include "formrsctlk.hh"
+#include "rs.hh"
+// #include "stateconstr.hh"
 
 using std::set;
 using std::string;
@@ -37,7 +39,7 @@ class rsin_driver;
     // Entity_f *ent;
     // Action_f *act;
     // ActionsVec_f *actionsVec;
-	BoolContexts *fboolctx;
+	StateConstr *fstc;
 };
 
 %code {
@@ -64,7 +66,7 @@ class rsin_driver;
 // %type <ent> f_entity
 // %type <act> action
 // %type <actionsVec> actions
-%type <fboolctx> bool_contexts
+%type <fstc> state_constr
 
 //%printer    { yyoutput << *$$; } "identifier"
 %destructor { delete $$; } "identifier"
@@ -235,6 +237,11 @@ auttrans: LCB proc_ctxsets RCB COL IDENTIFIER RARR IDENTIFIER {
 		free($5);
 		free($7);
 	}
+    | LCB proc_ctxsets RCB COL IDENTIFIER RARR IDENTIFIER COL state_constr {
+        driver.getReactionSystem()->ctxAutAddTransition(*$5, *$7, $9);
+        free($5);
+        free($7);
+    }
 	;
   
 proc_ctxsets:
@@ -260,25 +267,25 @@ ctxentity: IDENTIFIER {
 
 /* formulae */
 	
-bool_contexts: IDENTIFIER DOT IDENTIFIER {
-        $$ = new BoolContexts(*$1, *$3);
+state_constr: IDENTIFIER DOT IDENTIFIER {
+        $$ = new StateConstr(*$1, *$3);
         free($1);
         free($3);
     }
-    | NOT bool_contexts {
-        $$ = new BoolContexts(BCTX_NOT, $2);
+    | NOT state_constr {
+        $$ = new StateConstr(STC_NOT, $2);
     }
-    | LRB bool_contexts RRB {
+    | LRB state_constr RRB {
         $$ = $2;
     }
-    | bool_contexts AND bool_contexts {
-        $$ = new BoolContexts(BCTX_AND, $1, $3);
+    | state_constr AND state_constr {
+        $$ = new StateConstr(STC_AND, $1, $3);
     }
-    | bool_contexts OR bool_contexts {
-        $$ = new BoolContexts(BCTX_OR, $1, $3);
+    | state_constr OR state_constr {
+        $$ = new StateConstr(STC_OR, $1, $3);
     }
-    | bool_contexts XOR bool_contexts {
-        $$ = new BoolContexts(BCTX_XOR, $1, $3);
+    | state_constr XOR state_constr {
+        $$ = new StateConstr(STC_XOR, $1, $3);
     }
 	;
 
@@ -404,28 +411,28 @@ rsctlk_form:
     // }
 
 	  /* contexts as boolean formulae  */
-    | E LAB bool_contexts RAB X rsctlk_form { 
+    | E LAB state_constr RAB X rsctlk_form { 
         $$ = new FormRSCTLK(RSCTLK_EX_ACT, $3, $6);
     }
-    | E LAB bool_contexts RAB U LRB rsctlk_form COMMA rsctlk_form RRB {
+    | E LAB state_constr RAB U LRB rsctlk_form COMMA rsctlk_form RRB {
         $$ = new FormRSCTLK(RSCTLK_EU_ACT, $3, $7, $9);
     }
-    | E LAB bool_contexts RAB F rsctlk_form {
+    | E LAB state_constr RAB F rsctlk_form {
         $$ = new FormRSCTLK(RSCTLK_EF_ACT, $3, $6);
     }
-    | E LAB bool_contexts RAB G rsctlk_form {
+    | E LAB state_constr RAB G rsctlk_form {
         $$ = new FormRSCTLK(RSCTLK_EG_ACT, $3, $6);
     }
-    | A LAB bool_contexts RAB X rsctlk_form {
+    | A LAB state_constr RAB X rsctlk_form {
         $$ = new FormRSCTLK(RSCTLK_AX_ACT, $3, $6);
     }
-    | A LAB bool_contexts RAB U LRB rsctlk_form COMMA rsctlk_form RRB {
+    | A LAB state_constr RAB U LRB rsctlk_form COMMA rsctlk_form RRB {
         $$ = new FormRSCTLK(RSCTLK_AU_ACT, $3, $7, $9);
     }
-    | A LAB bool_contexts RAB F rsctlk_form {
+    | A LAB state_constr RAB F rsctlk_form {
         $$ = new FormRSCTLK(RSCTLK_AF_ACT, $3, $6);
     }
-    | A LAB bool_contexts RAB G rsctlk_form {
+    | A LAB state_constr RAB G rsctlk_form {
         $$ = new FormRSCTLK(RSCTLK_AG_ACT, $3, $6);
     }
     ;

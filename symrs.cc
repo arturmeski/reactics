@@ -4,7 +4,8 @@
 */
 
 #include "symrs.hh"
-
+#include "rs.hh"
+#include "bdd_macro.hh"
 
 SymRS::SymRS(RctSys *rs, Options *opts)
 {
@@ -33,6 +34,17 @@ SymRS::SymRS(RctSys *rs, Options *opts)
   tr_ca = nullptr;
 
   encode();
+}
+
+bool SymRS::usingContextAutomaton(void)
+{
+  return rs->ctx_aut != nullptr;
+}
+
+
+BDD SymRS::encEntity(std::string proc_name, std::string entity_name) const
+{
+  return encEntity(rs->getProcessID(proc_name), rs->getEntityID(entity_name));
 }
 
 void SymRS::encode(void)
