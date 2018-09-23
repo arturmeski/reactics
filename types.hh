@@ -56,9 +56,11 @@ typedef std::vector<ReactionCond> ReactionConds;
 typedef std::map<Entity, ReactionConds> DecompReactions;
 typedef std::vector<int> StateEntityToAction;
 
+class StateConstr;
 struct CtxAutTransition {
   State src_state;
   EntitiesForProc ctx;
+  StateConstr *state_constr;
   State dst_state;
 };
 

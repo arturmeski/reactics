@@ -107,6 +107,7 @@ void CtxAut::addTransition(std::string srcStateName, std::string dstStateName, S
   new_transition.ctx = tmpProcEntities;
   // tmpEntities.clear();
   tmpProcEntities.clear();
+  new_transition.state_constr = stateConstr;
   new_transition.dst_state = getStateID(dstStateName);
   transitions.push_back(new_transition);
 }
@@ -118,7 +119,11 @@ void CtxAut::showTransitions(void)
   for (const auto &t : transitions) {
     cout << " * [" << getStateName(t.src_state) << " -> " << getStateName(
            t.dst_state)
-         << "]: { " << parent_rctsys->procEntitiesToStr(t.ctx) << "}" << endl;
+         << "]: { " << parent_rctsys->procEntitiesToStr(t.ctx) << "}";
+    if (t.state_constr != nullptr) {
+      cout << " " << t.state_constr->toStr();
+    }
+    cout << endl;
   }
 }
 
