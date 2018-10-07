@@ -234,7 +234,7 @@ void FormRSCTLK::encodeActions(const SymRS *srs)
     //   }
     // }
     if (boolCtx != nullptr) {
-      *actions_bdd = boolCtx->getBDD(srs);
+      *actions_bdd = boolCtx->getBDDforContext(srs);
     }
     else {
       assert(0);

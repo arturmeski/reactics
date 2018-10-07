@@ -87,9 +87,7 @@ class StateConstr
 
     std::string toStr(void) const;
 
-    BDD getBDD(const SymRS *srs) const {
-      return getBDDforContext(srs);
-    }
+    BDD getBDD(const SymRS *srs, bool encode_context) const;
     BDD getBDDforContext(const SymRS *srs) const;
     BDD getBDDforState(const SymRS *srs) const;
 

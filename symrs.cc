@@ -5,6 +5,7 @@
 
 #include "symrs.hh"
 #include "rs.hh"
+#include "stateconstr.hh"
 #include "bdd_macro.hh"
 
 SymRS::SymRS(RctSys *rs, Options *opts)
@@ -822,7 +823,7 @@ void SymRS::encodeTransitions(void)
   if (usingContextAutomaton()) {
     VERB("Augmenting transition relation encoding with the transition relation for context automaton");
 
-    if (opts->part_tr_rel) {  
+    if (opts->part_tr_rel) {
       auto last_index = numberOfProc;
       (*partTrans)[last_index] = *tr_ca;
     }
@@ -946,8 +947,8 @@ void SymRS::encodeCtxAutTrans(void)
     BDD enc_src = encCtxAutState(t.src_state);
     BDD enc_dst = encCtxAutStateSucc(t.dst_state);
     BDD enc_ctx = compContext(encContext(t.ctx));
-
-    BDD new_trans = enc_src * enc_ctx * enc_dst;
+    BDD enc_drs_state = t.state_constr->getBDDforState(this);
+    BDD new_trans = enc_src * enc_drs_state * enc_ctx * enc_dst;
 
     *tr_ca += new_trans;
   }
