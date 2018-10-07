@@ -947,7 +947,10 @@ void SymRS::encodeCtxAutTrans(void)
     BDD enc_src = encCtxAutState(t.src_state);
     BDD enc_dst = encCtxAutStateSucc(t.dst_state);
     BDD enc_ctx = compContext(encContext(t.ctx));
-    BDD enc_drs_state = t.state_constr->getBDDforState(this);
+    BDD enc_drs_state = BDD_TRUE;
+    if (t.state_constr != nullptr) {
+      enc_drs_state = t.state_constr->getBDDforState(this);
+    }
     BDD new_trans = enc_src * enc_drs_state * enc_ctx * enc_dst;
 
     *tr_ca += new_trans;
