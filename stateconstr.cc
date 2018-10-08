@@ -88,3 +88,25 @@ BDD StateConstr::getBDD(const SymRS *srs, bool encode_context) const
     return srs->getBDDfalse();
   }
 }
+
+bool StateConstr::isFalse(void) const
+{
+  if (oper == STC_TF && tf == false)
+    return true;
+
+  if (oper == STC_NOT && arg[0]->oper == STC_TF && arg[0]->tf == true)
+    return true;
+    
+  return false;
+}
+
+bool StateConstr::isTrue(void) const
+{
+  if (oper == STC_TF && tf == true)
+    return true;
+
+  if (oper == STC_NOT && arg[0]->oper == STC_TF && arg[0]->tf == false)
+    return true;
+
+  return false;
+}

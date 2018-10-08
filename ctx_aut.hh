@@ -40,6 +40,7 @@ class CtxAut
     void showStates(void);
     void addTransition(std::string srcStateName, std::string dstStateName, StateConstr *stateConstr);
     void showTransitions(void);
+    void makeProgressive(void);
     void pushContextEntity(Entity entity_id);
     void saveCurrentContextSet(Process proc_id);
     void setOptions(Options *opts)

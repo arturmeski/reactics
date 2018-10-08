@@ -127,4 +127,41 @@ void CtxAut::showTransitions(void)
   }
 }
 
+void CtxAut::makeProgressive(void)
+{
+  std::string special_loc = "T";
+  while (hasState(special_loc))
+  {
+    special_loc += "T";
+  }
+  addState(special_loc);
+
+  std::map<State, StateConstr *> constrs;
+  for (State s = 0; s < states_ids.size(); ++s)
+  {
+    if (constrs.count(s) == 0) {
+      constrs[s] = new StateConstr(false);
+    }
+  }
+
+  for (const auto &t : transitions) {
+    State curr_st = t.src_state;
+    if (t.state_constr != nullptr)
+    {
+      constrs[curr_st] = new StateConstr(
+      STC_OR, constrs[curr_st], t.state_constr);
+    }
+  }
+
+  for (const auto &s : states_ids)
+  {
+      StateConstr *state_constr = nullptr;
+      if (!constrs[getStateID(s)]->isFalse()) {
+        state_constr = new StateConstr(STC_NOT, constrs[getStateID(s)]);
+      }
+      addTransition(s, special_loc, state_constr);
+  }
+
+}
+
 /** EOF **/

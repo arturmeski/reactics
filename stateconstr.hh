@@ -107,6 +107,9 @@ class StateConstr
       assert(arg[1] != nullptr);
       return arg[1];
     }
+
+    bool isFalse(void) const;
+    bool isTrue(void) const;
 };
 
 #endif
