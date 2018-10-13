@@ -35,7 +35,7 @@ class rsin_driver
     // options in configuration file:
     bool use_ctx_aut;
     bool use_concentrations;
-    bool use_progressive;
+    bool make_progressive;
 
     // Handling the scanner
     void scan_begin();
