@@ -34,11 +34,7 @@ SymRS::SymRS(RctSys *rs, Options *opts)
   pv_ca_succ = nullptr;
   tr_ca = nullptr;
 
-  // TODO: this should be triggered by the parser and it should depend
-  //       on an option in the input file
   rs->ctx_aut->makeProgressive();
-
-  rs->printSystem();
 
   encode();
 }

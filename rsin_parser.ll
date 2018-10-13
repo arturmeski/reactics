@@ -41,6 +41,7 @@ blank [ \t]
 "options"				        return token::OPTIONS;
 "use-context-automaton"	return token::USE_CTX_AUT;
 "use-concentrations"	  return token::USE_CONCENTRATIONS;
+"make-progressive"      return token::MAKE_PROGRESSIVE;
 "reactions"             return token::REACTIONS;
 "initial-contexts"      return token::INITIALCONTEXTS;
 "context-entities"      return token::CONTEXTENTITIES;
@@ -128,4 +129,3 @@ rsin_driver::scan_end()
 {
   fclose(yyin);
 }
-

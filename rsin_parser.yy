@@ -46,7 +46,7 @@ class rsin_driver;
 #include "rsin_driver.hh"
 }
 
-%token OPTIONS USE_CTX_AUT USE_CONCENTRATIONS
+%token OPTIONS USE_CTX_AUT USE_CONCENTRATIONS MAKE_PROGRESSIVE
 %token REACTIONS INITIALCONTEXTS CONTEXTENTITIES RSCTLKFORM
 %token CONTEXTAUTOMATON STATES INITSTATE TRANSITIONS
 %token EQ LCB RCB LRB RRB LSB RSB LAB RAB COL SEMICOL DOT COMMA RARR
@@ -77,34 +77,40 @@ class rsin_driver;
 
 %start system;
 
-system: 
+system:
 	| OPTIONS LCB options RCB system
-    | REACTIONS LCB reactionsets RCB system
-    | INITIALCONTEXTS LCB initstates RCB system
-    | CONTEXTENTITIES LCB actionentities RCB system
+  | REACTIONS LCB reactionsets RCB system
+  | INITIALCONTEXTS LCB initstates RCB system
+  | CONTEXTENTITIES LCB actionentities RCB system
 	| CONTEXTAUTOMATON LCB ctxaut RCB system
-    | RSCTLKFORM LCB IDENTIFIER COL rsctlk_form RCB system {
-        driver.addFormRSCTLK(*$3, $5);
-        free($3);
-    }
-    ;
+  {
+    driver.getReactionSystem()->ctxAutFinalise();
+  }
+  | RSCTLKFORM LCB IDENTIFIER COL rsctlk_form RCB system {
+    driver.addFormRSCTLK(*$3, $5);
+    free($3);
+  }
+  ;
 
 options:
 	| options option SEMICOL
 	;
 
 option:
-	| USE_CTX_AUT { 
-		driver.useContextAutomaton(); 
+	| USE_CTX_AUT {
+		driver.useContextAutomaton();
 	}
 	| USE_CONCENTRATIONS {
 		driver.useConcentrations();
 	}
+  | MAKE_PROGRESSIVE {
+    driver.makeProgressive();
+  }
 	;
 
-/* 
+/*
  * -------------------------
- *         REACTIONS 
+ *         REACTIONS
  * -------------------------
  */
 
@@ -113,11 +119,11 @@ reactionsets:
 	;
 
 process_reactions: processname LCB reactions RCB SEMICOL
-	
+
 processname: IDENTIFIER {
 		driver.getReactionSystem()->setCurrentProcess(*$1);
 		free($1);
-	}	
+	}
 
 reactions:
     | reactions reaction SEMICOL
@@ -146,7 +152,7 @@ reactant: IDENTIFIER {
 
 inhibitors:
     inhibitor
-    | inhibitors COMMA inhibitor 
+    | inhibitors COMMA inhibitor
     ;
 
 inhibitor:
@@ -180,7 +186,7 @@ initstates:
 
 initstate:
     | entity
-    | initstate COMMA entity 
+    | initstate COMMA entity
     ;
 
 entity: IDENTIFIER {
@@ -191,7 +197,7 @@ entity: IDENTIFIER {
 
 /*******************************************/
 
-actionentities: 
+actionentities:
     | actentity
     | actionentities COMMA actentity
     ;
@@ -201,7 +207,7 @@ actentity: IDENTIFIER {
         free($1);
     }
     ;
-	
+
 /*******************************************/
 
 ctxaut:
@@ -226,11 +232,11 @@ autinitstate: IDENTIFIER {
 		free($1);
 	}
 	;
-	
+
 auttransitions:
 	| auttrans
 	| auttrans SEMICOL auttransitions
-	;	
+	;
 
 auttrans: LCB proc_ctxsets RCB COL IDENTIFIER RARR IDENTIFIER {
 		driver.getReactionSystem()->ctxAutAddTransition(*$5, *$7);
@@ -243,22 +249,22 @@ auttrans: LCB proc_ctxsets RCB COL IDENTIFIER RARR IDENTIFIER {
         free($7);
     }
 	;
-  
+
 proc_ctxsets:
   | proc_ctxsets single_proc_ctxset
   ;
-  
+
 single_proc_ctxset: IDENTIFIER EQ LCB contextset RCB {
   driver.getReactionSystem()->ctxAutSaveCurrentContextSet(*$1);
 		free($1);
 	}
 	;
-	
+
 contextset:
 	| ctxentity
 	| contextset COMMA ctxentity
 	;
-		
+
 ctxentity: IDENTIFIER {
 		driver.getReactionSystem()->ctxAutPushNamedContextEntity(*$1);
 		free($1);
@@ -266,7 +272,7 @@ ctxentity: IDENTIFIER {
 	;
 
 /* formulae */
-	
+
 state_constr: IDENTIFIER DOT IDENTIFIER {
         $$ = new StateConstr(*$1, *$3);
         free($1);
@@ -324,7 +330,7 @@ state_constr: IDENTIFIER DOT IDENTIFIER {
 //     }
 //     ;
 
-rsctlk_form: 
+rsctlk_form:
     IDENTIFIER DOT IDENTIFIER {
         $$ = new FormRSCTLK(*$1, *$3);
         free($1);
@@ -371,7 +377,7 @@ rsctlk_form:
     }
     | AG rsctlk_form {
         $$ = new FormRSCTLK(RSCTLK_AG, $2);
-    } 
+    }
     | UK LSB IDENTIFIER RSB LRB rsctlk_form RRB {
         Agents_f agents;
         agents.insert(*$3);
@@ -411,7 +417,7 @@ rsctlk_form:
     // }
 
 	  /* contexts as boolean formulae  */
-    | E LAB state_constr RAB X rsctlk_form { 
+    | E LAB state_constr RAB X rsctlk_form {
         $$ = new FormRSCTLK(RSCTLK_EX_ACT, $3, $6);
     }
     | E LAB state_constr RAB U LRB rsctlk_form COMMA rsctlk_form RRB {
@@ -443,4 +449,3 @@ yy::rsin_parser::error(const yy::rsin_parser::location_type &l, const std::strin
 {
     driver.error(l, m);
 }
-

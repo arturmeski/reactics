@@ -22,6 +22,7 @@ void rsin_driver::initialise(void)
   opts = nullptr;
   use_ctx_aut = false;
   use_concentrations = false;
+  use_progressive = false;
 }
 
 rsin_driver::~rsin_driver ()
@@ -106,3 +107,17 @@ void rsin_driver::useContextAutomaton(void)
   getReactionSystem()->ctxAutEnable();
 }
 
+void rsin_driver::makeProgressive(void)
+{
+  use_progressive = true;
+  if (use_ctx_aut)
+  {
+    getReactionSystem()->ctxAutEnableProgressiveClosure();
+  }
+  else
+  {
+    FERROR("Context automaton not enabled");
+  }
+}
+
+// EOF

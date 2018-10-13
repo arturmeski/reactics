@@ -85,12 +85,14 @@ class RctSys
     void printSystem(void);
 
     void ctxAutEnable(void);
+    void ctxAutEnableProgressiveClosure(void);
     void ctxAutAddState(std::string stateName);
     void ctxAutSetInitState(std::string stateName);
     void ctxAutAddTransition(std::string srcStateName, std::string dstStateName);
     void ctxAutAddTransition(std::string srcStateName, std::string dstStateName, StateConstr *stateConstr);
     void ctxAutPushNamedContextEntity(std::string entity_name);
     void ctxAutSaveCurrentContextSet(std::string processName);
+    void ctxAutFinalise(void);
 
     bool initStatesDefined(void)
     {
@@ -115,6 +117,8 @@ class RctSys
     Entities actionEntities;
 
     CtxAut *ctx_aut;
+
+    bool gen_ctxaut_progressive_closure;
 
     EntitiesById entities_ids;
     EntitiesByName entities_names;

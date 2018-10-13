@@ -9,6 +9,7 @@ RctSys::RctSys(void)
   : current_process_defined(false)
 {
   ctx_aut = nullptr;
+  gen_ctxaut_progressive_closure = false;
 }
 
 bool RctSys::hasEntity(std::string name)
@@ -306,6 +307,11 @@ void RctSys::ctxAutEnable(void)
   ctx_aut = new CtxAut(opts, this);
 }
 
+void RctSys::ctxAutEnableProgressiveClosure(void)
+{
+  gen_ctxaut_progressive_closure = true;
+}
+
 void RctSys::ctxAutAddState(std::string stateName)
 {
   assert(ctx_aut != nullptr);
@@ -353,6 +359,11 @@ void RctSys::ctxAutSaveCurrentContextSet(std::string processName)
 {
   Process processID = getProcessID(processName);
   ctx_aut->saveCurrentContextSet(processID);
+}
+
+void RctSys::ctxAutFinalise(void)
+{
+  ctx_aut->makeProgressive();
 }
 
 /** EOF **/
