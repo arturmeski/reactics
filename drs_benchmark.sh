@@ -7,7 +7,7 @@ CMD="./reactics -zxbB"
 for i in `seq 2 9`;do
 
 	echo "[i] n=$i; generating input file"
-	in/gen_drs_mutex.py $i > $TMPINPUT
+	in/gen_tgc_sc.py $i > $TMPINPUT
 
 	for f in `seq 1 2`; do
 
