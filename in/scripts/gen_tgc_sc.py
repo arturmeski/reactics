@@ -54,36 +54,28 @@ transitions = ""
 init_trans = 8*" " + "{ "
 for i in range(n):
     init_trans += "proc{:d}={{out}} ".format(i)
-
 init_trans += "}: init -> green;\n"
-
 transitions += init_trans
-
-green_no_change_trans = 8*" " + "{ "
-for i in range(n):
-    green_no_change_trans += "proc{:d}={{}} ".format(i)
-green_no_change_trans += "}: green -> green : ~proc0.req"
-for i in range(1, n):
-    green_no_change_trans += " AND ~proc{:d}.req".format(i)
-green_no_change_trans += ";\n"
-
-transitions += green_no_change_trans
 
 for i in range(n):
     transitions += "{:s}{{ proc{:d}={{allowed}} }}: green -> red : proc{:d}.req;\n".format(8*" ", i, i)
 
+no_req_cond = "~proc0.req"
+for i in range(1, n):
+     no_req_cond += " AND ~proc{:d}.req".format(i)
+
+for i in range(n):
+    transitions += "{:s}{{ proc{:d}={{}} }}: green -> green : {:s};\n".format(8*" ", i, no_req_cond)
+
 for i in range(n):
     transitions += "{:s}{{ proc{:d}={{}} }}: red -> green : proc{:d}.leave;\n".format(8*" ", i, i)
 
-red_no_change_trans = 8*" " + "{ "
-for i in range(n):
-    red_no_change_trans += "proc{:d}={{}} ".format(i)
-red_no_change_trans += "}: red -> red : ~proc0.leave"
+no_leave_cond = "~proc0.leave"
 for i in range(1, n):
-    red_no_change_trans += " AND ~proc{:d}.leave".format(i)
-red_no_change_trans += ";\n"
+     no_leave_cond += " AND ~proc{:d}.leave".format(i)
 
-transitions += red_no_change_trans
+for i in range(n):
+    transitions += "{:s}{{ proc{:d}={{}} }}: red -> red : {:s};\n".format(8*" ", i, no_leave_cond)
 
 out += CA_STR.format(transitions)
 
