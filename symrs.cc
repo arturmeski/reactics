@@ -34,8 +34,6 @@ SymRS::SymRS(RctSys *rs, Options *opts)
   pv_ca_succ = nullptr;
   tr_ca = nullptr;
 
-  rs->ctx_aut->makeProgressive();
-
   encode();
 }
 
@@ -925,7 +923,7 @@ BDD SymRS::encCtxAutState_raw(State state_id, bool succ) const
 
 BDD SymRS::getEncCtxAutInitState(void)
 {
-  VERB_LN(2, "Encoding context automaton's initial state");
+  VERB_LN(1, "Encoding context automaton's initial state");
 
   State state = rs->ctx_aut->getInitState();
 
@@ -934,7 +932,7 @@ BDD SymRS::getEncCtxAutInitState(void)
 
 void SymRS::encodeCtxAutTrans(void)
 {
-  VERB_LN(2, "Encoding context automaton's transition relation");
+  VERB_LN(1, "Encoding context automaton's transition relation");
 
   if (tr_ca != nullptr) {
     VERB_LN(1, "Encoding for context automaton already present, not replacing")
@@ -956,6 +954,8 @@ void SymRS::encodeCtxAutTrans(void)
     BDD new_trans = enc_src * enc_drs_state * enc_ctx * enc_dst;
 
     *tr_ca += new_trans;
+
+    reorder();
   }
 }
 
