@@ -62,6 +62,7 @@ class CtxAut
     EntitiesForProc tmpProcEntities;
     Entities tmpEntities;
     CtxAutTransitions transitions;
+    bool made_progressive;
 };
 
 #endif /* RS_CTX_AUT_HH */

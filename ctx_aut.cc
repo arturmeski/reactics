@@ -8,6 +8,7 @@ CtxAut::CtxAut(Options *opts, RctSys *parent_rctsys)
 {
   setOptions(opts);
   this->parent_rctsys = parent_rctsys;
+  made_progressive = false;
 }
 
 bool CtxAut::hasState(std::string name)
@@ -129,6 +130,9 @@ void CtxAut::showTransitions(void)
 
 void CtxAut::makeProgressive(void)
 {
+  VERB_LN(2, "Calculating progressive closure of CA");
+  assert(!made_progressive);
+
   std::string special_loc = "T";
   while (hasState(special_loc))
   {
@@ -161,6 +165,8 @@ void CtxAut::makeProgressive(void)
       }
       addTransition(s, special_loc, state_constr);
   }
+
+  made_progressive = true;
 
 }
 
