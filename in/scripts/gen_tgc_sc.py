@@ -3,7 +3,7 @@
 from sys import argv,exit
 
 OPTIONS_STR = """
-options { use-context-automaton; }
+options { use-context-automaton; make-progressive; }
 """
 
 PROC_STR = """
