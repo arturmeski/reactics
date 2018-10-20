@@ -2,32 +2,45 @@
 
 TMPINPUT="tmp_$RANDOM$RANDOM.rs"
 
-CMD="./reactics -zxbB"
+CMD="./reactics -bB"
 
-for i in `seq 2 9`;do
+for opt in "" "z" "x" "zx";do
 
-	echo "[i] n=$i; generating input file"
-	in/scripts/gen_tgc_sc.py $i > $TMPINPUT
+    for i in `seq 2 10`;do
 
-	for f in `seq 1 2`; do
+        echo "[i] n=$i; generating input file"
+        in/scripts/gen_tgc_sc.py $i > $TMPINPUT
 
-		echo "[i] Testing formula f$f"
+        for f in `seq 1 2`; do
 
-		TMPCMD="$CMD -c f$f $TMPINPUT"
-		echo "[i] running reactics: $TMPCMD"
+            echo "[i] Testing formula f$f"
 
-		res=$($TMPCMD | grep STAT)
-		mem=$(echo $res | cut -d';' -f 5)
-		time=$(echo $res | cut -d';' -f 6)
+            if [[ "$opt" = "" ]];then
+                opt_str="NoOpt"
+                CMDOPT=""
+            else
+                opt_str="$opt"
+                CMDOPT="-$opt"
+            fi
 
-		echo "[.] Finished. time:$time, mem:$mem"
+            TMPCMD="$CMD $CMDOPT -c f$f $TMPINPUT"
+            echo "[i] running reactics: $TMPCMD"
 
-		echo "$i $time $mem" >> bench_drs_mutex_f$f.dat
+            res=$($TMPCMD | grep STAT)
+            mem=$(echo $res | cut -d';' -f 5)
+            time=$(echo $res | cut -d';' -f 6)
 
-	done
+            echo "[.] Finished. time:$time, mem:$mem"
 
-	echo 
-	
+
+            echo "$i $time $mem" >> bench_drs_tgc_${opt_str}_f$f.dat
+
+        done
+
+        echo 
+        
+    done
+
 done
 
 rm -f $TMPINPUT
