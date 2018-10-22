@@ -93,4 +93,11 @@ formula = "AG( proc0.in IMPLIES K[proc0]({:s}) )".format(subf)
 
 out += PROPERTY_STR.format("f2",formula)
 
+# f3
+formula = "EF( proc0.approach"
+for i in range(1, n):
+    formula += " AND proc{:d}.approach".format(i)
+formula += " )"
+out += PROPERTY_STR.format("f3",formula)
+
 print(out)
