@@ -830,6 +830,7 @@ void SymRS::encodeTransitions(void)
     else {
       assert(tr_ca != nullptr);
       *monoTrans *= *tr_ca;
+      reorder();
     }
   }
 }
