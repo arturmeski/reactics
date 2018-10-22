@@ -2,16 +2,25 @@
 
 TMPINPUT="tmp_$RANDOM$RANDOM.rs"
 
-CMD="./reactics -bB"
+CMD="./reactics -B"
 
-for opt in "" "z" "x" "zx";do
+timelimit="$((30*60))" # 30 minutes
 
-    for i in `seq 2 10`;do
+for opt in "z" "zb" "x" "xz" "xzb" "xb" "" "b";do
 
-        echo "[i] n=$i; generating input file"
-        in/scripts/gen_tgc_sc.py $i > $TMPINPUT
+    for f in `seq 1 3`; do
 
-        for f in `seq 1 2`; do
+        done=0
+
+        for i in `seq 2 20`;do
+
+            if [[ $done -eq 1 ]];then
+                echo "Skipping f=$f i=$i for $opt"
+                continue
+            fi
+
+            echo "[i] n=$i; generating input file"
+            in/scripts/gen_tgc_sc.py $i > $TMPINPUT
 
             echo "[i] Testing formula f$f"
 
@@ -26,12 +35,14 @@ for opt in "" "z" "x" "zx";do
             TMPCMD="$CMD $CMDOPT -c f$f $TMPINPUT"
             echo "[i] running reactics: $TMPCMD"
 
-            res=$($TMPCMD | grep STAT)
+            res=$(timeout $timelimit $TMPCMD | grep STAT)
+	    if [[ $? -ne 0 ]];then
+		done=1
+            fi
             mem=$(echo $res | cut -d';' -f 5)
             time=$(echo $res | cut -d';' -f 6)
 
             echo "[.] Finished. time:$time, mem:$mem"
-
 
             echo "$i $time $mem" >> bench_drs_tgc_${opt_str}_f$f.dat
 
