@@ -81,16 +81,12 @@ out += CA_STR.format(transitions)
 
 # f1
 formula = "EF( proc0.in )"
-for i in range(1, n):
-    formula += " AND EF( proc{:d}.in )".format(i)
 out += PROPERTY_STR.format("f1",formula)
 
 # f2
-subf = "~proc1.in"
-for i in range(2, n):
-    subf += " AND ~proc{:d}.in".format(i)
-formula = "AG( proc0.in IMPLIES K[proc0]({:s}) )".format(subf)
-
+formula = "EF( proc0.in )"
+for i in range(1, n):
+    formula += " AND EF( proc{:d}.in )".format(i)
 out += PROPERTY_STR.format("f2",formula)
 
 # f3
@@ -100,4 +96,13 @@ for i in range(1, n):
 formula += " )"
 out += PROPERTY_STR.format("f3",formula)
 
+# f4
+subf = "~proc1.in"
+for i in range(2, n):
+    subf += " AND ~proc{:d}.in".format(i)
+formula = "AG( proc0.in IMPLIES K[proc0]({:s}) )".format(subf)
+
+out += PROPERTY_STR.format("f4",formula)
+
 print(out)
+
