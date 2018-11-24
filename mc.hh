@@ -61,6 +61,7 @@ class ModelChecker
     BDD statesEUctx(const BDD *contexts, const BDD &statesA, const BDD &statesB);
     BDD statesEFctx(const BDD *contexts, const BDD &states);
     BDD statesNK(const BDD &states, Process proc_id);
+    BDD statesNE(const BDD &states, ProcSet processes);
     BDD statesNC(const BDD &states, ProcSet processes);
 
     BDD getIthOnly(Process proc_id);

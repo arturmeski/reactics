@@ -409,6 +409,14 @@ rsctlk_form:
         $$ = new FormRSCTLK(RSCTLK_NE, *$3, $6);
         free($3);
     }
+    | UC LSB agents RSB LRB rsctlk_form RRB {
+        $$ = new FormRSCTLK(RSCTLK_UC, *$3, $6);
+        free($3);
+    }
+    | NC LSB agents RSB LRB rsctlk_form RRB {
+        $$ = new FormRSCTLK(RSCTLK_NC, *$3, $6);
+        free($3);
+    }
 
     // | E LSB actions RSB X rsctlk_form {
     //     $$ = new FormRSCTLK(RSCTLK_EX_ACT, $3, $6);
