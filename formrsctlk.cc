@@ -93,6 +93,13 @@ std::string FormRSCTLK::toStr(void) const
   else if (oper == RSCTLK_UK) {
     return "K[" + getSingleAgent() + "](" + arg[0]->toStr() + ")";
   }
+  else if (oper == RSCTLK_NC) {
+    return "NC[" + getAgentsStr() + "](" + arg[0]->toStr() + ")";
+  }
+  else if (oper == RSCTLK_UC) {
+    return "C[" + getAgentsStr() + "](" + arg[0]->toStr() + ")";
+  }
+
 
   else {
     return "??";
@@ -250,6 +257,21 @@ void FormRSCTLK::encodeActions(const SymRS *srs)
     arg[0]->encodeActions(srs);
     arg[1]->encodeActions(srs);
   }
+}
+
+std::string FormRSCTLK::getAgentsStr(void) const
+{
+  std::string r = "";
+  bool first = true;
+  for (const auto &a : agents)
+  {
+    if (first)
+      first = false;
+    else
+      r += " ";
+    r += a;
+  }
+  return r;
 }
 
 ProcSet FormRSCTLK::getAgentsAsProcSet(RctSys *rs) const

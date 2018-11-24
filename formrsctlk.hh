@@ -292,6 +292,7 @@ class FormRSCTLK
       assert(oper == RSCTLK_NK || oper == RSCTLK_UK);
       return *(agents.begin());
     }
+    std::string getAgentsStr(void) const;
     ProcSet getAgentsAsProcSet(RctSys *rs) const;
 };
 
