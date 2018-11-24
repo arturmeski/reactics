@@ -43,9 +43,13 @@
 #define RSCTLK_TF      50 // true/false
 
 #define RSCTLK_NK      61 // Epistemic operators
+#define RSCTLK_NE      62
+#define RSCTLK_NC      63
 #define RSCTLK_UK      71
+#define RSCTLK_UE      72
+#define RSCTLK_UC      73
 
-#define RSCTLK_COND_1ARG(a) ((a) == RSCTLK_NOT || (a) == RSCTLK_EG || (a) == RSCTLK_EF || (a) == RSCTLK_EX || (a) == RSCTLK_AG || (a) == RSCTLK_AF || (a) == RSCTLK_AX || (a) == RSCTLK_EG_ACT || (a) == RSCTLK_EF_ACT || (a) == RSCTLK_EX_ACT || (a) == RSCTLK_AG_ACT || (a) == RSCTLK_AF_ACT || (a) == RSCTLK_AX_ACT || (a) == RSCTLK_UK || (a) == RSCTLK_NK)
+#define RSCTLK_COND_1ARG(a) ((a) == RSCTLK_NOT || (a) == RSCTLK_EG || (a) == RSCTLK_EF || (a) == RSCTLK_EX || (a) == RSCTLK_AG || (a) == RSCTLK_AF || (a) == RSCTLK_AX || (a) == RSCTLK_EG_ACT || (a) == RSCTLK_EF_ACT || (a) == RSCTLK_EX_ACT || (a) == RSCTLK_AG_ACT || (a) == RSCTLK_AF_ACT || (a) == RSCTLK_AX_ACT || (a) == RSCTLK_UK || (a) == RSCTLK_NK || (a) == RSCTLK_UE || (a) == RSCTLK_NE || (a) == RSCTLK_UC || (a) == RSCTLK_NC)
 #define RSCTLK_COND_2ARG(a) ((a) == RSCTLK_AND || (a) == RSCTLK_OR || (a) == RSCTLK_XOR || (a) == RSCTLK_IMPL || (a) == RSCTLK_EU || (a) == RSCTLK_AU || (a) == RSCTLK_EU_ACT || (a) == RSCTLK_AU_ACT)
 #define RSCTLK_COND_ACT(a) ((a) > 30 && (a) < 45)
 #define RSCTLK_IS_VALID(a) (RSCTLK_COND_1ARG(a) || RSCTLK_COND_2ARG(a) || (a) == RSCTLK_PV || (a) == RSCTLK_TF)
@@ -288,6 +292,7 @@ class FormRSCTLK
       assert(oper == RSCTLK_NK || oper == RSCTLK_UK);
       return *(agents.begin());
     }
+    ProcSet getAgentsAsProcSet(RctSys *rs) const;
 };
 
 #endif

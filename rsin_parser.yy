@@ -39,7 +39,8 @@ class rsin_driver;
     // Entity_f *ent;
     // Action_f *act;
     // ActionsVec_f *actionsVec;
-	StateConstr *fstc;
+    StateConstr *fstc;
+    Agents_f *agents;
 };
 
 %code {
@@ -67,6 +68,7 @@ class rsin_driver;
 // %type <act> action
 // %type <actionsVec> actions
 %type <fstc> state_constr
+%type <agents> agents;
 
 //%printer    { yyoutput << *$$; } "identifier"
 %destructor { delete $$; } "identifier"
@@ -330,6 +332,19 @@ state_constr: IDENTIFIER DOT IDENTIFIER {
 //     }
 //     ;
 
+agents:
+    IDENTIFIER {
+      Agents_f *ag = new Agents_f;
+      ag->insert(*$1);
+      free($1);
+      $$ = ag;
+    }
+    | agents COMMA IDENTIFIER {
+      $1->insert(*$3);
+      free($3);
+      $$ = $1;
+    }
+
 rsctlk_form:
     IDENTIFIER DOT IDENTIFIER {
         $$ = new FormRSCTLK(*$1, *$3);
@@ -378,16 +393,20 @@ rsctlk_form:
     | AG rsctlk_form {
         $$ = new FormRSCTLK(RSCTLK_AG, $2);
     }
-    | UK LSB IDENTIFIER RSB LRB rsctlk_form RRB {
-        Agents_f agents;
-        agents.insert(*$3);
-        $$ = new FormRSCTLK(RSCTLK_UK, agents, $6);
+    | UK LSB agents RSB LRB rsctlk_form RRB {
+        $$ = new FormRSCTLK(RSCTLK_UK, *$3, $6);
         free($3);
     }
-    | NK LSB IDENTIFIER RSB LRB rsctlk_form RRB {
-        Agents_f agents;
-        agents.insert(*$3);
-        $$ = new FormRSCTLK(RSCTLK_NK, agents, $6);
+    | NK LSB agents RSB LRB rsctlk_form RRB {
+        $$ = new FormRSCTLK(RSCTLK_NK, *$3, $6);
+        free($3);
+    }
+    | UE LSB agents RSB LRB rsctlk_form RRB {
+        $$ = new FormRSCTLK(RSCTLK_UE, *$3, $6);
+        free($3);
+    }
+    | NE LSB agents RSB LRB rsctlk_form RRB {
+        $$ = new FormRSCTLK(RSCTLK_NE, *$3, $6);
         free($3);
     }
 

@@ -359,6 +359,16 @@ BDD ModelChecker::getStatesRSCTLK(const FormRSCTLK *form)
     auto proc_id = srs->rs->getProcessID(form->getSingleAgent());
     return *reach - (statesNK(*reach - getStatesRSCTLK(form->getLeftSF()), proc_id) * *reach);
   }
+  else if (oper == RSCTLK_NC)
+  {
+    auto proc_set = form->getAgentsAsProcSet(srs->rs);
+    return statesNC(getStatesRSCTLK(form->getLeftSF()) * *reach, proc_set) * *reach;
+  }
+  else if (oper == RSCTLK_UC)
+  {
+    auto proc_set = form->getAgentsAsProcSet(srs->rs);
+    return *reach - (statesNC(*reach - getStatesRSCTLK(form->getLeftSF()), proc_set) * *reach);
+  }
 
   assert(0); // Should never happen
   return BDD_FALSE;
@@ -449,6 +459,25 @@ BDD ModelChecker::statesNK(const BDD &states, Process proc_id)
   BDD x = states;
 
   x = x.ExistAbstract(getIthOnly(proc_id));
+
+  return x;
+}
+
+BDD ModelChecker::statesNC(const BDD &states, ProcSet processes)
+{
+  BDD x = BDD_FALSE;
+  BDD x_p = *reach;
+
+  while (x != x_p)
+  {
+    x_p = x;
+    BDD t = BDD_FALSE;
+    for (auto const &proc_id : processes)
+    {
+      t += x.ExistAbstract(getIthOnly(proc_id));
+    }
+    x = t;
+  }
 
   return x;
 }

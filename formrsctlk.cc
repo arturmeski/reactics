@@ -7,6 +7,7 @@
 */
 
 #include "formrsctlk.hh"
+#include "rs.hh"
 
 std::string FormRSCTLK::toStr(void) const
 {
@@ -249,4 +250,14 @@ void FormRSCTLK::encodeActions(const SymRS *srs)
     arg[0]->encodeActions(srs);
     arg[1]->encodeActions(srs);
   }
+}
+
+ProcSet FormRSCTLK::getAgentsAsProcSet(RctSys *rs) const
+{
+  ProcSet processes;
+  for (auto &a : agents)
+  {
+    processes.insert(rs->getProcessID(a));
+  }
+  return processes;
 }

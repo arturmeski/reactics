@@ -30,6 +30,7 @@ struct Reaction {
 typedef unsigned int Process;
 typedef std::vector<std::string> ProcessesById;
 typedef std::map<std::string, Process> ProcessesByName;
+typedef std::set<Process> ProcSet;
 
 typedef std::vector<Reaction> Reactions;
 typedef std::map<Process, Reactions> ReactionsForProc;
