@@ -101,8 +101,17 @@ subf = "~proc1.in"
 for i in range(2, n):
     subf += " AND ~proc{:d}.in".format(i)
 formula = "AG( proc0.in IMPLIES K[proc0]({:s}) )".format(subf)
-
 out += PROPERTY_STR.format("f4",formula)
+
+# f5
+subf = "~proc1.in"
+for i in range(2, n):
+    subf += " AND ~proc{:d}.in".format(i)
+all_agents = "proc0"
+for i in range(1, n):
+    all_agents += ",proc{:d}".format(i)
+formula = "AG( proc0.in IMPLIES C[{:s}]({:s}) )".format(all_agents,subf)
+out += PROPERTY_STR.format("f5",formula)
 
 print(out)
 
