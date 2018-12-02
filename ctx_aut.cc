@@ -139,14 +139,21 @@ void CtxAut::makeProgressive(void)
     special_loc += "T";
   }
   addState(special_loc);
+  State special_loc_id = getLastStateID();
 
   std::map<State, StateConstr *> constrs;
   for (State s = 0; s < states_ids.size(); ++s)
   {
+    if (s == special_loc_id) {
+      continue;
+    }
+
     if (constrs.count(s) == 0) {
-      constrs[s] = new StateConstr(false);
+      constrs[s] = new StateConstr(true);
     }
   }
+
+  constrs[special_loc_id] = new StateConstr(true);
 
   for (const auto &t : transitions) {
     State curr_st = t.src_state;
@@ -160,11 +167,13 @@ void CtxAut::makeProgressive(void)
   for (const auto &s : states_ids)
   {
       StateConstr *state_constr = nullptr;
-      if (!constrs[getStateID(s)]->isFalse()) {
+      if (!constrs[getStateID(s)]->isTrue()) {
         state_constr = new StateConstr(STC_NOT, constrs[getStateID(s)]);
+        addTransition(s, special_loc, state_constr);
       }
-      addTransition(s, special_loc, state_constr);
+
   }
+  addTransition(special_loc, special_loc, nullptr);
 
   made_progressive = true;
 

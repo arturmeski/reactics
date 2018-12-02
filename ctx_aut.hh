@@ -35,6 +35,7 @@ class CtxAut
     void setInitState(std::string stateName);
     State getInitState(void);
     State getStateID(std::string name);
+    State getLastStateID(void) { return states_ids.size(); }
     std::string getStateName(State state_id);
     void printAutomaton(void);
     void showStates(void);
