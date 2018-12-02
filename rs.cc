@@ -363,7 +363,7 @@ void RctSys::ctxAutSaveCurrentContextSet(std::string processName)
 
 void RctSys::ctxAutFinalise(void)
 {
-  ctx_aut->makeProgressive();
+  // EMPTY
 }
 
 /** EOF **/
