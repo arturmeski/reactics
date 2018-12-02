@@ -64,13 +64,13 @@ init_trans = 8*" " + "{ proc1={a} }: init -> act;\n"
 transitions += init_trans
 
 for i in range(1, n+1):
-    transitions += "{:s}{{ proc{:d}={{}} }}: act -> act;\n".format(8*" ", i, i)
+    transitions += "{:s}{{ proc{:d}={{}} }}: act -> act : ~proc{:d}.dy;\n".format(8*" ", i, i, i)
 
 for i in range(2, n+1):
     transitions += "{:s}{{ proc{:d}={{a}} }}: act -> act : proc{:d}.dy;\n".format(8*" ", i, i-1)
 
 final_cond = "proc1.dy"
-for i in range(1, n+1):
+for i in range(2, n+1):
      final_cond += " AND proc{:d}.dy".format(i)
 
 transitions += "{:s}{{ procFinal={{done}} }}: act -> act : {:s};\n".format(8*" ", final_cond)
@@ -82,8 +82,12 @@ formula = "EF( procFinal.done )"
 out += PROPERTY_STR.format("f1",formula)
 
 # f2
-formula = "EF( ~procFinal.done )"
+formula = "AG( proc{:d}.d IMPLIES K[proc{:d}]( proc{:d}.y ) )".format(n, n, n-1)
 out += PROPERTY_STR.format("f2",formula)
+
+# x1
+formula = "EF( ~procFinal.done )"
+out += PROPERTY_STR.format("x1",formula)
 
 print(out)
 
