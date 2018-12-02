@@ -158,6 +158,8 @@ int main(int argc, char **argv)
   //
   auto rs = *driver.getReactionSystem();
 
+  bool result = true;
+
   rs.setOptions(opts); // these need to be passed to the driver
 
   if (show_reactions) {
@@ -184,10 +186,10 @@ int main(int argc, char **argv)
     if (rstl_model_checking) {
       if (bmc) {
         cout << "Using BDD-based Bounded Model Checking" << endl;
-        mc.checkRSCTLK(driver.getFormRSCTLK(property_name));
+        result = mc.checkRSCTLK(driver.getFormRSCTLK(property_name));
       }
       else {
-        mc.checkRSCTLKfull(driver.getFormRSCTLK(property_name));
+        result = mc.checkRSCTLKfull(driver.getFormRSCTLK(property_name));
       }
     }
   }
@@ -213,7 +215,14 @@ int main(int argc, char **argv)
 
   delete opts;
 
-  return 0;
+  int ret_val;
+
+  if (result)
+    ret_val = 0;
+  else
+    ret_val = 1;
+
+  return ret_val;
 }
 
 void print_help(std::string path_str)
@@ -258,4 +267,3 @@ void print_help(std::string path_str)
 }
 
 /** EOF **/
-
