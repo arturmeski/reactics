@@ -79,31 +79,31 @@ for i in range(n):
 
 out += CA_STR.format(transitions)
 
-# f1
-formula = "EF( proc0.in )"
-out += PROPERTY_STR.format("f1",formula)
+## f1
+#formula = "EF( proc0.in )"
+#out += PROPERTY_STR.format("f1",formula)
 
-# f2
+# f1
 formula = "EF( E<proc0.allowed>X( proc0.in ) )"
 for i in range(1, n):
     formula += " AND EF( E<proc{:d}.allowed>X( proc{:d}.in ) )".format(i, i)
-out += PROPERTY_STR.format("f2",formula)
+out += PROPERTY_STR.format("f1",formula)
 
-# f3
+# f2
 formula = "EF( proc0.approach"
 for i in range(1, n):
     formula += " AND proc{:d}.approach".format(i)
 formula += " )"
-out += PROPERTY_STR.format("f3",formula)
+out += PROPERTY_STR.format("f2",formula)
 
-# f4
+# f3
 subf = "~proc1.in"
 for i in range(2, n):
     subf += " AND ~proc{:d}.in".format(i)
 formula = "AG( proc0.in IMPLIES K[proc0]({:s}) )".format(subf)
-out += PROPERTY_STR.format("f4",formula)
+out += PROPERTY_STR.format("f3",formula)
 
-# f5
+# f4
 subf = "~proc1.in"
 for i in range(2, n):
     subf += " AND ~proc{:d}.in".format(i)
@@ -111,7 +111,7 @@ all_agents = "proc0"
 for i in range(1, n):
     all_agents += ",proc{:d}".format(i)
 formula = "AG( proc0.in IMPLIES C[{:s}]({:s}) )".format(all_agents,subf)
-out += PROPERTY_STR.format("f5",formula)
+out += PROPERTY_STR.format("f4",formula)
 
 print(out)
 

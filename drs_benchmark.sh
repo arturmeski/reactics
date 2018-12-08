@@ -7,7 +7,7 @@ CMD="./reactics -B"
 timelimit="$((30*60))" # 30 minutes
 timelimit="$((5*60))" # 5 minutes
 
-form_tgc_sc="`seq 1 3`"
+form_tgc_sc="`seq 1 4`"
 form_asm="`seq 1 2`"
 
 for benchmark in "tgc_sc" "asm"; do
