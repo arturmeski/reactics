@@ -84,9 +84,9 @@ formula = "EF( proc0.in )"
 out += PROPERTY_STR.format("f1",formula)
 
 # f2
-formula = "EF( proc0.in )"
+formula = "EF( E<proc0.allowed>X( proc0.in ) )"
 for i in range(1, n):
-    formula += " AND EF( proc{:d}.in )".format(i)
+    formula += " AND EF( E<proc{:d}.allowed>X( proc{:d}.in ) )".format(i, i)
 out += PROPERTY_STR.format("f2",formula)
 
 # f3
