@@ -263,23 +263,28 @@ std::string FormRSCTLK::getAgentsStr(void) const
 {
   std::string r = "";
   bool first = true;
-  for (const auto &a : agents)
-  {
-    if (first)
+
+  for (const auto &a : agents) {
+    if (first) {
       first = false;
-    else
+    }
+    else {
       r += " ";
+    }
+
     r += a;
   }
+
   return r;
 }
 
 ProcSet FormRSCTLK::getAgentsAsProcSet(RctSys *rs) const
 {
   ProcSet processes;
-  for (auto &a : agents)
-  {
+
+  for (auto &a : agents) {
     processes.insert(rs->getProcessID(a));
   }
+
   return processes;
 }

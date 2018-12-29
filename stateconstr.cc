@@ -57,10 +57,12 @@ BDD StateConstr::getBDDforContext(const SymRS *srs) const
 BDD StateConstr::getBDD(const SymRS *srs, bool encode_context) const
 {
   if (oper == STC_PV) {
-    if (encode_context)
+    if (encode_context) {
       return srs->encActStrEntity(proc_name, entity_name);
-    else
+    }
+    else {
       return srs->encEntity(proc_name, entity_name);
+    }
   }
   else if (oper == STC_TF) {
     if (tf) {
@@ -91,22 +93,26 @@ BDD StateConstr::getBDD(const SymRS *srs, bool encode_context) const
 
 bool StateConstr::isFalse(void) const
 {
-  if (oper == STC_TF && tf == false)
+  if (oper == STC_TF && tf == false) {
     return true;
+  }
 
-  if (oper == STC_NOT && arg[0]->isTrue())
+  if (oper == STC_NOT && arg[0]->isTrue()) {
     return true;
+  }
 
   return false;
 }
 
 bool StateConstr::isTrue(void) const
 {
-  if (oper == STC_TF && tf == true)
+  if (oper == STC_TF && tf == true) {
     return true;
+  }
 
-  if (oper == STC_NOT && arg[0]->isFalse())
+  if (oper == STC_NOT && arg[0]->isFalse()) {
     return true;
+  }
 
   return false;
 }

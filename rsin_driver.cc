@@ -110,12 +110,11 @@ void rsin_driver::useContextAutomaton(void)
 void rsin_driver::makeProgressive(void)
 {
   make_progressive = true;
-  if (use_ctx_aut)
-  {
+
+  if (use_ctx_aut) {
     getReactionSystem()->ctxAutEnableProgressiveClosure();
   }
-  else
-  {
+  else {
     FERROR("Context automaton not enabled");
   }
 }

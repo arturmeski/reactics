@@ -773,7 +773,7 @@ void SymRS::encodeTransitions(void)
     VERB("Using partitioned transition relation encoding");
 
     if (usingContextAutomaton()) {
-      partTrans = new BDDvec(numberOfProc+1);
+      partTrans = new BDDvec(numberOfProc + 1);
     }
     else {
       partTrans = new BDDvec(numberOfProc);
@@ -789,8 +789,7 @@ void SymRS::encodeTransitions(void)
 
   VERB_LN(3, "Entity production encoding for all the processes and their products");
 
-  if (opts->part_tr_rel)
-  {
+  if (opts->part_tr_rel) {
 
     for (const auto &proc_products : usedProducts) {
       auto proc_id = proc_products.first;
@@ -949,9 +948,11 @@ void SymRS::encodeCtxAutTrans(void)
     BDD enc_dst = encCtxAutStateSucc(t.dst_state);
     BDD enc_ctx = compContext(encContext(t.ctx));
     BDD enc_drs_state = BDD_TRUE;
+
     if (t.state_constr != nullptr) {
       enc_drs_state = t.state_constr->getBDDforState(this);
     }
+
     BDD new_trans = enc_src * enc_drs_state * enc_ctx * enc_dst;
 
     *tr_ca += new_trans;

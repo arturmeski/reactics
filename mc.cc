@@ -127,6 +127,7 @@ inline BDD ModelChecker::getPreEctx(const BDD &states, const BDD *contexts)
       q *= x * trans;
       reorder();
     }
+
     q *= *contexts;
   }
   else {
@@ -367,13 +368,11 @@ BDD ModelChecker::getStatesRSCTLK(const FormRSCTLK *form)
     auto proc_set = form->getAgentsAsProcSet(srs->rs);
     return *reach - (statesNE(*reach - getStatesRSCTLK(form->getLeftSF()), proc_set) * *reach);
   }
-  else if (oper == RSCTLK_NC)
-  {
+  else if (oper == RSCTLK_NC) {
     auto proc_set = form->getAgentsAsProcSet(srs->rs);
     return statesNC(getStatesRSCTLK(form->getLeftSF()) * *reach, proc_set) * *reach;
   }
-  else if (oper == RSCTLK_UC)
-  {
+  else if (oper == RSCTLK_UC) {
     auto proc_set = form->getAgentsAsProcSet(srs->rs);
     return *reach - (statesNC(*reach - getStatesRSCTLK(form->getLeftSF()), proc_set) * *reach);
   }
@@ -475,8 +474,7 @@ BDD ModelChecker::statesNE(const BDD &states, ProcSet processes)
 {
   BDD x = BDD_FALSE;
 
-  for (auto const &proc_id : processes)
-  {
+  for (auto const &proc_id : processes) {
     x += states.ExistAbstract(getIthOnly(proc_id));
   }
 
@@ -488,14 +486,14 @@ BDD ModelChecker::statesNC(const BDD &states, ProcSet processes)
   BDD x = BDD_FALSE;
   BDD x_p = *reach;
 
-  while (x != x_p)
-  {
+  while (x != x_p) {
     x_p = x;
     BDD t = BDD_FALSE;
-    for (auto const &proc_id : processes)
-    {
+
+    for (auto const &proc_id : processes) {
       t += x.ExistAbstract(getIthOnly(proc_id));
     }
+
     x = t;
   }
 

@@ -121,9 +121,11 @@ void CtxAut::showTransitions(void)
     cout << " * [" << getStateName(t.src_state) << " -> " << getStateName(
            t.dst_state)
          << "]: { " << parent_rctsys->procEntitiesToStr(t.ctx) << "}";
+
     if (t.state_constr != nullptr) {
       cout << " " << t.state_constr->toStr();
     }
+
     cout << endl;
   }
 }
@@ -134,16 +136,17 @@ void CtxAut::makeProgressive(void)
   assert(!made_progressive);
 
   std::string special_loc = "T";
-  while (hasState(special_loc))
-  {
+
+  while (hasState(special_loc)) {
     special_loc += "T";
   }
+
   addState(special_loc);
   State special_loc_id = getLastStateID();
 
   std::map<State, StateConstr *> constrs;
-  for (State s = 0; s < states_ids.size(); ++s)
-  {
+
+  for (State s = 0; s < states_ids.size(); ++s) {
     if (s == special_loc_id) {
       continue;
     }
@@ -157,22 +160,23 @@ void CtxAut::makeProgressive(void)
 
   for (const auto &t : transitions) {
     State curr_st = t.src_state;
-    if (t.state_constr != nullptr)
-    {
+
+    if (t.state_constr != nullptr) {
       constrs[curr_st] = new StateConstr(
-      STC_OR, constrs[curr_st], t.state_constr);
+        STC_OR, constrs[curr_st], t.state_constr);
     }
   }
 
-  for (const auto &s : states_ids)
-  {
-      StateConstr *state_constr = nullptr;
-      if (!constrs[getStateID(s)]->isTrue()) {
-        state_constr = new StateConstr(STC_NOT, constrs[getStateID(s)]);
-        addTransition(s, special_loc, state_constr);
-      }
+  for (const auto &s : states_ids) {
+    StateConstr *state_constr = nullptr;
+
+    if (!constrs[getStateID(s)]->isTrue()) {
+      state_constr = new StateConstr(STC_NOT, constrs[getStateID(s)]);
+      addTransition(s, special_loc, state_constr);
+    }
 
   }
+
   addTransition(special_loc, special_loc, nullptr);
 
   made_progressive = true;

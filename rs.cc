@@ -363,8 +363,9 @@ void RctSys::ctxAutSaveCurrentContextSet(std::string processName)
 
 void RctSys::ctxAutFinalise(void)
 {
-  if (gen_ctxaut_progressive_closure)
+  if (gen_ctxaut_progressive_closure) {
     ctx_aut->makeProgressive();
+  }
 }
 
 /** EOF **/

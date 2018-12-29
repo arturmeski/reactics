@@ -69,16 +69,18 @@ static inline int64 memUsedInt64()
 
 #if defined(__APPLE__)
 
-static inline double memUsed() {
-    malloc_statistics_t t;
-    malloc_zone_statistics(NULL, &t);
-    return (double)t.max_size_in_use / (1024*1024); }
+static inline double memUsed()
+{
+  malloc_statistics_t t;
+  malloc_zone_statistics(NULL, &t);
+  return (double)t.max_size_in_use / (1024 * 1024);
+}
 
 #else
 
 static inline double memUsed()
 {
-  return memUsedInt64() / (1024*1024);
+  return memUsedInt64() / (1024 * 1024);
 }
 
 #endif

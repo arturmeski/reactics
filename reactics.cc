@@ -124,7 +124,7 @@ int main(int argc, char **argv)
   if (optind < argc) {
     inputfile = argv[optind];
   }
-	else if (!dump_help_message) {
+  else if (!dump_help_message) {
     cout << "Missing input file" << endl;
     dump_help_message = true;
   }
@@ -217,10 +217,12 @@ int main(int argc, char **argv)
 
   int ret_val;
 
-  if (result)
+  if (result) {
     ret_val = 0;
-  else
+  }
+  else {
     ret_val = 1;
+  }
 
   return ret_val;
 }
@@ -244,25 +246,25 @@ void print_help(std::string path_str)
 #endif
        << " Usage: " << path_str << " [options] <input file>" << endl << endl
        << " TASKS:" << endl
-       << "  -c   -- perform RSCTLK model checking" << endl
+       << "  -c form  -- perform RSCTLK model checking (form: formula identifier)" << endl
        //<< " -f K -- generate SMT input for the depth K" << endl
-       << "  -P   -- print parsed system" << endl
-       << "  -r   -- print reactions" << endl
-       << "  -s   -- print the set of all the reachable states" << endl
-       << "  -t   -- print the set of all the reachable states with their successors"
+       << "  -P       -- print parsed system" << endl
+       << "  -r       -- print reactions" << endl
+       << "  -s       -- print all the reachable states" << endl
+       << "  -t       -- print all the reachable states with their successors"
        << endl
        << endl << " OTHER:" << endl
-       << "  -b   -- disable bounded model checking (BMC) heuristic" << endl
-       << "  -x   -- use partitioned transition relation (may use less memory)" <<
+       << "  -b       -- disable bounded model checking (BMC) heuristic" << endl
+       << "  -x       -- use partitioned transition relation" <<
        endl
-       << "  -z   -- use reordering of the BDD variables" << endl
-       << "  -v   -- verbose (can be used more than once to increase verbosity)" <<
+       << "  -z       -- use reordering of the BDD variables" << endl
+       << "  -v       -- verbose (use more than once to increase verbosity)" <<
        endl
-       << "  -p   -- show progress (where possible)" << endl
+       << "  -p       -- show progress (where possible)" << endl
        << endl
        << " Benchmarking options:" << endl
-       << "  -m   -- measure and display time and memory usage" << endl
-       << "  -B   -- display an easy to parse summary (enables -m)" << endl
+       << "  -m       -- measure and display time and memory usage" << endl
+       << "  -B       -- display an easy to parse summary (enables -m)" << endl
        << endl;
 }
 
