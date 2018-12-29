@@ -820,7 +820,7 @@ void SymRS::encodeTransitions(void)
   VERB("Reactions ready");
 
   if (usingContextAutomaton()) {
-    VERB("Augmenting transition relation encoding with the transition relation for context automaton");
+    VERB("Augmenting transitions with transitions for context automaton");
 
     if (opts->part_tr_rel) {
       auto last_index = numberOfProc;
