@@ -19,8 +19,9 @@
 #include "options.hh"
 #include "memtime.hh"
 
-#define VERSION     "2.0 ALPHA"
-#define AUTHOR      "Artur Meski <artur.meski@gmail.com>"
+#define VERSION     "2.0"
+//#define AUTHOR      "Artur Meski <artur.meski@gmail.com>"
+#define AUTHOR      "Artur Meski <meski@ipipan.waw.pl>"
 using std::cout;
 using std::endl;
 

@@ -21,7 +21,7 @@ int main(int argc, char **argv)
   bool reach_states_succ = false;
   bool bmc = true;
   bool benchmarking = false;
-  bool usage_error = false;
+  bool dump_help_message = false;
   bool print_parsed_sys = false;
   std::string property_name = "default";
 
@@ -110,11 +110,11 @@ int main(int argc, char **argv)
         break;
 
       case 'h':
-        usage_error = true;
+        dump_help_message = true;
         break;
 
       default:
-        usage_error = true;
+        dump_help_message = true;
         break;
     }
   }
@@ -124,12 +124,12 @@ int main(int argc, char **argv)
   if (optind < argc) {
     inputfile = argv[optind];
   }
-  else {
+	else if (!dump_help_message) {
     cout << "Missing input file" << endl;
-    usage_error = true;
+    dump_help_message = true;
   }
 
-  if (usage_error) {
+  if (dump_help_message) {
     print_help(std::string(argv[0]));
     return 100;
   }

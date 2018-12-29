@@ -7,7 +7,8 @@ CPPFLAGS = -Wall $(CPPFLAGS_SILENT) #-Werror
 #CPPFLAGS = -Wall $(INCLUDES) -DNDEBUG
 CXXFLAGS_SILENT = -O3 -g
 CXXFLAGS = -std=c++14 $(CXXFLAGS_SILENT)
-#CXXFLAGS = -std=c++14 -O3 -DPUBLIC_RELEASE -DNDEBUG #-g
+CXXFLAGS = -std=c++14 -O3 -DPUBLIC_RELEASE -DNDEBUG #-g
+CXXFLAGS = -std=c++14 -O3 -DPUBLIC_RELEASE #-g
 LDLIBS = $(CUDD_INCLUDE)
 
 OBJ = rs.o ctx_aut.o symrs.o mc.o rsin_driver.o rsin_parser.o rsin_parser.lex.o formrsctlk.o stateconstr.o
