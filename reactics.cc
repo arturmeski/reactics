@@ -242,7 +242,7 @@ void print_help(std::string path_str)
        << " ###################################" << endl
        << endl
 #endif
-       << " Usage: " << path_str << " [options] <inputfile>" << endl << endl
+       << " Usage: " << path_str << " [options] <input file>" << endl << endl
        << " TASKS:" << endl
        << "  -c   -- perform RSCTLK model checking" << endl
        //<< " -f K -- generate SMT input for the depth K" << endl
