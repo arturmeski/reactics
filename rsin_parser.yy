@@ -80,15 +80,15 @@ class rsin_driver;
 %start system;
 
 system:
-	| OPTIONS LCB options RCB system
-  | REACTIONS LCB reactionsets RCB system
-  | INITIALCONTEXTS LCB initstates RCB system
-  | CONTEXTENTITIES LCB actionentities RCB system
-	| CONTEXTAUTOMATON LCB ctxaut RCB system
+	| OPTIONS LCB options RCB SEMICOL system
+  | REACTIONS LCB reactionsets RCB SEMICOL system
+  | INITIALCONTEXTS LCB initstates RCB SEMICOL system
+  | CONTEXTENTITIES LCB actionentities RCB SEMICOL system
+	| CONTEXTAUTOMATON LCB ctxaut RCB SEMICOL system
   {
     driver.getReactionSystem()->ctxAutFinalise();
   }
-  | RSCTLKFORM LCB IDENTIFIER COL rsctlk_form RCB system {
+  | RSCTLKFORM LCB IDENTIFIER COL rsctlk_form RCB SEMICOL system {
     driver.addFormRSCTLK(*$3, $5);
     free($3);
   }
@@ -213,9 +213,9 @@ actentity: IDENTIFIER {
 /*******************************************/
 
 ctxaut:
-	| STATES LCB autstates RCB ctxaut
-	| INITSTATE LCB autinitstate RCB ctxaut
-	| TRANSITIONS LCB auttransitions RCB ctxaut
+	| STATES LCB autstates RCB SEMICOL ctxaut
+	| INITSTATE LCB autinitstate RCB SEMICOL ctxaut
+	| TRANSITIONS LCB auttransitions RCB SEMICOL ctxaut
 	;
 
 autstate: IDENTIFIER {
