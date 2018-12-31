@@ -749,7 +749,7 @@ class SmtCheckerRSCParam(object):
             print_error("Expected a list of formulae")
         
         #print_info("Parameter constraint: {:s}".format(str(param_constr)))
-        print_info("Parameter constraint defined")
+        #print_info("Parameter constraint defined")
 
 
         self.reset()

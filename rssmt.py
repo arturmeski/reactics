@@ -23,7 +23,7 @@ if profiling:
 
 ##################################################################
 
-version = "2018/01/06/00"
+version = "2.5"
 rsmc_banner = """
 Reaction Systems SMT-Based Model Checking
 
