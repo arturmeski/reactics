@@ -28,7 +28,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
         self.background_set = []
         self.context_entities = []  # legacy. to be removed
         self.reactions_by_prod = None
-        self.max_concentration = 0
+        self.max_concentration = 1
         self.max_conc_per_ent = dict()
 
     def add_bg_set_entity(self, e):

@@ -66,14 +66,11 @@ def gen_expr():
     #     ltl_X(bag_Not("h"), exact_state("X", all_entities))))
     #
     
-    # param_constr = param_entity(lda, "yp") == 0
-
+    pc = param_entity(lda, "a") == 0
     f = ltl_F(bag_entity("h") == 0, "c")
 
     checker = SmtCheckerRSCParam(crprs, optimise=True)
-    checker.check_rsltl(formulae_list=[f]) 
-    
-    #, param_constr=param_constr)
+    checker.check_rsltl(formulae_list=[f], param_constr=pc)
     
 
 gen_expr()
