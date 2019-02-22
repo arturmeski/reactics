@@ -9,10 +9,10 @@ def gen_expr():
     
     prs = ReactionSystemWithConcentrationsParam()
     
-    entities = ["a", "b", "c", "h"]
+    ent_with_conc = [("a", 3), ("b",2), ("c",1), ("h",1)]
 
-    for ent in entities:
-        prs.add_bg_set_entity((ent, 3))
+    for ec in ent_with_conc:
+        prs.add_bg_set_entity(ec)
 
     lda = prs.get_param("lda")
     
