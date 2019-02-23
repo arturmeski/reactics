@@ -62,14 +62,13 @@ class SmtCheckerRSCParam(object):
 
         self.next_level_to_encode = 0
 
-        # this is probably not needed anymore:
-        # self.producible_entities = self.rs.get_producible_entities()
-        # self.improducible_entities = set(self.rs.get_state_ids(self.rs.background_set)) - self.producible_entities
-        
+        #
         # WARNING: improd vs. improducible
-        # there is some confusion related to the variables naming:
-        # improd - intermediate products
-        # improducible - entities that are never produces (there is no reaction that produces that entity)
+        # there is some confusion related to the variable naming:
+        #
+        # * improd - intermediate products
+        # * improducible - entities that are never produces (there is no reaction that produces that entity)
+        #
         
         # TODO: number of loops == number of paths
         self.loop_position = None
@@ -162,9 +161,6 @@ class SmtCheckerRSCParam(object):
         self.path_v_improd.setdefault(path_idx, [])
         self.path_v_improd_for_entities.setdefault(path_idx, [])
         
-        # assert len(self.path_v_improd[path_idx]) == level
-        # assert len(self.path_v_improd_for_entities[path_idx]) == level
-
         if level < 1:
             #
             # If we are at level==0, we add a dummy "level"
@@ -580,11 +576,6 @@ class SmtCheckerRSCParam(object):
             e_id = self.rs.get_entity_id(ent)
             enc = And(enc, self.v[level][e_id] >= conc)
 
-        # state_ids = self.rs.get_state_ids(state)
-        #
-        # for entity in state_ids:
-        #     enc = And(enc, self.v[level][entity])
-
         return simplify(enc)    
 
     def enc_state_with_blocking(self, level, prop):
@@ -629,7 +620,6 @@ class SmtCheckerRSCParam(object):
                     print(
                         " " + self.rs.get_entity_name(var_id) + "=" + var_rep,
                         end="")
-                # print(" " + repr(m[self.v[level][var_id]]), end="")
             print(" }")
 
             if level != max_level:
@@ -748,16 +738,10 @@ class SmtCheckerRSCParam(object):
         if not isinstance(formulae_list, (list, tuple)):
             print_error("Expected a list of formulae")
         
-        #print_info("Parameter constraint: {:s}".format(str(param_constr)))
-        #print_info("Parameter constraint defined")
-
-
         self.reset()
 
         num_of_paths = len(formulae_list)
         
-        # formula = formulae[0]
-
         print_info("Running rsLTL bounded model checking")
         print_info("Tested formulae:")
         for form in formulae_list:
@@ -780,8 +764,6 @@ class SmtCheckerRSCParam(object):
         
         self.current_level = 0
 
-        # self.prepare_all_variables(num_of_paths)
-
         # assertions for all the paths and parameters
         self.solver_add(self.enc_concentration_levels_assertions_for_paths(0, num_of_paths))
         self.solver_add(self.enc_param_concentration_levels_assertion())
@@ -803,7 +785,6 @@ class SmtCheckerRSCParam(object):
             
             print(
                 "\n{:-^70}".format("[ Working at level=" + str(self.current_level) + " ]"))
-            # stdout.flush()
 
             # reachability test:
             self.solver.push()
@@ -816,9 +797,6 @@ class SmtCheckerRSCParam(object):
             # Loops encoding
             print_info("Adding the encoding for the loops...")
             self.solver_add(self.get_loop_encodings())
-
-            # if self.optimise:
-            #     self.assert_param_optimisation()
 
             print_info("Testing satisfiability...")
             result = self.solver.check()

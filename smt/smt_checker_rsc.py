@@ -153,23 +153,6 @@ class SmtCheckerRSC(object):
         
             enc_ordinary_reactions_enabledness = simplify(Or(enc_ordinary_reactions_enabledness,enc_rct_enabled))
         
-        # for reactants,inhibitors,products in rcts_for_prod_entity:
-        #     enc_reactants   = True
-        #     enc_inhibitors  = True
-        #     # enc_products -- below
-        #
-        #     for reactant,concentration in reactants:
-        #         enc_reactants = simplify(And(enc_reactants,
-        #                                     Or(self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
-        #     for inhibitor,concentration in inhibitors:
-        #         enc_inhibitors = simplify(And(enc_inhibitors,
-        #                                      And(self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
-        #
-        #     enc_products = self.v[level+1][products[0][0]] == products[0][1]
-        #
-        #     enc_enabledness = simplify(Or(enc_enabledness, And(enc_reactants, enc_inhibitors)))
-        #     enc_rct_prod = simplify(Or(enc_rct_prod, And(enc_reactants, enc_inhibitors, enc_products)))
-            
         # -------- meta reactions ---------------------------------------------------
         
         for r_type,command_entity,reactants,inhibitors in meta_reactions:
@@ -234,17 +217,6 @@ class SmtCheckerRSC(object):
         enc_rct_prod = Or(enc_rct_prod, enc_when_to_produce_zero_conc)
         return enc_rct_prod
 
-    # def enc_entity_production(self, level, prod_entity):
-    #     """Encodes the production of a given entity from a given level at level+1"""
-    #
-    #     enc_enab_cond = self.enc_enabledness(level, prod_entity)
-    #
-    #     enc_ent_prod = Or(And(enc_enab_cond, self.v[level+1][prod_entity]),
-    #             And(Not(enc_enab_cond), Not(self.v[level+1][prod_entity])))
-    #
-    #     return simplify(enc_ent_prod)
-    
-        
     def enc_transition_relation(self, level):
         return simplify(And(self.enc_rs_trans(level), self.enc_automaton_trans(level)))
 
@@ -299,21 +271,6 @@ class SmtCheckerRSC(object):
 
         raise RuntimeError("Should not be used with RSC")
 
-        # enc = True
-        # used_entities_ids = self.rs.get_state_ids(state)
-        #
-        # for ent,conc in state:
-        #     e_id = self.rs.get_entity_id(ent)
-        #     enc = And(enc, self.v[level][e_id] == conc)
-        #
-        # not_in_state = set(range(len(self.rs.background_set)))
-        # not_in_state = not_in_state.difference(set(used_entities_ids))
-        #
-        # for entity in not_in_state:
-        #     enc = And(enc, self.v[level][entity] == 0)
-        #
-        # return simplify(enc)
-
     def enc_min_state(self, level, state):
         """Encodes the state at the given level with the minimal required concentration levels"""
 
@@ -321,11 +278,6 @@ class SmtCheckerRSC(object):
         for ent,conc in state:
             e_id = self.rs.get_entity_id(ent)
             enc = And(enc, self.v[level][e_id] >= conc)
-
-        # state_ids = self.rs.get_state_ids(state)
-        #
-        # for entity in state_ids:
-        #     enc = And(enc, self.v[level][entity])
 
         return simplify(enc)
 
