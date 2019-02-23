@@ -3,8 +3,8 @@
 #include <string>
 #include <map>
 #include "rsin_parser.hh"
-#include "rs.hh"
-#include "formrsctl.hh"
+// #include "rs.hh"
+#include "formrsctlk.hh"
 #include "options.hh"
 
 // Tell Flex the lexer's prototype ...
@@ -16,21 +16,26 @@
 // ... and declare it for the parser's sake.
 YY_DECL;
 
+class RctSys;
+class CtxAut;
+
 // Conducting the whole scanning an parsing of RS
 class rsin_driver
 {
-public:
+  public:
     rsin_driver(void);
     rsin_driver(RctSys *rs);
     virtual ~rsin_driver();
 
     //std::map<std::string, int> variables;
-    FormRSCTL *rsctlform;
     Options *opts;
-	
-	// options in configuration file:
-	bool use_ctx_aut;
-	bool use_concentrations;
+
+    std::map<std::string, FormRSCTLK *> properties;
+
+    // options in configuration file:
+    bool use_ctx_aut;
+    bool use_concentrations;
+    bool make_progressive;
 
     // Handling the scanner
     void scan_begin();
@@ -41,29 +46,36 @@ public:
     std::string file;
     bool trace_parsing;
 
-	void setOptions(Options *opts) 		{ this->opts = opts; };
-    void addFormRSCTL(FormRSCTL *f) 	{ rsctlform = f; };
-    FormRSCTL *getFormRSCTL(void);
+    void setOptions(Options *opts)
+    {
+      this->opts = opts;
+    };
+    void addFormRSCTLK(std::string propertyName, FormRSCTLK *f);
 
-	void ensureOptionsAllowed(void);
-	void useContextAutomaton(void);
-	void useConcentrations(void)		{ ensureOptionsAllowed(); use_concentrations = true; };
-	
-	void ensureReactionSystemReady(void);
-	void setupReactionSystem(void);
-	
-	RctSys *getReactionSystem(void);
-	CtxAut *getCtxAut(void);
+    FormRSCTLK *getFormRSCTLK(std::string propertyName);
+
+    void ensureOptionsAllowed(void);
+    void useContextAutomaton(void);
+    void useConcentrations(void)
+    {
+      ensureOptionsAllowed();
+      use_concentrations = true;
+    };
+    void makeProgressive(void);
+    void ensureReactionSystemReady(void);
+    void setupReactionSystem(void);
+
+    RctSys *getReactionSystem(void);
+    CtxAut *getCtxAut(void);
 
     // Error handling.
     void error(const yy::location &l, const std::string &m);
     void error(const std::string &m);
-	
-private:
+
+  private:
     RctSys *rs;
 
-	void initialise(void);
+    void initialise(void);
 };
 
 #endif
-

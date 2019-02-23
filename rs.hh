@@ -25,80 +25,119 @@ using std::cout;
 using std::endl;
 
 class CtxAut;
+class StateConstr;
 
 class RctSys
 {
-	    friend class SymRS;
-	    friend class SymRSstate;
+    friend class SymRS;
+    friend class SymRSstate;
 
-	public:
-		RctSys(void);
-	    void setOptions(Options *opts)
-	    {
-	        this->opts = opts;
-	    }
-	    bool hasEntity(std::string entityName);
-	    void addEntity(std::string entityName);
-	    std::string getEntityName(Entity entityID);
-	    void pushReactant(std::string entityName);
-	    void pushInhibitor(std::string entityName);
-	    void pushProduct(std::string entityName);
-	    void commitReaction(void);
-	    std::string entityToStr(const Entity entity) {
-	        return entities_ids[entity];
-	    }
-	    std::string entitiesToStr(const Entities &entities);
-	    void showReactions(void);
-	    void pushStateEntity(std::string entityName);
-	    void commitInitState(void);
-	    void addActionEntity(std::string entityName);
-	    void addActionEntity(Entity entity);
-	    bool isActionEntity(Entity entity);
-	    void resetInitStates(void) {
-	        initStates.clear();
-	    }
-	    unsigned int getEntitiesSize(void) {
-	        return entities_ids.size();
-	    }
-	    unsigned int getReactionsSize(void) {
-	        return reactions.size();
-	    }
-	    unsigned int getActionsSize(void) {
-	        return actionEntities.size();
-	    }
-	    void showInitialStates(void);
-	    void showActionEntities(void);
-	    void printSystem(void);
+  public:
+    RctSys(void);
 
-		void ctxAutEnable(void);		
-		void ctxAutAddState(std::string stateName);
-		void ctxAutSetInitState(std::string stateName);
-		void ctxAutAddTransition(std::string srcStateName, std::string dstStateName);
-		void ctxAutPushNamedContextEntity(std::string entity_name);
-		
-		bool initStatesDefined(void) { return initStates.size() != 0; }
-		bool usingContextAutomaton(void) { return ctx_aut != nullptr; }
-		
-	private:
-	    Reactions reactions;
-	    EntitiesSets initStates;
+    void setOptions(Options *opts)
+    {
+      this->opts = opts;
+    }
+    bool hasEntity(std::string entityName);
+    void addEntity(std::string entityName);
+    std::string getEntityName(Entity entityID);
 
-	    Entities actionEntities;
+    void setCurrentProcess(std::string processName);
+    void addProcess(std::string processName);
+    bool hasProcess(Process processID);
+    bool hasProcess(std::string processName);
+    Process getProcessID(std::string processName);
+    std::string getProcessName(Process processID);
 
-		CtxAut *ctx_aut;
+    void addReactionForCurrentProcess(Reaction reaction);
 
-	    EntitiesByIds entities_ids;
-	    EntitiesByName entities_names;
+    void pushReactant(std::string entityName);
+    void pushInhibitor(std::string entityName);
+    void pushProduct(std::string entityName);
+    void commitReaction(void);
+    std::string entityToStr(const Entity entity)
+    {
+      return entities_ids[entity];
+    }
+    std::string entitiesToStr(const Entities &entities);
+    std::string procEntitiesToStr(const EntitiesForProc &procEntities);
+    void showReactions(void);
+    void pushStateEntity(std::string entityName);
+    void commitInitState(void);
+    void addActionEntity(std::string entityName);
+    void addActionEntity(Entity entity);
+    bool isActionEntity(Entity entity);
+    void resetInitStates(void)
+    {
+      initStates.clear();
+    }
+    unsigned int getEntitiesSize(void)
+    {
+      return entities_ids.size();
+    }
+    unsigned int getActionsSize(void)
+    {
+      return actionEntities.size();
+    }
+    void showInitialStates(void);
+    void showActionEntities(void);
+    void printSystem(void);
 
-	    Entities tmpReactants;
-	    Entities tmpInhibitors;
-	    Entities tmpProducts;
+    void ctxAutEnable(void);
+    void ctxAutEnableProgressiveClosure(void);
+    void ctxAutAddState(std::string stateName);
+    void ctxAutSetInitState(std::string stateName);
+    void ctxAutAddTransition(std::string srcStateName, std::string dstStateName);
+    void ctxAutAddTransition(std::string srcStateName, std::string dstStateName, StateConstr *stateConstr);
+    void ctxAutPushNamedContextEntity(std::string entity_name);
+    void ctxAutSaveCurrentContextSet(std::string processName);
+    void ctxAutFinalise(void);
 
-	    Entities tmpState;
+    bool initStatesDefined(void)
+    {
+      return initStates.size() != 0;
+    }
+    bool usingContextAutomaton(void)
+    {
+      return ctx_aut != nullptr;
+    }
 
-	    Options *opts;
+    size_t getNumberOfProcesses(void)
+    {
+      return processes_ids.size();
+    }
 
-	    Entity getEntityID(std::string entityName);
+  private:
+
+    ReactionsForProc proc_reactions;
+
+    EntitiesSets initStates;
+
+    Entities actionEntities;
+
+    CtxAut *ctx_aut;
+
+    bool gen_ctxaut_progressive_closure;
+
+    EntitiesById entities_ids;
+    EntitiesByName entities_names;
+
+    ProcessesById processes_ids;
+    ProcessesByName processes_names;
+
+    Process current_proc_id;
+    bool current_process_defined;
+
+    Entities tmpReactants;
+    Entities tmpInhibitors;
+    Entities tmpProducts;
+
+    Entities tmpState;
+
+    Options *opts;
+
+    Entity getEntityID(std::string entityName);
 
 };
 

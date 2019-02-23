@@ -38,34 +38,39 @@ blank [ \t]
   typedef yy::rsin_parser::token token;
 %}
 
-"options"				return token::OPTIONS;
+"options"				        return token::OPTIONS;
 "use-context-automaton"	return token::USE_CTX_AUT;
-"use-concentrations"	return token::USE_CONCENTRATIONS;
+"use-concentrations"	  return token::USE_CONCENTRATIONS;
+"make-progressive"      return token::MAKE_PROGRESSIVE;
 "reactions"             return token::REACTIONS;
 "initial-contexts"      return token::INITIALCONTEXTS;
 "context-entities"      return token::CONTEXTENTITIES;
-"context-automaton"		return token::CONTEXTAUTOMATON;
-"transitions"			return token::TRANSITIONS;
-"states"				return token::STATES;
-"init-state"			return token::INITSTATE;
-"rsctl-property"        return token::RSCTLFORM;
+"context-automaton"		  return token::CONTEXTAUTOMATON;
+"transitions"			      return token::TRANSITIONS;
+"states"				        return token::STATES;
+"init-state"			      return token::INITSTATE;
+"rsctlk-property"        return token::RSCTLKFORM;
 "{"                     return token::LCB;
 "}"                     return token::RCB;
 "("                     return token::LRB;
 ")"                     return token::RRB;
 "["                     return token::LSB;
 "]"                     return token::RSB;
-"<"						return token::LAB;
-">"						return token::RAB;
-":"						return token::COL;
+"="						          return token::EQ;
+"<"						          return token::LAB;
+">"						          return token::RAB;
+":"						          return token::COL;
 ";"                     return token::SEMICOL;
+"."                     return token::DOT;
 ","                     return token::COMMA;
 "->"                    return token::RARR;
 "AND"                   return token::AND;
 "OR"                    return token::OR;
-"XOR"					return token::XOR;
+"XOR"					          return token::XOR;
 "IMPLIES"               return token::IMPLIES;
 "~"                     return token::NOT;
+"A"                     return token::A;
+"E"                     return token::E;
 "EX"                    return token::EX;
 "EU"                    return token::EU;
 "EF"                    return token::EF;
@@ -74,12 +79,18 @@ blank [ \t]
 "AU"                    return token::AU;
 "AF"                    return token::AF;
 "AG"                    return token::AG;
-"E"                     return token::E;
-"A"                     return token::A;
 "X"                     return token::X;
 "U"                     return token::U;
 "F"                     return token::F;
 "G"                     return token::G;
+"K"                     return token::UK;
+"C"                     return token::UC;
+"D"                     return token::UD;
+"UE"                    return token::UE;
+"NK"                    return token::NK;
+"NC"                    return token::NC;
+"ND"                    return token::ND;
+"NE"                    return token::NE;
 "empty"                 return token::EMPTY;
 "#".*                   ;
 
@@ -118,4 +129,3 @@ rsin_driver::scan_end()
 {
   fclose(yyin);
 }
-

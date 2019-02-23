@@ -1,13 +1,10 @@
 /*
-    Copyright (c) 2012, 2013
+    Copyright (c) 2012, 2013, 2018
     Artur Meski <meski@ipipan.waw.pl>
-
-    Reuse of the code or its part for any purpose
-    without the author's permission is strictly prohibited.
 */
 
-#ifndef RS_MAIN_HH
-#define RS_MAIN_HH
+#ifndef REACTICS_HH
+#define REACTICS_HH
 
 #include <iostream>
 #include <string>
@@ -22,9 +19,12 @@
 #include "options.hh"
 #include "memtime.hh"
 
-#define VERSION     "1.0alpha"
-#define AUTHOR      "Artur Męski <meski@ipipan.waw.pl>"
+#define VERSION     "2.0"
+//#define AUTHOR      "Artur Meski <artur.meski@gmail.com>"
+#define AUTHOR      "Artur Meski <meski@ipipan.waw.pl>"
 using std::cout;
 using std::endl;
+
+void print_help(std::string path_str);
 
 #endif
