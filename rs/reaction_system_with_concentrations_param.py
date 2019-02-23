@@ -3,19 +3,22 @@ from colour import *
 
 from rs.reaction_system import ReactionSystem
 
+
 class ParameterObj(object):
 
     def __init__(self, name):
         self.name = name
-        
+
     def __repr__(self):
         return "@{0}".format(self.name)
+
 
 def is_param(some_object):
     if isinstance(some_object, ParameterObj):
         return True
     else:
         return False
+
 
 class ReactionSystemWithConcentrationsParam(ReactionSystem):
 
@@ -124,7 +127,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
                 reactants.append((self.get_entity_id(entity), level))
                 if self.max_concentration < level:
                     self.max_concentration = level
-        
+
         #
         # INHIBITORS
         #
@@ -139,7 +142,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
                 inhibitors.append((self.get_entity_id(entity), level))
                 if self.max_concentration < level:
                     self.max_concentration = level
-        
+
         #
         # PRODUCTS
         #
@@ -161,51 +164,56 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
 
     def add_reaction(self, R, I, P):
         """Adds a reaction
-        
+
         R, I, and P are sets of entities (not their IDs)
         """
-        
+
         if P == []:
             raise RuntimeError("No products defined")
-        reaction = self.process_rip(R,I,P)
-        
+        reaction = self.process_rip(R, I, P)
+
         self.reactions.append(reaction)
 
     def add_reaction_without_reactants(self, R, I, P):
         """Adds a reaction"""
-        
+
         if P == []:
             raise RuntimeError("No products defined")
-        reaction = self.process_rip(R,I,P,ignore_empty_R=True)
+        reaction = self.process_rip(R, I, P, ignore_empty_R=True)
         self.reactions.append(reaction)
 
     def add_reaction_inc(self, incr_entity, incrementer, R, I):
         """Adds a macro/meta reaction for increasing the value of incr_entity"""
 
-        reactants,inhibitors,products = self.process_rip(R,I,[],ignore_empty_R=True)
+        reactants, inhibitors, products = self.process_rip(
+            R, I, [], ignore_empty_R=True)
         incr_entity_id = self.get_entity_id(incr_entity)
-        self.meta_reactions.setdefault(incr_entity_id,[])
-        self.meta_reactions[incr_entity_id].append(("inc", self.get_entity_id(incrementer), reactants, inhibitors))
+        self.meta_reactions.setdefault(incr_entity_id, [])
+        self.meta_reactions[incr_entity_id].append(
+            ("inc", self.get_entity_id(incrementer), reactants, inhibitors))
 
     def add_reaction_dec(self, decr_entity, decrementer, R, I):
         """Adds a macro/meta reaction for decreasing the value of incr_entity"""
 
-        reactants,inhibitors,products = self.process_rip(R,I,[],ignore_empty_R=True)
+        reactants, inhibitors, products = self.process_rip(
+            R, I, [], ignore_empty_R=True)
         decr_entity_id = self.get_entity_id(decr_entity)
-        self.meta_reactions.setdefault(decr_entity_id,[])
-        self.meta_reactions[decr_entity_id].append(("dec", self.get_entity_id(decrementer), reactants, inhibitors))
+        self.meta_reactions.setdefault(decr_entity_id, [])
+        self.meta_reactions[decr_entity_id].append(
+            ("dec", self.get_entity_id(decrementer), reactants, inhibitors))
 
     def add_permanency(self, ent, I):
         """Sets entity to be permanent unless it is inhibited"""
-    
+
         ent_id = self.get_entity_id(ent)
-        
+
         if ent_id in self.permanent_entities:
-            raise RuntimeError("Permanency for {0} already defined.".format(ent))
-        
-        inhibitors = self.process_rip([],I,[],ignore_empty_R=True)[1]
+            raise RuntimeError(
+                "Permanency for {0} already defined.".format(ent))
+
+        inhibitors = self.process_rip([], I, [], ignore_empty_R=True)[1]
         self.permanent_entities[ent_id] = inhibitors
-    
+
     def set_context_entities(self, entities):
         raise NotImplementedError
 
@@ -233,33 +241,36 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
             return str(state)
         else:
             s = ""
-            for ent,level in state:
+            for ent, level in state:
                 s += self.get_entity_name(ent) + "=" + str(level) + ", "
             s = s[:-2]
-        return s        
+        return s
 
     def show_background_set(self):
-        print(C_MARK_INFO + " Background set: {" + self.entities_names_set_to_str(self.background_set) + "}")
+        print(
+            C_MARK_INFO + " Background set: {" + self.entities_names_set_to_str(self.background_set) + "}")
 
     def show_meta_reactions(self):
         print(C_MARK_INFO + " Meta reactions:")
-        for param_ent,reactions in self.meta_reactions.items():
-            for r_type,command,reactants,inhibitors in reactions:
+        for param_ent, reactions in self.meta_reactions.items():
+            for r_type, command, reactants, inhibitors in reactions:
                 if r_type == "inc" or r_type == "dec":
-                    print(" - [ Type=" + repr(r_type) + " Operand=( " + self.get_entity_name(param_ent) + \
-                        " ) Command=( " + self.get_entity_name(command) + " ) ] -- ( R={" + self.state_to_str(reactants) + "}, I={" + self.state_to_str(inhibitors) + "} )")
+                    print(" - [ Type=" + repr(r_type) + " Operand=( " + self.get_entity_name(param_ent) + " ) Command=( " + self.get_entity_name(
+                        command) + " ) ] -- ( R={" + self.state_to_str(reactants) + "}, I={" + self.state_to_str(inhibitors) + "} )")
                 else:
-                    raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
+                    raise RuntimeError(
+                        "Unknown meta-reaction type: " + repr(r_type))
 
     def show_max_concentrations(self):
         print(C_MARK_INFO + " Maximal allowed concentration levels:")
-        for e,max_conc in self.max_conc_per_ent.items():
-            print(" - {0:^20} = {1:<6}".format(self.get_entity_name(e),max_conc))
+        for e, max_conc in self.max_conc_per_ent.items():
+            print(" - {0:^20} = {1:<6}".format(self.get_entity_name(e), max_conc))
 
     def show_permanent_entities(self):
         print(C_MARK_INFO + " Permanent entities:")
-        for e,inhibitors in self.permanent_entities.items():
-            print(" - {0:^20}{1:<6}".format(self.get_entity_name(e) + ": ","I={" + self.state_to_str(inhibitors) + "}"))
+        for e, inhibitors in self.permanent_entities.items():
+            print(" - {0:^20}{1:<6}".format(self.get_entity_name(e) + ": ",
+                                            "I={" + self.state_to_str(inhibitors) + "}"))
 
     def show(self, soft=False):
         self.show_background_set()
@@ -268,21 +279,22 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
         self.show_permanent_entities()
         self.show_meta_reactions()
         self.show_max_concentrations()
-        
+
     def get_producible_entities(self):
         """
         Returns the set of entities that appear as products of 
         reactions.
         """
-        
+
         producible_entities = set()
 
         for reaction in self.reactions:
-            product_entities = [e for e,c in reaction[2] if c > 0]
-            producible_entities = producible_entities.union(set(product_entities))
-            
+            product_entities = [e for e, c in reaction[2] if c > 0]
+            producible_entities = producible_entities.union(
+                set(product_entities))
+
         return producible_entities
-        
+
     def get_reaction_system(self):
         """
         Translates RSC into RS

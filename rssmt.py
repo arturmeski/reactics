@@ -48,14 +48,16 @@ def main():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-v", "--verbose", 
-        help="turn verbosity on", action="store_true")
-    parser.add_argument("-o", "--optimise", 
-        help="minimise the parametric computation result", action="store_true")
-    parser.add_argument("-n", "--scaling-parameter",
+    parser.add_argument("-v", "--verbose",
+                        help="turn verbosity on", action="store_true")
+    parser.add_argument("-o", "--optimise",
+                        help="minimise the parametric computation result",
+                        action="store_true")
+    parser.add_argument(
+        "-n", "--scaling-parameter",
         help="scaling parameter value (used in some benchmarks)")
     parser.add_argument("-s", "--special_mode",
-        help="special mode (used in some benchmarks)")
+                        help="special mode (used in some benchmarks)")
 
     args = parser.parse_args()
 
@@ -63,6 +65,7 @@ def main():
     rs_testing.run_tests(args)
 
 ##################################################################
+
 
 if __name__ == "__main__":
     try:

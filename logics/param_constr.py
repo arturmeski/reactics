@@ -1,6 +1,7 @@
 from enum import Enum
 ParamConstraint_oper = Enum(
-    'ParamConstraint_oper', 'param_entity true l_and l_or l_not lt le eq ge gt')
+    'ParamConstraint_oper',
+    'param_entity true l_and l_or l_not lt le eq ge gt')
 
 
 class ParamConstraint(object):
@@ -49,7 +50,8 @@ class ParamConstraint(object):
 
     @classmethod
     def f_param_ent(cls, param, entity_name):
-        return cls(ParamConstraint_oper.param_entity, param=param, entity=entity_name)
+        return cls(ParamConstraint_oper.param_entity, param=param,
+                   entity=entity_name)
 
     @classmethod
     def f_TRUE(cls):
@@ -64,25 +66,32 @@ class ParamConstraint(object):
         return cls(ParamConstraint_oper.l_not, L_oper=arg)
 
     def __lt__(self, other):
-        return ParamConstraint(ParamConstraint_oper.lt, L_oper=self, R_oper=other)
+        return ParamConstraint(
+            ParamConstraint_oper.lt, L_oper=self, R_oper=other)
 
     def __le__(self, other):
-        return ParamConstraint(ParamConstraint_oper.le, L_oper=self, R_oper=other)
+        return ParamConstraint(
+            ParamConstraint_oper.le, L_oper=self, R_oper=other)
 
     def __eq__(self, other):
-        return ParamConstraint(ParamConstraint_oper.eq, L_oper=self, R_oper=other)
+        return ParamConstraint(
+            ParamConstraint_oper.eq, L_oper=self, R_oper=other)
 
     def __ge__(self, other):
-        return ParamConstraint(ParamConstraint_oper.ge, L_oper=self, R_oper=other)
+        return ParamConstraint(
+            ParamConstraint_oper.ge, L_oper=self, R_oper=other)
 
     def __gt__(self, other):
-        return ParamConstraint(ParamConstraint_oper.gt, L_oper=self, R_oper=other)
+        return ParamConstraint(
+            ParamConstraint_oper.gt, L_oper=self, R_oper=other)
 
     def __and__(self, other):
-        return ParamConstraint(ParamConstraint_oper.l_and, L_oper=self, R_oper=other)
+        return ParamConstraint(
+            ParamConstraint_oper.l_and, L_oper=self, R_oper=other)
 
     def __or__(self, other):
-        return ParamConstraint(ParamConstraint_oper.l_or, L_oper=self, R_oper=other)
+        return ParamConstraint(
+            ParamConstraint_oper.l_or, L_oper=self, R_oper=other)
 
     def __invert__(self):
         return ParamConstraint(ParamConstraint_oper.l_not, L_oper=self)

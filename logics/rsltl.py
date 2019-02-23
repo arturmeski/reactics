@@ -27,7 +27,7 @@ class Formula_rsLTL(object):
             self.left_operand = Formula_rsLTL.f_bag(self.left_operand)
         if isinstance(self.right_operand, BagDescription):
             self.right_operand = Formula_rsLTL.f_bag(self.right_operand)
-            
+
         if self.sub_operand is True:
             self.sub_operand = BagDescription.f_TRUE()
 

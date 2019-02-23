@@ -1,12 +1,15 @@
 from logics import *
 
-##### SHORTCUTS
+# SHORTCUTS
+
 
 def bag_True():
     return BagDescription.f_TRUE()
 
+
 def bag_entity(name):
     return BagDescription.f_entity(name)
+
 
 def get_bag_if_str(arg):
     if isinstance(arg, str):
@@ -14,9 +17,11 @@ def get_bag_if_str(arg):
     else:
         return arg
 
+
 def bag_Not(a0):
     a0 = get_bag_if_str(a0)
     return BagDescription.f_Not(a0)
+
 
 def bag_And(*args):
     assert len(args) > 1
@@ -25,7 +30,8 @@ def bag_And(*args):
         last = BagDescription.f_And(
             last, get_bag_if_str(arg))
     return last
-    
+
+
 def exact_state(contained_entities, all_entities):
     """
     Assumes 0 concentration level for all the
@@ -40,31 +46,36 @@ def exact_state(contained_entities, all_entities):
             expr.append(ent == 0)
 
     if len(expr) > 0:
-        
+
         last = expr[0]
         for e in expr[1:]:
             last = BagDescription.f_And(last, e)
         return last
-        
+
     else:
         assert False
+
 
 def ltl_F(ctx_arg, a0):
     a0 = get_bag_if_str(a0)
     return Formula_rsLTL.f_F(ctx_arg, a0)
 
+
 def ltl_G(ctx_arg, a0):
     a0 = get_bag_if_str(a0)
     return Formula_rsLTL.f_G(ctx_arg, a0)
+
 
 def ltl_X(ctx_arg, a0):
     a0 = get_bag_if_str(a0)
     return Formula_rsLTL.f_X(ctx_arg, a0)
 
+
 def ltl_U(ctx_arg, a0, a1):
     a0 = get_bag_if_str(a0)
     a1 = get_bag_if_str(a1)
     return Formula_rsLTL.f_U(ctx_arg, a0, a1)
+
 
 def ltl_And(*args):
     assert len(args) > 1
@@ -73,17 +84,21 @@ def ltl_And(*args):
         last = Formula_rsLTL.f_And(last, get_bag_if_str(arg))
     return last
 
+
 def ltl_Not(a0):
     a0 = get_bag_if_str(a0)
     return Formula_rsLTL.f_Not(a0)
-    
+
+
 def ltl_Implies(a0, a1):
     a0 = get_bag_if_str(a0)
     a1 = get_bag_if_str(a1)
     return Formula_rsLTL.f_Implies(a0, a1)
 
+
 def param_entity(param, entity_name):
     return ParamConstraint.f_param_ent(param, entity_name)
+
 
 def param_And(*args):
     assert len(args) > 1
@@ -91,4 +106,3 @@ def param_And(*args):
     for arg in args[1:]:
         last = ParamConstraint.f_And(last, arg)
     return last
-

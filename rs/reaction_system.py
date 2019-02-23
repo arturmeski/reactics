@@ -1,6 +1,7 @@
 from sys import exit
 from colour import *
 
+
 class ReactionSystem(object):
 
     def __init__(self):
@@ -8,17 +9,17 @@ class ReactionSystem(object):
         self.reactions = []
         self.background_set = []
 
-        #self.reactions_by_agents = [] # each element is 'reactions_by_prod'
+        # self.reactions_by_agents = [] # each element is 'reactions_by_prod'
         self.reactions_by_prod = None
 
-        ## legacy:
+        # legacy:
         self.init_contexts = []
         self.context_entities = []
 
     @property
     def background_set_size(self):
         return len(self.background_set)
-        
+
     @property
     def set_of_bgset_ids(self):
         return set(range(self.background_set_size))
@@ -29,12 +30,13 @@ class ReactionSystem(object):
 
     def assume_not_in_bgset(self, name):
         if self.is_in_background_set(name):
-            raise RuntimeError("The entity " + name + " is already on the list")
-            
+            raise RuntimeError(
+                "The entity " + name + " is already on the list")
+
     def add_bg_set_entity(self, name):
         self.assume_not_in_bgset(name)
         self.background_set.append(name)
-    
+
     def ensure_bg_set_entity(self, name):
         if not self.is_in_background_set(name):
             self.background_set.append(name)
@@ -70,7 +72,7 @@ class ReactionSystem(object):
 
     def add_reaction(self, R, I, P):
         """Adds a reaction"""
-        
+
         if R == [] or P == []:
             raise RuntimeError("No reactants or products defined")
 
@@ -122,34 +124,38 @@ class ReactionSystem(object):
             s += self.get_entity_name(entity) + ", "
         s = s[:-2]
         return s
-        
+
     def state_to_str(self, state):
         return self.entities_ids_set_to_str(state)
 
     def show_reactions(self, soft=False):
         print(C_MARK_INFO + " Reactions:")
         if soft and len(self.reactions) > 50:
-            print(" -> there are more than 50 reactions (" + str(len(self.reactions)) + ")")
+            print(" -> there are more than 50 reactions (" +
+                  str(len(self.reactions)) + ")")
         else:
-            print(" "*4 + "{0: ^35}{1: ^25}{2: ^15}".format("reactants"," inhibitors"," products"))
+            print(
+                " "*4 + "{0: ^35}{1: ^25}{2: ^15}".format("reactants", " inhibitors", " products"))
             for reaction in self.reactions:
                 # print("\t( R={" + self.state_to_str(reaction[0]) + "}, I={" + self.state_to_str(reaction[1]) + "}, P={" + self.state_to_str(reaction[2]) + "} )")
                 print(" " + "- {0: ^35}{1: ^25}{2: ^15}".format("{ " + self.state_to_str(reaction[0]) + " }",
-                                                            " { " + self.state_to_str(reaction[1]) + " }",
-                                                            " { " + self.state_to_str(reaction[2]) + " }"))
+                                                                " { " + self.state_to_str(reaction[1]) + " }",
+                                                                " { " + self.state_to_str(reaction[2]) + " }"))
 
     def show_background_set(self):
-        print(C_MARK_INFO + " Background set: {" + self.entities_names_set_to_str(self.background_set) + "}")
+        print(
+            C_MARK_INFO + " Background set: {" + self.entities_names_set_to_str(self.background_set) + "}")
 
     def show_initial_contexts(self):
         if len(self.init_contexts) > 0:
             print(C_MARK_INFO + " Initial context sets:")
             for ctx in self.init_contexts:
-                  print(" - {" + self.entities_ids_set_to_str(ctx) + "}")
+                print(" - {" + self.entities_ids_set_to_str(ctx) + "}")
 
     def show_context_entities(self):
         if len(self.context_entities) > 0:
-            print(C_MARK_INFO + " Context entities: " + self.entities_ids_set_to_str(self.context_entities))
+            print(
+                C_MARK_INFO + " Context entities: " + self.entities_ids_set_to_str(self.context_entities))
 
     def show(self, soft=False):
 
@@ -157,7 +163,7 @@ class ReactionSystem(object):
         self.show_initial_contexts()
         self.show_reactions(soft)
         self.show_context_entities()
-        
+
     def get_reactions_by_product(self):
         """Sorts reactions by their products and returns a dictionary of products"""
 
@@ -169,13 +175,14 @@ class ReactionSystem(object):
         for reaction in self.reactions:
             producible_entities = producible_entities.union(set(reaction[2]))
 
-        reactions_by_prod = {} 
+        reactions_by_prod = {}
 
         for prod_entity in producible_entities:
             reactions_by_prod[prod_entity] = []
             for reaction in self.reactions:
                 if prod_entity in reaction[2]:
-                    reactions_by_prod[prod_entity].append([reaction[0],reaction[1]])
+                    reactions_by_prod[prod_entity].append(
+                        [reaction[0], reaction[1]])
 
         # save in cache
         self.reactions_by_prod = reactions_by_prod
