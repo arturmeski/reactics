@@ -162,3 +162,4 @@ class ContextAutomaton(object):
         self.show_transitions()
         self.show_prod_entities()
 
+# EOF

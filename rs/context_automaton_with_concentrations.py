@@ -67,3 +67,4 @@ class ContextAutomatonWithConcentrations(ContextAutomaton):
         self.show_states()
         self.show_transitions()
 
+# EOF

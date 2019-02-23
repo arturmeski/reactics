@@ -402,12 +402,5 @@ class ReactionSystemWithAutomaton(object):
         return ReactionSystemWithAutomaton(ors, oca)
         
 
-# class ReactionSystemWithConcentrationWithAutomaton(ReactionSystemWithAutomaton):
-#
-#     def __init__(self, reaction_system, context_automaton):
-#         self.rs = reaction_system
-#         self.ca = context_automaton
-#
-#     def show(self, soft=False):
-#         self.rs.show(soft)
-#         self.ca.show()
+# EOF
+

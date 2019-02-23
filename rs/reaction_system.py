@@ -192,3 +192,5 @@ class ReactionSystem(object):
         if self.background_set == []:
             print("Empty background set")
             exit(1)
+
+# EOF

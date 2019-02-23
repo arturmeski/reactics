@@ -8,4 +8,5 @@ class ReactionSystemWithNetworkOfAutomata(object):
     def show(self, soft=False):
         self.rs.show(soft)
         self.cas.show()
-        
+
+# EOF

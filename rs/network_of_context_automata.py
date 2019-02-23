@@ -101,4 +101,5 @@ class NetworkOfContextAutomata(object):
         print()
         self.show_prod_entities()
         self.show_actions()
-        
+
+# EOF 

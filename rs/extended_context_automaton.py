@@ -164,4 +164,5 @@ class ExtendedContextAutomaton(ContextAutomaton):
     def show(self):
         super(ExtendedContextAutomaton, self).show()
         self.show_actions()
-        
+
+# EOF 
