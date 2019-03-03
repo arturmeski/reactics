@@ -1,0 +1,10 @@
+
+Verbose level: 1
+Formula AG((p22 IMPLIES EF(~p22))) holds
+
+Encoding time: 0.004 sec
+Verification time: 2831 sec
+Encoding memory: 10.3 MB
+Memory (total): 25.98 MB
+TOTAL time: 2831 sec
+STAT; 0.004 ; 2831 ; 10.3 ; 25.98 ; 2831

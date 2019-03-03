@@ -1,0 +1,10 @@
+
+Verbose level: 1
+Formula AG(((((((((((((((~p0 AND ~p1) AND ~p2) AND ~p3) AND ~p4) AND ~p5) AND ~p6) AND ~p7) AND ~p8) AND ~p9) AND ~p10) AND ~p11) AND ~p12) AND ~p13) IMPLIES E[{inc},{dec}]F((((((((((((((p0 AND p1) AND p2) AND p3) AND p4) AND p5) AND p6) AND p7) AND p8) AND p9) AND p10) AND p11) AND p12) AND p13)))) holds
+
+Encoding time: 0.003 sec
+Verification time: 7.038 sec
+Encoding memory: 9.918 MB
+Memory (total): 24.45 MB
+TOTAL time: 7.041 sec
+STAT; 0.003 ; 7.038 ; 9.918 ; 24.45 ; 7.041

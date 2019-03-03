@@ -1,0 +1,9 @@
+22
+Formula AG((p21 IMPLIES EF(~p21))) holds
+
+Encoding time: 0.003 sec
+Verification time: 0.775 sec
+Encoding memory: 9.906 MB
+Memory (total): 38.34 MB
+TOTAL time: 0.778 sec
+STAT; 0.003 ; 0.775 ; 9.906 ; 38.34 ; 0.778

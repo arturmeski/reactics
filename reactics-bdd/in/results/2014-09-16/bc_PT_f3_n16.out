@@ -1,0 +1,10 @@
+
+Verbose level: 1
+Formula E[{inc}]F((((((((((((((((p0 AND p1) AND p2) AND p3) AND p4) AND p5) AND p6) AND p7) AND ~p8) AND ~p9) AND ~p10) AND ~p11) AND ~p12) AND ~p13) AND ~p14) AND ~p15)) holds
+
+Encoding time: 0.001 sec
+Verification time: 0.193 sec
+Encoding memory: 9.926 MB
+Memory (total): 24.9 MB
+TOTAL time: 0.194 sec
+STAT; 0.001 ; 0.193 ; 9.926 ; 24.9 ; 0.194

@@ -1,0 +1,10 @@
+
+Verbose level: 1
+Formula AG((((((((((((((((((((((((((((((((((((~(in0 AND in1) AND ~(in0 AND in2)) AND ~(in0 AND in3)) AND ~(in0 AND in4)) AND ~(in0 AND in5)) AND ~(in0 AND in6)) AND ~(in0 AND in7)) AND ~(in0 AND in8)) AND ~(in1 AND in2)) AND ~(in1 AND in3)) AND ~(in1 AND in4)) AND ~(in1 AND in5)) AND ~(in1 AND in6)) AND ~(in1 AND in7)) AND ~(in1 AND in8)) AND ~(in2 AND in3)) AND ~(in2 AND in4)) AND ~(in2 AND in5)) AND ~(in2 AND in6)) AND ~(in2 AND in7)) AND ~(in2 AND in8)) AND ~(in3 AND in4)) AND ~(in3 AND in5)) AND ~(in3 AND in6)) AND ~(in3 AND in7)) AND ~(in3 AND in8)) AND ~(in4 AND in5)) AND ~(in4 AND in6)) AND ~(in4 AND in7)) AND ~(in4 AND in8)) AND ~(in5 AND in6)) AND ~(in5 AND in7)) AND ~(in5 AND in8)) AND ~(in6 AND in7)) AND ~(in6 AND in8)) AND ~(in7 AND in8))) holds
+
+Encoding time: 8.449 sec
+Verification time: 4.95 sec
+Encoding memory: 137.2 MB
+Memory (total): 151 MB
+TOTAL time: 13.4 sec
+STAT; 8.449 ; 4.95 ; 137.2 ; 151 ; 13.4

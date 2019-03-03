@@ -1,0 +1,9 @@
+36
+Formula AG((p35 IMPLIES EF(~p35))) holds
+
+Encoding time: 0.009 sec
+Verification time: 19.23 sec
+Encoding memory: 11.29 MB
+Memory (total): 64.04 MB
+TOTAL time: 19.24 sec
+STAT; 0.009 ; 19.23 ; 11.29 ; 64.04 ; 19.24

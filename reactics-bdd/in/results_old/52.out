@@ -1,0 +1,9 @@
+52
+Formula AG((p51 IMPLIES EF(~p51))) holds
+
+Encoding time: 0.023 sec
+Verification time: 1013 sec
+Encoding memory: 13.25 MB
+Memory (total): 83.62 MB
+TOTAL time: 1013 sec
+STAT; 0.023 ; 1013 ; 13.25 ; 83.62 ; 1013

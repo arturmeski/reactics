@@ -1,0 +1,10 @@
+
+Verbose level: 1
+Formula AG(((~(in0 AND in1) AND ~(in0 AND in2)) AND ~(in1 AND in2))) holds
+
+Encoding time: 0.003 sec
+Verification time: 0.001 sec
+Encoding memory: 9.934 MB
+Memory (total): 23.18 MB
+TOTAL time: 0.004 sec
+STAT; 0.003 ; 0.001 ; 9.934 ; 23.18 ; 0.004

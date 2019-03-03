@@ -1,0 +1,10 @@
+
+Verbose level: 1
+Formula A[{act1}]F(in1) holds
+
+Encoding time: 0.009 sec
+Verification time: 21.03 sec
+Encoding memory: 11.81 MB
+Memory (total): 86.78 MB
+TOTAL time: 21.04 sec
+STAT; 0.009 ; 21.03 ; 11.81 ; 86.78 ; 21.04

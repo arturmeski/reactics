@@ -1,0 +1,10 @@
+
+Verbose level: 1
+Formula AG((p16 IMPLIES EF(~p16))) holds
+
+Encoding time: 0.002 sec
+Verification time: 22.61 sec
+Encoding memory: 9.93 MB
+Memory (total): 24.3 MB
+TOTAL time: 22.61 sec
+STAT; 0.002 ; 22.61 ; 9.93 ; 24.3 ; 22.61

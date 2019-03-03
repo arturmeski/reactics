@@ -1,0 +1,10 @@
+
+Verbose level: 1
+Formula AG((p1 IMPLIES EF(~p1))) holds
+
+Encoding time: 0 sec
+Verification time: 0 sec
+Encoding memory: 9.512 MB
+Memory (total): 22.66 MB
+TOTAL time: 0 sec
+STAT; 0 ; 0 ; 9.512 ; 22.66 ; 0
