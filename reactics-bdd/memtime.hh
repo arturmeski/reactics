@@ -1,18 +1,3 @@
-/**************************************************************************
- *                                                                        *
- *  This file is a part of BMC4LTLK,                                      *
- *  a program for Bounded Model Checking of LTLK.                         *
- *                                                                        *
- *  Copyright (C) 2002-2010 Andrzej Zbrzezny <a.zbrzezny@gmail.com>       *
- *                                                                        *
- *  This program is released under the terms of the license contained     *
- *  in the file LICENSE.                                                  *
- *                                                                        *
- **************************************************************************/
-
-/* WARNING: LICENSE VIOLATION. THIS PROGRAM IS USED FOR TEST PURPOSES ONLY
- *          THIS CODE WILL BE REPLACED BEFORE ANY RELEASE!!!!
- */
 
 /* Based on MiniSat 1.14 */
 
