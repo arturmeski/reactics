@@ -106,3 +106,6 @@ def param_And(*args):
     for arg in args[1:]:
         last = ParamConstraint.f_And(last, arg)
     return last
+
+def param_True():
+    return ParamConstraint.f_TRUE()

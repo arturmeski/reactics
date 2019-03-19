@@ -26,9 +26,9 @@ def run_tests(cmd_args):
     # heat_shock_response_param(cmd_args)
     # simple_param(cmd_args)
 
-    # gene_expression(cmd_args)
+    param_gene_expression(cmd_args)
 
-    mutex_bench_main(cmd_args)
+    # mutex_bench_main(cmd_args)
 
 def mutex_bench_main(cmd_args):
 
@@ -374,9 +374,9 @@ def mutex_nonparam_bench_oldimpl(cmd_args):
         log_str="{:d} {:f}\n".format(n_proc, mem_usage)
         f.write(log_str)
 
-def gene_expression(cmd_args):
+def param_gene_expression(cmd_args):
     """
-    Simple gene expression example
+    Simple gene expression example with parameters
     """
     r = ReactionSystemWithConcentrationsParam()
 
@@ -391,8 +391,14 @@ def gene_expression(cmd_args):
 
     all_entities = set(r.background_set)
 
+    lda0 = r.get_param("lda0")
+    lda1 = r.get_param("lda1")
+    lda2 = r.get_param("lda2")
+    lda3 = r.get_param("lda3")
+
     r.add_reaction([("x",1)],[("h",1)],[("x",1)])
-    r.add_reaction([("x",1)],[("h",1)],[("xp",1)])
+    # r.add_reaction([("x",1)],[("h",1)],[("xp",1)])
+    r.add_reaction(lda0, [("h",1)],[("xp",1)])
     r.add_reaction([("x",1),("xp",1)],[("h",1)],[("X",1)])
 
     r.add_reaction([("X",1),("Y",1)],[("h",1)],[("Q",1)])
@@ -401,9 +407,6 @@ def gene_expression(cmd_args):
     # r.add_reaction([("y",1)],[("h",1)],[("y",1)])
     # r.add_reaction([("y",1)],[("Q",1)],[("yp",1)])
     # r.add_reaction([("y",1),("yp",1)],[("h",1)],[("Y",1)])
-    lda1 = r.get_param("lda1")
-    lda2 = r.get_param("lda2")
-    lda3 = r.get_param("lda3")
 
     r.add_reaction([("y",1)],[("h",1)],lda1)
     r.add_reaction(lda2,[("h",1)],[("yp",1)])
@@ -454,6 +457,12 @@ def gene_expression(cmd_args):
 
     obs_1 = ltl_And(phi_r, phi_c1, phi_c2, delayed_Q)
     
+    # Observation related to A_x:
+    obs_2 = ltl_G(bag_entity("h") == 0, ltl_Implies(
+            bag_entity("x") > 0,
+            ltl_X(True, bag_And(bag_entity("x") > 0, bag_entity("xp") > 0))))
+    
+    
     # obs_2 = ltl_And(f_y2, reach_y, reach_Y, delayed_Y, delayed_Q)
 
     # f_x2 = ltl_G(True, ltl_Implies(
@@ -461,13 +470,43 @@ def gene_expression(cmd_args):
     #     ltl_X(bag_Not("h"), exact_state("X", all_entities))))
     #
     
-    param_constr = param_And(param_entity(lda3, "Y") > 0, param_entity(lda2, "Q") == 0, param_entity(lda1, "yp") == 0, param_entity(lda1, "Y") == 0)
+    related_to_x = ["x", "xp", "X"]
+    related_to_y = ["y", "yp", "Y"]
+    params_for_x = [lda0]
+    params_for_y = [lda1, lda2, lda3]
+    
+    
+    
+    no_x_in_y = param_True()
+    for par in params_for_y:
+        for ent in related_to_x:
+            no_x_in_y = param_And(no_x_in_y, param_entity(par, ent) == 0)
+    
+    no_y_in_x = param_True()
+    for par in params_for_x:
+        for ent in related_to_y:
+            no_y_in_x = param_And(no_y_in_x, param_entity(par, ent) == 0)
+    
+    param_constr = param_And(param_entity(lda3, "Y") > 0, param_entity(lda3, "X") == 0, param_entity(lda2, "Q") == 0, param_entity(lda1, "yp") == 0, param_entity(lda1, "Y") == 0)
+    # param_constr = param_And(no_y_in_x, no_x_in_y)
         
     smt_rsc = SmtCheckerRSCParam(rc, optimise=cmd_args.optimise)
     #
-    smt_rsc.check_rsltl(formulae_list=[obs_1], param_constr=param_constr) #, max_level=4, cont_if_sat=True)
+    smt_rsc.check_rsltl(
+        formulae_list=[obs_1,obs_2],
+        param_constr=param_constr,
+    ) #, max_level=4, cont_if_sat=True)
 
     # smt_rsc.check_rsltl(formula=f_x1, print_witness=True)
+
+     #                 reactants                     inhibitors           products
+     # -               { x=1 }                       { h=1 }             { x=1 }
+     # -              lda0:{ Q=1 }                      { h=1 }             { xp=1 }
+     # -            { x=1, xp=1 }                    { h=1 }             { X=1 }
+     # -            { X=1, Y=1 }                     { h=1 }             { Q=1 }
+     # -               { y=1 }                       { h=1 }            lda1: { y=1 }
+     # -              lda2: { y=1 }                      { h=1 }             { yp=1 }
+     # -            { y=1, yp=1 }                    { h=1 }            lda3: { xp=1 X=1 Y=1 }
 
 def gene_expression_full(cmd_args):
     """
@@ -1056,142 +1095,3 @@ def scalable_chain(print_system=False):
     f.write(log_str)
     f.close()
 
-
-def test_rsLTL():
-
-    r = ReactionSystemWithConcentrations()
-    r.add_bg_set_entity(("inc",2))
-    r.add_bg_set_entity(("ent1",1))
-    r.add_bg_set_entity(("ent2",5))
-    r.add_reaction([("ent2",1),("inc",1)],[],[("ent2",2)])
-    r.add_reaction([("ent2",2)],[],[("ent2",2)])
-
-    c = ContextAutomatonWithConcentrations(r)
-    c.add_init_state("init")
-    c.add_state("working")
-    c.add_transition("init", [("ent2",1),("inc",1)], "working")
-    c.add_transition("working", [("inc",1)], "working")
-
-    # x = ( Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_bag( ~((BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3)) ) ) ) & Formula_rsLTL.f_X(BagDescription.f_TRUE(), Formula_rsLTL.f_bag( ~((BagDescription.f_entity("ent3") == 1) ) ) )
-    x = Formula_rsLTL.f_G((BagDescription.f_entity("inc") > 0), (BagDescription.f_entity("ent1") == 3) | (BagDescription.f_entity("ent2") < 3))
-    
-    #x = Formula_rsLTL.f_F(BagDescription.f_TRUE(), (BagDescription.f_entity("ent2") == 2) )
-    
-    print(x)
-    
-    rc = ReactionSystemWithAutomaton(r,c)
-    rc.show()
-    
-    checker = SmtCheckerRSC(rc)
-    checker.check_rsltl(formula=x)
-    
-    # checker.dummy_unroll(10)
-    # e = rsLTL_Encoder(checker)
-    # print(checker.get_loop_encodings())
-    # print(e.encode(x, 0, 10))
-
-def test_extended_automaton():
-    
-    r = ReactionSystem()
-    r.add_bg_set_entity("a")
-    r.add_bg_set_entity("b")
-    r.add_bg_set_entity("inc")
-    r.add_bg_set_entity("dec")
-    r.add_bg_set_entity("decx")
-    r.add_bg_set_entity("baam")
-
-    c1 = ExtendedContextAutomaton(r)
-    c1.add_init_state("init")
-    c1.name = "catest"
-    c1.add_state("working")
-    c1.add_action("act1")
-    c1.add_action("act2")
-    c1.add_transition("init", ["act1", "act2"], (["a"],["b"],["inc","dec"]), "working")
-    c1.add_transition("working", ["act2"], ([],[],["inc"]), "working")
-
-    c2 = ExtendedContextAutomaton(r)
-    c2.add_init_state("init")
-    c2.name = "c2"
-    c2.add_state("working")
-    c2.add_action("act1")
-    c2.add_action("act2")
-    c2.add_transition("init", ["act1", "act2"], ([],[],["inc"]), "working")
-    c2.add_transition("working", ["act2"], ([],[],["inc"]), "working")
-    
-    c3 = ExtendedContextAutomaton(r)
-    c3.add_init_state("init")
-    c3.name = "c3"
-    c3.add_state("working")
-    c3.add_action("act1")
-    c3.add_transition("init", ["act1"], ([],[],["inc"]), "working")
-    
-    c4 = ExtendedContextAutomaton(r)
-    c4.add_init_state("init")
-    c4.name = "c4"
-    c4.add_state("w")
-    c4.add_action("action_x")
-    c4.add_transition("init", ["action_x"], ([],[],["baam"]), "w")
-    #
-    # c4 = ExtendedContextAutomaton(r)
-    # c4.add_init_state("init")
-    # c4.name = "c4"
-    # c4.add_state("working")
-    # c4.add_action("act1")
-    # c4.add_action("act42")
-    # c4.add_transition("init", ["act1", "act42"], ([],[],["inc"]), "working")
-    # c4.add_transition("working", ["act42"], ([],[],["inc"]), "working")
-    #
-    # c5 = ExtendedContextAutomaton(r)
-    # c5.add_init_state("init")
-    # c5.name = "c5"
-    # c5.add_state("working")
-    # c5.add_action("act1")
-    # c5.add_action("act2")
-    # c5.add_transition("init", ["act1", "act2"], ([],[],["inc"]), "working")
-    # c5.add_transition("working", ["act2"], ([],[],["inc"]), "working")
-
-    na = NetworkOfContextAutomata(r, [c1,c2,c3,c4])
-
-    rna = ReactionSystemWithNetworkOfAutomata(r,na)
-
-    rna.show()
-    
-    checker = SmtCheckerRSNA(rna)
-    
-    checker.check_reachability([])
-
-def process():
-    
-    # rs_examples.run_counter_exp()
-    rs_examples.chain_reaction(print_system=True)
-    # rs_examples.heat_shock_response()
-    
-    
-
-# RS:
-# rsca = rs_examples.ca_toy_ex1()
-# rsca.show()
-# smt = SmtCheckerRS(rsca)
-# smt.check_reachability(rs_examples.ca_toy_ex1_property1(), print_time=True)
-
-# rsca = rs_examples.ca_bitctr(N)
-# rsca.show(True)
-# smt = SmtCheckerRS(rsca)
-# smt.check_reachability(rs_examples.ca_bitctr_property(N), print_time=True)
-
-# Distributed RS:
-#drs = rs_examples.drs_mutex(N)
-#drs.show()
-
-#smt = SmtCheckerDistribRS(drs,debug_level=0)
-#smt.check_reachability(rs_examples.drs_mutex_property1(N),
-#    exclusive_state=False,
-#    max_level=10,
-#    print_time=True,
-#    print_mem=True)
-
-# drs = rs_examples.drs_toy_ex1()
-# drs.show()
-#
-# smt = SmtCheckerDistribRS(drs,debug_level=3)
-# smt.check_reachability(rs_examples.drs_toy_ex1_property1(),max_level=10,print_time=True)
