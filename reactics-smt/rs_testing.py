@@ -487,8 +487,8 @@ def param_gene_expression(cmd_args):
         for ent in related_to_y:
             no_y_in_x = param_And(no_y_in_x, param_entity(par, ent) == 0)
     
-    param_constr = param_And(param_entity(lda3, "Y") > 0, param_entity(lda3, "X") == 0, param_entity(lda2, "Q") == 0, param_entity(lda1, "yp") == 0, param_entity(lda1, "Y") == 0)
-    # param_constr = param_And(no_y_in_x, no_x_in_y)
+    # param_constr = param_And(param_entity(lda3, "Y") > 0, param_entity(lda3, "X") == 0, param_entity(lda2, "Q") == 0, param_entity(lda1, "yp") == 0, param_entity(lda1, "Y") == 0)
+    param_constr = param_And(no_y_in_x, no_x_in_y)
         
     smt_rsc = SmtCheckerRSCParam(rc, optimise=cmd_args.optimise)
     #
@@ -497,16 +497,6 @@ def param_gene_expression(cmd_args):
         param_constr=param_constr,
     ) #, max_level=4, cont_if_sat=True)
 
-    # smt_rsc.check_rsltl(formula=f_x1, print_witness=True)
-
-     #                 reactants                     inhibitors           products
-     # -               { x=1 }                       { h=1 }             { x=1 }
-     # -              lda0:{ Q=1 }                      { h=1 }             { xp=1 }
-     # -            { x=1, xp=1 }                    { h=1 }             { X=1 }
-     # -            { X=1, Y=1 }                     { h=1 }             { Q=1 }
-     # -               { y=1 }                       { h=1 }            lda1: { y=1 }
-     # -              lda2: { y=1 }                      { h=1 }             { yp=1 }
-     # -            { y=1, yp=1 }                    { h=1 }            lda3: { xp=1 X=1 Y=1 }
 
 def gene_expression_full(cmd_args):
     """
