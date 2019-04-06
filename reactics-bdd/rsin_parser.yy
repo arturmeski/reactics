@@ -1,7 +1,7 @@
 %skeleton "lalr1.cc" /* -*- C++ -*- */
 %require "2.5"
 %defines
-%define parser_class_name {rsin_parser}
+%define api.parser.class {rsin_parser}
 
 %code requires {
 #include <string>
@@ -28,7 +28,7 @@ class rsin_driver;
 };
 
 %debug
-%error-verbose
+%define parse.error verbose
 
 // Symbols
 %union
