@@ -98,6 +98,24 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
 
         return False
 
+    def is_valid_concentration_for_entity(self, entity, level):
+        """Checks the concentration level for entity"""
+        e = self.get_entity_id(entity)
+        try:
+            max_conc = self.max_conc_per_ent[e]
+        except KeyError as _:
+            return True
+
+        if level > max_conc:
+            return False
+
+        return True
+
+    def terminate_on_invalid_concentration(self, entity, level):
+        if not self.is_valid_concentration_for_entity(entity, level):
+            print("FATAL. Invalid entity concentration: {:s}={:d}".format(entity, level))
+            exit(1)
+            
     def get_state_ids(self, state):
         """Returns entities of the given state without levels"""
         return [self.get_entity_id(e) for e in state]
@@ -124,6 +142,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
                 self.is_valid_entity_with_concentration(r)
                 self.has_non_zero_concentration(r)
                 entity, level = r
+                self.terminate_on_invalid_concentration(entity, level)
                 reactants.append((self.get_entity_id(entity), level))
                 if self.max_concentration < level:
                     self.max_concentration = level
@@ -139,6 +158,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
                 self.is_valid_entity_with_concentration(i)
                 self.has_non_zero_concentration(i)
                 entity, level = i
+                self.terminate_on_invalid_concentration(entity, level)
                 inhibitors.append((self.get_entity_id(entity), level))
                 if self.max_concentration < level:
                     self.max_concentration = level
@@ -154,6 +174,7 @@ class ReactionSystemWithConcentrationsParam(ReactionSystem):
                 self.is_valid_entity_with_concentration(p)
                 self.has_non_zero_concentration(p)
                 entity, level = p
+                self.terminate_on_invalid_concentration(entity, level)
                 products.append((self.get_entity_id(entity), level))
 
         return reactants, inhibitors, products

@@ -26,9 +26,9 @@ def run_tests(cmd_args):
     # heat_shock_response_param(cmd_args)
     # simple_param(cmd_args)
 
-    param_gene_expression(cmd_args)
+    # param_gene_expression(cmd_args)
 
-    # mutex_bench_main(cmd_args)
+    mutex_bench_main(cmd_args)
 
 def mutex_bench_main(cmd_args):
 
@@ -76,7 +76,8 @@ def mutex_param_bench(cmd_args):
             r.add_bg_set_entity(E(ent,i))
 
     for ent in shared_entities:
-        r.add_bg_set_entity((ent, 1))
+        max_conc = 2 if ent == "lock" else 1
+        r.add_bg_set_entity((ent, max_conc))
     
     ###################################################
     
@@ -94,7 +95,7 @@ def mutex_param_bench(cmd_args):
         r.add_reaction([E("req",i)],[E("act",i)],[E("req",i)])
         
         enter_inhib = [E("act",j) for j in range(n_proc) if i != j] + [("lock",1)]
-        r.add_reaction([E("req",i),E("act",i)],enter_inhib,[E("in",i), ("lock",1)])
+        r.add_reaction([E("req",i),E("act",i)],enter_inhib,[E("in",i), ("lock",2)])
         
         r.add_reaction([E("in",i),E("act",i)],Inhib,[E("out",i), ("done",1)])
         r.add_reaction([E("in",i)],[E("act",i)],[E("in",i)])
