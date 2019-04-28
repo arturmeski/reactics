@@ -153,7 +153,7 @@ def mutex_param_bench(cmd_args):
         if ent not in ent_of_Nth_proc:
             disallow.append(ent)
 
-    disallow.append("act_" + str(n_proc-1))
+    # disallow.append("act_" + str(n_proc-1))
     
     # disallow = ["in_0", "in_" + str(n_proc)] #, "req_0", "req_1"]
     lda1_disallow = [param_entity(lda1, ent) == 0 for ent in disallow]
