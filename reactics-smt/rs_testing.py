@@ -68,15 +68,20 @@ def mutex_param_bench(cmd_args):
     
     r = ReactionSystemWithConcentrationsParam()
     
-    def E(a,b):
-        return (a + "_" + str(b), 1)
+    def E(a,b,c=1):
+        return (a + "_" + str(b), c)
 
     for i in range(n_proc):
         for ent in base_entities:
-            r.add_bg_set_entity(E(ent,i))
+            max_conc = 1
+            if ent == "in":
+                max_conc = 3
+            elif ent == "req":
+                max_conc = 2
+            r.add_bg_set_entity(E(ent,i,max_conc))
 
     for ent in shared_entities:
-        max_conc = 2 if ent == "lock" else 1
+        max_conc = 1
         r.add_bg_set_entity((ent, max_conc))
     
     ###################################################
@@ -92,10 +97,13 @@ def mutex_param_bench(cmd_args):
             if i != j:
                 r.add_reaction([E("req",i),E("act",i),E("act",j)],Inhib,[E("req",i)])
         
-        r.add_reaction([E("req",i)],[E("act",i)],[E("req",i)])
+        r.add_reaction([E("req",i)],[E("act",i)],[E("req",i,2)])
         
         enter_inhib = [E("act",j) for j in range(n_proc) if i != j] + [("lock",1)]
-        r.add_reaction([E("req",i),E("act",i)],enter_inhib,[E("in",i), ("lock",2)])
+        r.add_reaction([E("req",i,2),E("act",i)],enter_inhib,[E("in",i,3), ("lock",1)])
+
+        r.add_reaction([E("in",i,3),E("act",i)],Inhib,[E("in",i,2)])
+        r.add_reaction([E("in",i,2),E("act",i)],Inhib,[E("in",i,1)])
         
         r.add_reaction([E("in",i),E("act",i)],Inhib,[E("out",i), ("done",1)])
         r.add_reaction([E("in",i)],[E("act",i)],[E("in",i)])
@@ -144,6 +152,8 @@ def mutex_param_bench(cmd_args):
     for ent in r.background_set:
         if ent not in ent_of_Nth_proc:
             disallow.append(ent)
+
+    disallow.append("act_" + str(n_proc-1))
     
     # disallow = ["in_0", "in_" + str(n_proc)] #, "req_0", "req_1"]
     lda1_disallow = [param_entity(lda1, ent) == 0 for ent in disallow]
