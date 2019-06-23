@@ -3,7 +3,7 @@
 from sys import argv,exit
 
 OPTIONS_STR = """
-options { use-context-automaton; make-progressive; }
+options { use-context-automaton; make-progressive; };
 """
 
 PROC_STR = """
@@ -25,16 +25,16 @@ FINAL_PROC = """
 
 CA_STR = """
 context-automaton {{
-    states {{ init, act }}
-    init-state {{ init }}
+    states {{ init, act }};
+    init-state {{ init }};
     transitions {{
 {:s}
-    }}
-}}
+    }};
+}};
 """
 
 PROPERTY_STR = """
-rsctlk-property {{ {:s} : {:s} }}
+rsctlk-property {{ {:s} : {:s} }};
 """
 
 
@@ -56,7 +56,7 @@ for i in range(1, n+1):
     out += PROC_STR.format(i)
 
 out += FINAL_PROC
-out += "}\n"
+out += "};\n"
 
 transitions = ""
 
