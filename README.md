@@ -6,11 +6,11 @@ The toolkit consists of two separate modules implementing:
 * BDD-based methods
 * SMT-based methods
 
-## Example
+## Examples
 
 The `examples` directory contains sample input files.
 
-To quickly the BDD module you can perform verification of the TGC controller consiting of three trains:
+To quickly test the BDD module you can perform verification of the TGC controller consiting of three trains:
 
 ```
 $ ./reactics bdd -c f1 examples/bdd/tgc.rs
