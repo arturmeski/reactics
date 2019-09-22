@@ -11,6 +11,8 @@
 
 #include "types.hh"
 
+#include <cassert>
+
 /* For state constraints: */
 #define STC_PV   80
 #define STC_AND  81
