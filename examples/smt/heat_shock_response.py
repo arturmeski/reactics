@@ -112,6 +112,10 @@ def heat_shock_response(print_system=True, verify_rsc=True):
         smt_tr_rs.check_reachability(rs_prop)
 
 
+def state_translate_rsc2rs(p):
+    return [e[0] + "#" + str(e[1]) for e in p]
+
+
 def main():
 
     heat_shock_response()
