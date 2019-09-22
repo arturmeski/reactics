@@ -21,7 +21,11 @@ elif [[ "$mode" == "smt" ]]
 then
  
   export PYTHONPATH="$PYTHONPATH:$REACTICS_SMT"
-  python3 $* 
+  if [[ "$*" != "" ]]
+    python3 $* 
+  else
+    echo "Nothing to do"
+  fi
   
 elif [[ "$mode" == "setup" ]]
 then
