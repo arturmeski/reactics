@@ -46,3 +46,4 @@ context-automaton {
 rsctlk-property { f1 : EF( proc0.in ) AND EF( proc1.in ) AND EF( proc2.in ) }
 
 rsctlk-property { f2 : AG( proc0.in IMPLIES K[proc0](~proc1.in AND ~proc2.in) ) }
+
