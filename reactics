@@ -37,7 +37,6 @@ REACTICS_SMT="$(pwd)/reactics-smt"
 if [[ "$mode" == "bdd" ]]
 then
   
-  echo $*
   if [[ ! -x $REACTICS_BDD/reactics ]]
   then
     echo "Make sure to run setup first!"
