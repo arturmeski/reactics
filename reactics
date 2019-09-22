@@ -3,7 +3,8 @@
 mode="$1"
 shift
 
-REACTICS_BDD="./reactics-bdd"
+REACTICS_BDD="$(pwd)/reactics-bdd"
+REACTICS_SMT="$(pwd)/reactics-smt"
 
 if [[ "$mode" == "bdd" ]]
 then
@@ -18,8 +19,9 @@ then
   
 elif [[ "$mode" == "smt" ]]
 then
-  
-  echo "SMT"
+ 
+  export PYTHONPATH="$PYTHONPATH:$REACTICS_SMT"
+  python3 $* 
   
 elif [[ "$mode" == "setup" ]]
 then
