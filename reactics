@@ -22,6 +22,7 @@ then
  
   export PYTHONPATH="$PYTHONPATH:$REACTICS_SMT"
   if [[ "$*" != "" ]]
+  then
     python3 $* 
   else
     echo "Nothing to do"
