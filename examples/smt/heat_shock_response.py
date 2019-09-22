@@ -1,4 +1,25 @@
 #!/usr/bin/env python
+#
+# Copyright (c) 2015-2019 Artur Meski
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 
 from rs import *
 from smt import *
@@ -6,12 +27,14 @@ import sys
 import resource
 
 
-def heat_shock_response(print_system=True,verify_rsc=True):
+def heat_shock_response(print_system=True, verify_rsc=True):
 
     if len(sys.argv) < 1+1:
-        print("provide B")
-        print(" B=1 - RSC")
-        print(" B=0 - Translated RSC into RS")
+        print("{source} <type>".format(source=sys.argv[0]))
+        print("type:")
+        print(" - 1 -- RSC")
+        print(" - 0 -- RSC translated into RS")
+        print()
         exit(1)
 
     verify_rsc=bool(int(sys.argv[1]))
@@ -58,27 +81,20 @@ def heat_shock_response(print_system=True,verify_rsc=True):
     r.add_reaction_dec("temp", "cool", [("temp",1)],[])
 
     r.add_permanency("temp",[("heat",1),("cool",1)])
-    #r.add_permanency("temp",[])
 
     c = ContextAutomatonWithConcentrations(r)
     c.add_init_state("0")
     c.add_state("1")
-    # c.add_transition("0", [("prot",1), ("temp",35)], "1")
     c.add_transition("0", [("hsf",1),("prot",1),("hse",1),("temp",35)], "1")
-    #-> c.add_transition("0", [("hse",1),("prot",1),("hsp:hsf",1),("temp",stress_temp)], "1")
-    # c.add_transition("0", [("hsp",1),("prot",1),("hsf3:hse",1),("mfp",1),("hsp:mfp",1),("temp",30)], "1")
     c.add_transition("1", [("cool",1)], "1")
     c.add_transition("1", [("heat",1)], "1")
     c.add_transition("1", [], "1")
-    # c.add_transition("1", [("sugar",1)], "1")
 
     rc = ReactionSystemWithAutomaton(r,c)
     
     if print_system:
         rc.show()
     
-    # prop_req = [("hsp:hsf",1),("hse",1),("prot",1)]
-    # prop_block = [("temp",stress_temp)]
     prop_req   = [ ("mfp",1) ]
     prop_block = [ ]
     prop       = (prop_req,prop_block)
