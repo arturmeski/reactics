@@ -1,0 +1,44 @@
+#!/bin/bash
+
+mode="$1"
+shift
+
+REACTICS_BDD="./reactics-bdd"
+
+if [[ "$mode" == "bdd" ]]
+then
+  
+  echo $*
+  if [[ ! -x $REACTICS_BDD/reactics ]]
+  then
+    echo "Make sure to run setup first!"
+  fi
+  
+  reactics-bdd/reactics $*
+  
+elif [[ "$mode" == "smt" ]]
+then
+  
+  echo "SMT"
+  
+elif [[ "$mode" == "setup" ]]
+then
+ 
+  git pull 
+  cd $REACTICS_BDD
+  ./build_cudd.sh
+  make
+
+else
+  
+  echo "Usage: $0 <mode>"
+  echo
+  echo "mode:"
+  echo "  - bdd    -- uses BDD-based module"
+  echo "  - smt    -- used SMT-based module"
+  echo "  - setup  -- builds what is required" 
+  echo
+  
+fi
+
+# EOF
