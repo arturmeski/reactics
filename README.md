@@ -36,6 +36,18 @@ To test the SMT module for rsLTL verification with the scalable chain system, th
 ./reactics smt examples/smt/scalable_chain.py 2 5 1
 ```
 
+Running the benchmark without any arguments tells us what parameters can be used:
+
+```
+./reactics smt examples/smt/scalable_chain.py
+
+ ------------------------------------------------
+ -- ReactICS -- Reaction Systems Model Checker --
+ ------------------------------------------------
+
+arguments: <chainLen> <maxConc> <formulaNumber>
+```
+
 ### Reaction synthesis
 
 To test the reaction synthesis approach on a mutual exclution protocol modelling three processes, run the following command:
