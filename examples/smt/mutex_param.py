@@ -49,10 +49,10 @@ def mutex_param_bench(cmd_args):
     base_entities = ["out", "req", "in", "act"]
     shared_entities = ["lock", "done", "s"]
 
-    if not cmd_args.scaling_parameter:
+    if not cmd_args.scaling:
         print("Missing scaling parameter")
         return
-    n_proc = int(cmd_args.scaling_parameter)
+    n_proc = int(cmd_args.scaling)
 
     r = ReactionSystemWithConcentrationsParam()
 
@@ -196,9 +196,9 @@ def mutex_nonparam_bench(cmd_args):
     base_entities = ["out", "req", "in", "act"]
     shared_entities = ["lock", "done", "s"]
 
-    if not cmd_args.scaling_parameter:
+    if not cmd_args.scaling:
         raise RuntimeError("Missing scaling parameter")
-    n_proc = int(cmd_args.scaling_parameter)
+    n_proc = int(cmd_args.scaling)
 
     r = ReactionSystemWithConcentrationsParam()
 
@@ -304,9 +304,9 @@ def mutex_nonparam_bench_oldimpl(cmd_args):
     base_entities = ["out", "req", "in", "act"]
     shared_entities = ["lock", "done", "s"]
 
-    if not cmd_args.scaling_parameter:
+    if not cmd_args.scaling:
         raise RuntimeError("Missing scaling parameter")
-    n_proc = int(cmd_args.scaling_parameter)
+    n_proc = int(cmd_args.scaling)
 
     r = ReactionSystemWithConcentrations()
 
@@ -408,20 +408,13 @@ def state_translate_rsc2rs(p):
 
 def mutex_bench_main(cmd_args):
 
-    if not cmd_args.special_mode:
-        print("Missing special mode parameter")
-        print("*    1 - parametric")
-        print("*    2 - non-parametric (with parametric implementation)")
-        print("*    3 - non-parametric (with non-parametric implementation)")
-        return
+    mode = cmd_args.mode
 
-    smode = int(cmd_args.special_mode)
-
-    if smode == 1:
+    if mode == "p":
         mutex_param_bench(cmd_args)
-    elif smode == 2:
+    elif mode == "np-p":
         mutex_nonparam_bench(cmd_args)
-    elif smode == 3:
+    elif mode == "np-np":
         mutex_nonparam_bench_oldimpl(cmd_args)
     else:
         print("Unrecognised mode")
@@ -433,6 +426,17 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
+        "scaling",
+        help="scaling parameter value",
+    )
+    
+    parser.add_argument(
+        "mode",
+        choices=['p', 'np-p', 'np-np'], 
+        help="Selects the mode: p - parameter synthesis (parametric implementation), np-p - non-parametric with parametric implementation (with the parameters substituted), np-np - non-parametric with non-parametric implementation (parameters substituted)",
+    )
+
+    parser.add_argument(
         "-v", "--verbose", help="turn verbosity on", action="store_true"
     )
     parser.add_argument(
@@ -441,17 +445,9 @@ def main():
         help="minimise the parametric computation result",
         action="store_true",
     )
-    parser.add_argument(
-        "-n",
-        "--scaling-parameter",
-        help="scaling parameter value (used in some benchmarks)",
-    )
-    parser.add_argument(
-        "-s", "--special_mode", help="special mode (used in some benchmarks)"
-    )
 
     args = parser.parse_args()
-
+        
     mutex_bench_main(args)
 
 

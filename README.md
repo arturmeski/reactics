@@ -27,7 +27,7 @@ To test the SMT module you can perform reachability verification of the scalable
 Running the benchmark without any arguments tells us what parameters are available:
 
 ```
-./reactics smt examples/smt/scalable_chain.py
+$ ./reactics smt examples/smt/scalable_chain.py
 
  ------------------------------------------------
  -- ReactICS -- Reaction Systems Model Checker --
@@ -49,7 +49,7 @@ To test the SMT module for rsLTL verification the scalable chain system benchmar
 
 
 ```
-./reactics smt examples/smt/scalable_chain.py 2 5 1
+$ ./reactics smt examples/smt/scalable_chain.py 2 5 1
 ```
 
 
@@ -59,7 +59,32 @@ To test the SMT module for rsLTL verification the scalable chain system benchmar
 To test the reaction synthesis approach on a mutual exclution protocol modelling three processes, run the following command:
 
 ```
-./reactics smt examples/smt/mutex_param.py -n 3 -s 1 -o
+$ ./reactics smt examples/smt/mutex_param.py 3 p -o
+```
+
+To check the available parameters for the benchmark, we run it with `-h`:
+
+```
+$ ./reactics smt examples/smt/mutex_param.py -h
+
+ ------------------------------------------------
+ -- ReactICS -- Reaction Systems Model Checker --
+ ------------------------------------------------
+
+usage: mutex_param.py [-h] [-v] [-o] scaling {p,np-p,np-np}
+
+positional arguments:
+  scaling         scaling parameter value
+  {p,np-p,np-np}  Selects the mode: p - parameter synthesis (parametric
+                  implementation), np-p - non-parametric with parametric
+                  implementation (with the parameters substituted), np-np -
+                  non-parametric with non-parametric implementation
+                  (parameters substituted)
+
+optional arguments:
+  -h, --help      show this help message and exit
+  -v, --verbose   turn verbosity on
+  -o, --optimise  minimise the parametric computation result
 ```
 
 
