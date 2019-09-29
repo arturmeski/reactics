@@ -3,8 +3,8 @@
 Reaction Systems Verification Toolkit
 
 The toolkit consists of two separate modules implementing:
-* BDD-based methods
-* SMT-based methods
+* Methods implemented using binary decision diagrams (BDD) for storing and manipulating the state space of the verified system.
+* Methods translating the verification problems into satisfiability modulo theories (SMT).
 
 ## Examples
 
