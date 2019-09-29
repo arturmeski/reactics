@@ -8,6 +8,12 @@ The toolkit consists of two separate modules implementing:
 
 # Installation
 
+## Installing everything manually
+
+(to be added)
+
+## Virtual Machine
+
 The easiest way to try out ReactICS is to download [the VM where everything is alread installed](http://reactionsystems.org/ReactICS.zip). This a VirtualBox virtual machine. After booting it up, you can log in as `reactics` with the same password. After logging in, ReactICS is available in the `reactics` directory:
 
 ```
