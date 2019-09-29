@@ -24,3 +24,12 @@ To test the SMT module you can perform reachability verification of the scalable
 $ ./reactics smt examples/smt/chain_reaction.py 2 3 1
 ```
 
+### Reaction synthesis
+
+To test the reaction synthesis approach on a mutual exclution protocol modelling three processes run the following command:
+
+```
+./reactics smt examples/smt/mutex_param.py -n 3 -s 1 -o
+```
+
+`# EOF`
