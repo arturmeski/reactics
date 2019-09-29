@@ -24,19 +24,7 @@ The above command tests the formula labelled `f1` in the input file.
 
 To test the SMT module you can perform reachability verification of the scalable chain system:
 
-```
-$ ./reactics smt examples/smt/chain_reaction.py 2 3 1
-```
-
-### rsLTL verification
-
-To test the SMT module for rsLTL verification with the scalable chain system, the following command may be used:
-
-```
-./reactics smt examples/smt/scalable_chain.py 2 5 1
-```
-
-Running the benchmark without any arguments tells us what parameters can be used:
+Running the benchmark without any arguments tells us what parameters are available:
 
 ```
 ./reactics smt examples/smt/scalable_chain.py
@@ -47,6 +35,24 @@ Running the benchmark without any arguments tells us what parameters can be used
 
 arguments: <chainLen> <maxConc> <formulaNumber>
 ```
+
+We may execute the benchmark for `chainLen=2`, `maxConc=3`, and `formulaNumber=1` using the following command:
+
+```
+$ ./reactics smt examples/smt/chain_reaction.py 2 3 1
+```
+
+### rsLTL verification
+
+To test the SMT module for rsLTL verification the scalable chain system benchmark may be used.
+
+
+
+```
+./reactics smt examples/smt/scalable_chain.py 2 5 1
+```
+
+
 
 ### Reaction synthesis
 
