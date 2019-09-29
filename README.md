@@ -30,7 +30,7 @@ $ ./reactics smt examples/smt/chain_reaction.py 2 3 1
 
 ### rsLTL verification
 
-To test the SMT module for rsLTL verification with the scalable chain system you need, the following command may be used:
+To test the SMT module for rsLTL verification with the scalable chain system, the following command may be used:
 
 ```
 ./reactics smt examples/smt/scalable_chain.py 2 5 1
