@@ -56,7 +56,7 @@ $ ./reactics smt examples/smt/scalable_chain.py 2 5 1
 
 ### Reaction synthesis
 
-To test the reaction synthesis approach on a mutual exclution protocol modelling three processes, run the following command:
+To test the reaction synthesis approach on a mutual exclution protocol modelling three processes, run the following command (three processes, parametric verification, result optimised with OptSMT):
 
 ```
 $ ./reactics smt examples/smt/mutex_param.py 3 p -o
