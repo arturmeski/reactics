@@ -18,9 +18,9 @@ To quickly test the BDD module you can perform verification of the TGC controlle
 $ ./reactics bdd -c f1 examples/bdd/tgc.rs
 ```
 
-### Reachability
-
 The above command tests the formula labelled `f1` in the input file.
+
+### Reachability
 
 To test the SMT module you can perform reachability verification of the scalable chain system:
 
