@@ -1,9 +1,6 @@
 /*
     Copyright (c) 2018
     Artur Meski <meski@ipipan.waw.pl>
-
-    Reuse of the code or its part for any purpose
-    without the author's permission is strictly prohibited.
 */
 
 #ifndef RS_TYPES_HH

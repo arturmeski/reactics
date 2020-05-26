@@ -1,9 +1,6 @@
 /*
     Copyright (c) 2012-2014
     Artur Meski <meski@ipipan.waw.pl>
-
-    Reuse of the code or its part for any purpose
-    without the author's permission is strictly prohibited.
 */
 
 #include "reactics.hh"
