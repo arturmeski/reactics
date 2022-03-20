@@ -1,7 +1,7 @@
 
 #include "ctx_aut.hh"
-#include "rs.hh"
 #include "macro.hh"
+#include "rs.hh"
 #include "stateconstr.hh"
 
 CtxAut::CtxAut(Options *opts, RctSys *parent_rctsys)
@@ -75,11 +75,13 @@ void CtxAut::printAutomaton(void)
 
 void CtxAut::showStates(void)
 {
-  cout << "# Context Automaton States:" << endl;
-  cout << " = Init state: " << getStateName(init_state_id) << endl;
+  if (states_ids.size() > 0) {
+    cout << "# Context Automaton States:" << endl;
+    cout << " = Init state: " << getStateName(init_state_id) << endl;
 
-  for (const auto &s : states_ids) {
-    cout << " * " << s << endl;
+    for (const auto &s : states_ids) {
+      cout << " * " << s << endl;
+    }
   }
 }
 
@@ -98,7 +100,8 @@ void CtxAut::saveCurrentContextSet(Process proc_id)
   tmpEntities.clear();
 }
 
-void CtxAut::addTransition(std::string srcStateName, std::string dstStateName, StateConstr *stateConstr)
+void CtxAut::addTransition(std::string srcStateName, std::string dstStateName,
+                           StateConstr *stateConstr)
 {
   VERB_L3("Saving transition");
 
@@ -115,12 +118,17 @@ void CtxAut::addTransition(std::string srcStateName, std::string dstStateName, S
 
 void CtxAut::showTransitions(void)
 {
+  if (transitions.size() == 0) {
+    cout << "Empty context automaton" << endl;
+    return;
+  }
+
   cout << "# Context Automaton Transitions:" << endl;
 
   for (const auto &t : transitions) {
-    cout << " * [" << getStateName(t.src_state) << " -> " << getStateName(
-           t.dst_state)
-         << "]: { " << parent_rctsys->procEntitiesToStr(t.ctx) << "}";
+    cout << " * [" << getStateName(t.src_state) << " -> "
+         << getStateName(t.dst_state) << "]: { "
+         << parent_rctsys->procEntitiesToStr(t.ctx) << "}";
 
     if (t.state_constr != nullptr) {
       cout << " " << t.state_constr->toStr();
@@ -162,8 +170,8 @@ void CtxAut::makeProgressive(void)
     State curr_st = t.src_state;
 
     if (t.state_constr != nullptr) {
-      constrs[curr_st] = new StateConstr(
-        STC_OR, constrs[curr_st], t.state_constr);
+      constrs[curr_st] =
+        new StateConstr(STC_OR, constrs[curr_st], t.state_constr);
     }
   }
 
@@ -174,13 +182,11 @@ void CtxAut::makeProgressive(void)
       state_constr = new StateConstr(STC_NOT, constrs[getStateID(s)]);
       addTransition(s, special_loc, state_constr);
     }
-
   }
 
   addTransition(special_loc, special_loc, nullptr);
 
   made_progressive = true;
-
 }
 
 /** EOF **/
