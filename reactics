@@ -57,11 +57,19 @@ then
   
 elif [[ "$mode" == "setup" ]]
 then
- 
-  git pull 
+
+  which -s gmake
+  if [[ $? -eq 0 ]]
+  then
+    MAKE="gmake"
+  else
+    MAKE="make"
+  fi
+
+  git pull
   cd $REACTICS_BDD
   ./build_cudd.sh
-  make
+  $MAKE
 
 else
   
