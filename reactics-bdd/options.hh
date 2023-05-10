@@ -11,6 +11,7 @@ class Options
     bool part_tr_rel;
     bool reorder_reach;
     bool reorder_trans;
+    bool backend_mode;
 
     double enc_time;
     double enc_mem;
@@ -27,6 +28,8 @@ class Options
 
       reorder_reach = false;
       reorder_trans = false;
+
+      backend_mode = false;
 
       enc_time = 0;
       enc_mem = 0;

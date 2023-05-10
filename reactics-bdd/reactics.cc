@@ -31,7 +31,7 @@ int main(int argc, char **argv)
   int c;
   int option_index = 0;
 
-  while ((c = getopt_long(argc, argv, "c:bBmpPrsStTvxzh", long_options,
+  while ((c = getopt_long(argc, argv, "c:bBmpPrsStTvxzXh", long_options,
                           &option_index)) != -1) {
     switch (c) {
       case 0:
@@ -104,6 +104,10 @@ int main(int argc, char **argv)
       case 'z':
         opts->reorder_reach = true;
         opts->reorder_trans = true;
+        break;
+
+      case 'X':
+        opts->backend_mode = true;
         break;
 
       case 'h':
@@ -258,6 +262,8 @@ void print_help(std::string path_str)
        << "  -v       -- verbose (use more than once to increase verbosity)" <<
        endl
        << "  -p       -- show progress (where possible)" << endl
+       << endl
+       << "  -X       -- backend mode (makes output parsing easier)" << endl
        << endl
        << " Benchmarking options:" << endl
        << "  -m       -- measure and display time and memory usage" << endl

@@ -573,7 +573,14 @@ void SymRS::printDecodedRctSysStates(const BDD &states)
 
   while (!unproc.IsZero()) {
     BDD t = unproc.PickOneMinterm(*pv_drs_flat);
-    cout << decodedRctSysStateToStr(t) << endl;
+    if (opts->backend_mode)
+    {
+        cout << "s " << decodedRctSysStateToStr(t) << endl;
+    }
+    else
+    {
+        cout << decodedRctSysStateToStr(t) << endl;
+    }
 
     if (opts->verbose > 9) {
       BDD_PRINT(t);

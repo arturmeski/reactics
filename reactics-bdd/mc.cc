@@ -198,7 +198,14 @@ void ModelChecker::printReachWithSucc(void)
   while (!unproc.IsZero()) {
     BDD t;
     t = unproc.PickOneMinterm(*pv);
-    cout << "Successors of " << srs->decodedRctSysStateToStr(t) << ":" << endl;
+    if (opts->backend_mode)
+    {
+        cout << "G " << srs->decodedRctSysStateToStr(t) << endl;
+    }
+    else
+    {
+        cout << "Successors of " << srs->decodedRctSysStateToStr(t) << ":" << endl;
+    }
     srs->printDecodedRctSysStates(getSucc(t));
     unproc -= t;
   }
