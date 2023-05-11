@@ -601,8 +601,12 @@ bool ModelChecker::checkRSCTLKfull(FormRSCTLK *form)
 
   cleanup();
 
-  cout << "Formula " << form->toStr() << (result ? " holds" : " does not hold")
-       << endl;
+  if (opts->backend_mode) {
+      cout << "Result:" << result << endl;
+  } else {
+      cout << "Formula " << form->toStr() << (result ? " holds" : " does not hold")
+           << endl;
+  }
 
   if (opts->measure) {
     opts->ver_time = cpuTime() - opts->ver_time;
@@ -665,8 +669,12 @@ bool ModelChecker::checkRSCTLKbmc(FormRSCTLK *form)
 
   cleanup();
 
-  cout << "Formula " << form->toStr() << " " << (result ? "holds" :
-       "does not hold") << endl;
+  if (opts->backend_mode) {
+      cout << "result:" << result << endl;
+  } else {
+      cout << "Formula " << form->toStr() << " " << (result ? "holds" :
+           "does not hold") << endl;
+  }
 
   if (opts->measure) {
     opts->ver_time = cpuTime() - opts->ver_time;
