@@ -27,8 +27,7 @@ def bag_And(*args):
     assert len(args) > 1
     last = get_bag_if_str(args[0])
     for arg in args[1:]:
-        last = BagDescription.f_And(
-            last, get_bag_if_str(arg))
+        last = BagDescription.f_And(last, get_bag_if_str(arg))
     return last
 
 
@@ -46,7 +45,6 @@ def exact_state(contained_entities, all_entities):
             expr.append(ent == 0)
 
     if len(expr) > 0:
-
         last = expr[0]
         for e in expr[1:]:
             last = BagDescription.f_And(last, e)
@@ -106,6 +104,7 @@ def param_And(*args):
     for arg in args[1:]:
         last = ParamConstraint.f_And(last, arg)
     return last
+
 
 def param_True():
     return ParamConstraint.f_TRUE()

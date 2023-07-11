@@ -23,14 +23,13 @@ def z3_max(a, b):
 
 
 class SmtCheckerRSCParam(object):
-
     def __init__(self, rsca, optimise=False):
-
         rsca.sanity_check()
 
         if not rsca.is_concentr_and_param_compatible():
             raise RuntimeError(
-                "RS and CA with concentrations (and parameters) expected")
+                "RS and CA with concentrations (and parameters) expected"
+            )
 
         self.rs = rsca.rs
         self.ca = rsca.ca
@@ -92,7 +91,6 @@ class SmtCheckerRSCParam(object):
         self.initialise()
 
     def prepare_all_variables(self, num_of_paths):
-
         for path_idx in range(num_of_paths):
             self.prepare_all_path_variables(path_idx)
         self.next_level_to_encode += 1
@@ -100,8 +98,11 @@ class SmtCheckerRSCParam(object):
     def prepare_all_path_variables(self, path_idx):
         """Prepares the variables for a given path index"""
 
-        print_info("Preparing variables for path={:d} (level={:d})".format(
-            path_idx, self.next_level_to_encode))
+        print_info(
+            "Preparing variables for path={:d} (level={:d})".format(
+                path_idx, self.next_level_to_encode
+            )
+        )
 
         self.prepare_state_variables(path_idx)
         self.prepare_context_variables(path_idx)
@@ -111,8 +112,7 @@ class SmtCheckerRSCParam(object):
     def prepare_loop_position_variables(self, path_idx):
         """Prepares the variables for loop positions"""
 
-        self.path_loop_position[path_idx] = Int(
-            "p{:d}_loop_pos".format(path_idx))
+        self.path_loop_position[path_idx] = Int("p{:d}_loop_pos".format(path_idx))
 
     def prepare_context_variables(self, path_idx):
         """Prepares all the context variables"""
@@ -188,22 +188,26 @@ class SmtCheckerRSCParam(object):
             entities_dict = dict()
 
             if is_param(products):
-
                 for entity in self.rs.set_of_bgset_ids:
                     entity_name = self.rs.get_entity_name(entity)
-                    new_var = Int("p{:d}L{:d}_ImProd_r{:d}_{:s}".format(
-                        path_idx, level, reaction_id, entity_name))
+                    new_var = Int(
+                        "p{:d}L{:d}_ImProd_r{:d}_{:s}".format(
+                            path_idx, level, reaction_id, entity_name
+                        )
+                    )
                     entities_dict[entity] = new_var
 
                     all_entities_dict.setdefault(entity, [])
                     all_entities_dict[entity].append(new_var)
 
             else:
-
                 for entity, conc in products:
                     entity_name = self.rs.get_entity_name(entity)
-                    new_var = Int("p{:d}L{:d}_ImProd_r{:d}_{:s}".format(
-                        path_idx, level, reaction_id, entity_name))
+                    new_var = Int(
+                        "p{:d}L{:d}_ImProd_r{:d}_{:s}".format(
+                            path_idx, level, reaction_id, entity_name
+                        )
+                    )
                     entities_dict[entity] = new_var
 
                     all_entities_dict.setdefault(entity, [])
@@ -224,14 +228,13 @@ class SmtCheckerRSCParam(object):
         """
 
         for param_name in self.rs.parameters.keys():
-
             # we start collecting bg-related vars for the given param
             vars_for_param = []
 
             for entity in self.rs.ordered_list_of_bgset_ids:
                 new_var = Int(
-                    "Pm{:s}_{:s}".format(
-                        param_name, self.rs.get_entity_name(entity)))
+                    "Pm{:s}_{:s}".format(param_name, self.rs.get_entity_name(entity))
+                )
                 vars_for_param.append(new_var)
 
             self.v_param[param_name] = vars_for_param
@@ -266,23 +269,17 @@ class SmtCheckerRSCParam(object):
         enc_non_empty = True
 
         for param_vars in self.v_param.values():
-
             enc_param_at_least_one = False
             for pvar in param_vars:
-
                 # TODO: fixed upper limit: 100 (have a per-param setting for that)
-                enc_param_gz = simplify(
-                    And(enc_param_gz, pvar >= 0, pvar < 100))
-                enc_param_at_least_one = simplify(
-                    Or(enc_param_at_least_one, pvar > 0))
+                enc_param_gz = simplify(And(enc_param_gz, pvar >= 0, pvar < 100))
+                enc_param_at_least_one = simplify(Or(enc_param_at_least_one, pvar > 0))
 
-            enc_non_empty = simplify(
-                And(enc_non_empty, enc_param_at_least_one))
+            enc_non_empty = simplify(And(enc_non_empty, enc_param_at_least_one))
 
         return simplify(And(enc_param_gz, enc_non_empty))
 
     def assert_param_optimisation(self):
-
         for param_vars in self.v_param.values():
             for pvar in param_vars:
                 # self.solver.add_soft(pvar == 0)
@@ -296,8 +293,11 @@ class SmtCheckerRSCParam(object):
         only those that can possibly go below 0.
         """
 
-        print_info("Concentration level assertions for path={:d} (level={:d})".format(
-            path_idx, level))
+        print_info(
+            "Concentration level assertions for path={:d} (level={:d})".format(
+                path_idx, level
+            )
+        )
 
         enc_gz = True
 
@@ -305,15 +305,14 @@ class SmtCheckerRSCParam(object):
             var = self.path_v[path_idx][level][e_i]
             var_ctx = self.path_v_ctx[path_idx][level][e_i]
             e_max = self.rs.get_max_concentration_level(e_i)
-            enc_gz = simplify(And(enc_gz, var >= 0, var_ctx >=
-                                  0, var <= e_max, var_ctx <= e_max))
+            enc_gz = simplify(
+                And(enc_gz, var >= 0, var_ctx >= 0, var <= e_max, var_ctx <= e_max)
+            )
 
-            vars_per_reaction = self.path_v_improd_for_entities[path_idx][
-                level + 1]
+            vars_per_reaction = self.path_v_improd_for_entities[path_idx][level + 1]
             if e_i in vars_per_reaction:
                 for var_improd in vars_per_reaction[e_i]:
-                    enc_gz = simplify(
-                        And(enc_gz, var_improd >= 0, var_improd <= e_max))
+                    enc_gz = simplify(And(enc_gz, var_improd >= 0, var_improd <= e_max))
 
         return enc_gz
 
@@ -326,7 +325,8 @@ class SmtCheckerRSCParam(object):
             # the initial concentration levels are zeroed
             rs_init_state_enc = simplify(And(rs_init_state_enc, v == 0))
 
-        ca_init_state_enc = self.path_ca_state[path_idx][level] == self.ca.get_init_state_id(
+        ca_init_state_enc = (
+            self.path_ca_state[path_idx][level] == self.ca.get_init_state_id()
         )
 
         init_state_enc = simplify(And(rs_init_state_enc, ca_init_state_enc))
@@ -335,8 +335,11 @@ class SmtCheckerRSCParam(object):
 
     def enc_transition_relation(self, level, path_idx):
         return simplify(
-            And(self.enc_rs_trans(level, path_idx),
-                self.enc_automaton_trans(level, path_idx)))
+            And(
+                self.enc_rs_trans(level, path_idx),
+                self.enc_automaton_trans(level, path_idx),
+            )
+        )
 
     def enc_param_sanity_for_reactions(self):
         """R < I constraint (R n I = 0)"""
@@ -344,23 +347,21 @@ class SmtCheckerRSCParam(object):
         rct_inh_constr = True
 
         for reactants, inhibitors, products in self.rs.reactions:
-
             if is_param(reactants) or is_param(inhibitors):
-
                 # 1. R and I
                 if is_param(reactants) and is_param(inhibitors):
                     rct_param_name = reactants.name
                     inh_param_name = inhibitors.name
 
                     for entity in self.rs.set_of_bgset_ids:
-                        rct_inh_constr = And(rct_inh_constr,
-                                             Implies(
-                                                 self.v_param
-                                                 [inh_param_name][entity] > 0,
-                                                 self.v_param
-                                                 [rct_param_name][entity] <
-                                                 self.v_param
-                                                 [inh_param_name][entity]))
+                        rct_inh_constr = And(
+                            rct_inh_constr,
+                            Implies(
+                                self.v_param[inh_param_name][entity] > 0,
+                                self.v_param[rct_param_name][entity]
+                                < self.v_param[inh_param_name][entity],
+                            ),
+                        )
 
             elif (not is_param(reactants)) and is_param(inhibitors):
                 inh_param_name = inhibitors.name
@@ -370,8 +371,10 @@ class SmtCheckerRSCParam(object):
                     rct_inh_constr = And(
                         rct_inh_constr,
                         Implies(
-                            self.v_param[inh_param_name][entity] > 0, conc <
-                            self.v_param[inh_param_name][entity]))
+                            self.v_param[inh_param_name][entity] > 0,
+                            conc < self.v_param[inh_param_name][entity],
+                        ),
+                    )
 
             elif is_param(reactants) and (not is_param(inhibitors)):
                 rct_param_name = reactants.name
@@ -379,7 +382,8 @@ class SmtCheckerRSCParam(object):
                 for entity, conc in inhibitors:
                     assert conc > 0, "Unexpected concentration level!"
                     rct_inh_constr = And(
-                        rct_inh_constr, self.v_param[rct_param_name][entity] < conc)
+                        rct_inh_constr, self.v_param[rct_param_name][entity] < conc
+                    )
 
         return rct_inh_constr
 
@@ -405,31 +409,52 @@ class SmtCheckerRSCParam(object):
         if is_param(reactants):
             param_name = reactants.name
             for entity in self.rs.set_of_bgset_ids:
-                enc_reactants = And(enc_reactants, Or(
-                    self.v_param[param_name][entity] == 0,
-                    self.path_v[path_idx][level][entity] >= self.v_param[param_name][entity],
-                    self.path_v_ctx[path_idx][level][entity] >= self.v_param[param_name][entity]))
+                enc_reactants = And(
+                    enc_reactants,
+                    Or(
+                        self.v_param[param_name][entity] == 0,
+                        self.path_v[path_idx][level][entity]
+                        >= self.v_param[param_name][entity],
+                        self.path_v_ctx[path_idx][level][entity]
+                        >= self.v_param[param_name][entity],
+                    ),
+                )
         else:
             for entity, conc in reactants:
-                enc_reactants = And(enc_reactants, Or(
-                    self.path_v[path_idx][level][entity] >= conc,
-                    self.path_v_ctx[path_idx][level][entity] >= conc))
+                enc_reactants = And(
+                    enc_reactants,
+                    Or(
+                        self.path_v[path_idx][level][entity] >= conc,
+                        self.path_v_ctx[path_idx][level][entity] >= conc,
+                    ),
+                )
 
         # ** INHIBITORS ******************************************
         enc_inhibitors = True
         if is_param(inhibitors):
             param_name = inhibitors.name
             for entity in self.rs.set_of_bgset_ids:
-                enc_inhibitors = And(enc_inhibitors, Or(
-                    self.v_param[param_name][entity] == 0,
-                    And(
-                        self.path_v[path_idx][level][entity] < self.v_param[param_name][entity],
-                        self.path_v_ctx[path_idx][level][entity] < self.v_param[param_name][entity])))
+                enc_inhibitors = And(
+                    enc_inhibitors,
+                    Or(
+                        self.v_param[param_name][entity] == 0,
+                        And(
+                            self.path_v[path_idx][level][entity]
+                            < self.v_param[param_name][entity],
+                            self.path_v_ctx[path_idx][level][entity]
+                            < self.v_param[param_name][entity],
+                        ),
+                    ),
+                )
         else:
             for entity, conc in inhibitors:
-                enc_inhibitors = And(enc_inhibitors, And(
-                    self.path_v[path_idx][level][entity] < conc,
-                    self.path_v_ctx[path_idx][level][entity] < conc))
+                enc_inhibitors = And(
+                    enc_inhibitors,
+                    And(
+                        self.path_v[path_idx][level][entity] < conc,
+                        self.path_v_ctx[path_idx][level][entity] < conc,
+                    ),
+                )
 
         # ** PRODUCTS *******************************************
         enc_products = True
@@ -438,26 +463,38 @@ class SmtCheckerRSCParam(object):
             for entity in self.rs.set_of_bgset_ids:
                 enc_products = simplify(
                     And(
-                        enc_products, self.
-                        path_v_improd[path_idx]
-                        [level + 1][reaction_id]
-                        [entity] == self.v_param
-                        [param_name][entity]))
+                        enc_products,
+                        self.path_v_improd[path_idx][level + 1][reaction_id][entity]
+                        == self.v_param[param_name][entity],
+                    )
+                )
         else:
             for entity, conc in products:
-                enc_products = simplify(And(
-                    enc_products, self.path_v_improd[path_idx][level + 1][reaction_id][entity] == conc))
+                enc_products = simplify(
+                    And(
+                        enc_products,
+                        self.path_v_improd[path_idx][level + 1][reaction_id][entity]
+                        == conc,
+                    )
+                )
 
         # Nothing is produced (when the reaction is disabled)
         enc_no_prod = True
         if is_param(products):
             for entity in self.rs.set_of_bgset_ids:
                 enc_no_prod = And(
-                    enc_no_prod, self.path_v_improd[path_idx][level + 1][reaction_id][entity] == 0)
+                    enc_no_prod,
+                    self.path_v_improd[path_idx][level + 1][reaction_id][entity] == 0,
+                )
         else:
             for entity, _ in products:
-                enc_no_prod = simplify(And(
-                    enc_no_prod, self.path_v_improd[path_idx][level + 1][reaction_id][entity] == 0))
+                enc_no_prod = simplify(
+                    And(
+                        enc_no_prod,
+                        self.path_v_improd[path_idx][level + 1][reaction_id][entity]
+                        == 0,
+                    )
+                )
 
         #
         # (R and I) iff P
@@ -467,8 +504,7 @@ class SmtCheckerRSCParam(object):
         #
         # ~(R and I) iff P_zero
         #
-        enc_not_enabled = Not(
-            And(enc_reactants, enc_inhibitors)) == enc_no_prod
+        enc_not_enabled = Not(And(enc_reactants, enc_inhibitors)) == enc_no_prod
 
         enc_reaction = And(enc_enabled, enc_not_enabled)
 
@@ -491,7 +527,12 @@ class SmtCheckerRSCParam(object):
         enc_cond = False
         for entity in self.rs.set_of_bgset_ids:
             enc_cond = simplify(
-                Or(enc_cond, self.path_v[path_idx][level][entity] > 0, self.path_v_ctx[path_idx][level][entity] > 0))
+                Or(
+                    enc_cond,
+                    self.path_v[path_idx][level][entity] > 0,
+                    self.path_v_ctx[path_idx][level][entity] > 0,
+                )
+            )
 
         return enc_cond
 
@@ -533,25 +574,29 @@ class SmtCheckerRSCParam(object):
         #       =>
         #   {products}[level+1]
         #
-        current_v_improd_for_entities = self.path_v_improd_for_entities[path_idx][level + 1]
+        current_v_improd_for_entities = self.path_v_improd_for_entities[path_idx][
+            level + 1
+        ]
         for entity in self.rs.set_of_bgset_ids:
             per_reaction_vars = current_v_improd_for_entities.get(entity, [])
-            enc_max_prod = simplify(And(
-                enc_max_prod, self.path_v[path_idx][level + 1][entity] == self.enc_max(per_reaction_vars)))
+            enc_max_prod = simplify(
+                And(
+                    enc_max_prod,
+                    self.path_v[path_idx][level + 1][entity]
+                    == self.enc_max(per_reaction_vars),
+                )
+            )
 
         # make sure at least one entity is >0
-        enc_general_cond = self.enc_general_reaction_enabledness(
-            level, path_idx)
+        enc_general_cond = self.enc_general_reaction_enabledness(level, path_idx)
 
-        enc_trans_with_max = simplify(
-            And(enc_general_cond, enc_max_prod, enc_trans))
+        enc_trans_with_max = simplify(And(enc_general_cond, enc_max_prod, enc_trans))
 
         # print(enc_trans_with_max)
 
         return enc_trans_with_max
 
     def enc_max(self, elements):
-
         enc = None
 
         if elements == []:
@@ -561,7 +606,6 @@ class SmtCheckerRSCParam(object):
             enc = z3_max(0, elements[0])
 
         elif len(elements) > 1:
-
             enc = 0
             for i in range(len(elements) - 1):
                 enc = z3_max(enc, z3_max(elements[i], elements[i + 1]))
@@ -575,7 +619,7 @@ class SmtCheckerRSCParam(object):
 
         for src, ctx, dst in self.ca.transitions:
             src_enc = self.path_ca_state[path_idx][level] == src
-            dst_enc = self.path_ca_state[path_idx][level+1] == dst
+            dst_enc = self.path_ca_state[path_idx][level + 1] == dst
 
             all_ent = set(range(len(self.rs.background_set)))
 
@@ -586,11 +630,13 @@ class SmtCheckerRSCParam(object):
 
             for e, c in ctx:
                 ctx_enc = simplify(
-                    And(ctx_enc, self.path_v_ctx[path_idx][level][e] == c))
+                    And(ctx_enc, self.path_v_ctx[path_idx][level][e] == c)
+                )
 
             for e in excl_ctx:
                 ctx_enc = simplify(
-                    And(ctx_enc, self.path_v_ctx[path_idx][level][e] == 0))
+                    And(ctx_enc, self.path_v_ctx[path_idx][level][e] == 0)
+                )
 
             cur_trans = simplify(And(src_enc, ctx_enc, dst_enc))
             enc_trans = simplify(Or(enc_trans, cur_trans))
@@ -641,7 +687,6 @@ class SmtCheckerRSCParam(object):
             print(m)
 
         for level in range(max_level + 1):
-
             print("\n{: >70}".format("[ level=" + repr(level) + " ]"))
 
             print("  State: {", end=""),
@@ -649,11 +694,10 @@ class SmtCheckerRSCParam(object):
                 var_rep = repr(m[self.path_v[path_idx][level][var_id]])
                 if not var_rep.isdigit():
                     raise RuntimeError(
-                        "unexpected: representation is not a positive integer")
+                        "unexpected: representation is not a positive integer"
+                    )
                 if int(var_rep) > 0:
-                    print(
-                        " " + self.rs.get_entity_name(var_id) + "=" + var_rep,
-                        end="")
+                    print(" " + self.rs.get_entity_name(var_id) + "=" + var_rep, end="")
             print(" }")
 
             if level != max_level:
@@ -663,11 +707,13 @@ class SmtCheckerRSCParam(object):
                     var_rep = repr(m[self.path_v_ctx[path_idx][level][var_id]])
                     if not var_rep.isdigit():
                         raise RuntimeError(
-                            "unexpected: representation is not a positive integer")
+                            "unexpected: representation is not a positive integer"
+                        )
                     if int(var_rep) > 0:
                         print(
                             " " + self.rs.get_entity_name(var_id) + "=" + var_rep,
-                            end="")
+                            end="",
+                        )
                 print(" }")
 
         print()
@@ -675,29 +721,34 @@ class SmtCheckerRSCParam(object):
     def get_enc_formulae(self, encoder, formulae_list):
         enc_form = []
         for formula in formulae_list:
-
             path_idx = formulae_list.index(formula)
 
-            print_info("Generating the encoding for {:s} ({:d} of {:d})".format(
-                str(formula), path_idx+1, len(formulae_list)))
+            print_info(
+                "Generating the encoding for {:s} ({:d} of {:d})".format(
+                    str(formula), path_idx + 1, len(formulae_list)
+                )
+            )
 
             encoder.load_variables(
                 var_rs=self.path_v[path_idx],
                 var_ctx=self.path_v_ctx[path_idx],
-                var_loop_pos=self.path_loop_position[path_idx])
+                var_loop_pos=self.path_loop_position[path_idx],
+            )
 
             enc_form.append(encoder.get_encoding(formula, self.current_level))
             ncalls = encoder.get_ncalls()
 
-            print_info("Cache hits: {:d}, encode calls: {:d} (approx: {:d})".format(
-                encoder.get_cache_hits(), ncalls[0], ncalls[1]))
+            print_info(
+                "Cache hits: {:d}, encode calls: {:d} (approx: {:d})".format(
+                    encoder.get_cache_hits(), ncalls[0], ncalls[1]
+                )
+            )
 
             encoder.flush_cache()
 
         return enc_form
 
     def print_witness(self, formulae_list):
-
         for formula in formulae_list:
             path_idx = formulae_list.index(formula)
             print("\n{:=^70}".format("[ WITNESS ]"))
@@ -707,7 +758,6 @@ class SmtCheckerRSCParam(object):
         self.print_parameter_valuations()
 
     def print_parameter_valuations(self):
-
         m = self.solver.model()
 
         print("\n  Parameters:\n")
@@ -721,25 +771,24 @@ class SmtCheckerRSCParam(object):
                 var_rep = repr(m[params[entity]])
                 if not var_rep.isdigit():
                     raise RuntimeError(
-                        "unexpected: representation is not a positive integer")
+                        "unexpected: representation is not a positive integer"
+                    )
                 if int(var_rep) > 0:
                     print(
-                        " " + str(self.rs.get_entity_name(entity)) + "=" +
-                        str(var_rep),
-                        end="")
+                        " " + str(self.rs.get_entity_name(entity)) + "=" + str(var_rep),
+                        end="",
+                    )
             print(" }")
 
         print()
 
-    def enc_concentration_levels_assertions_for_paths(
-            self, level, num_of_paths):
-
+    def enc_concentration_levels_assertions_for_paths(self, level, num_of_paths):
         additional_assertions = []
         for path_idx in range(num_of_paths):
             additional_assertions.append(
-                self.enc_concentration_levels_assertion(level, path_idx))
-        additional_assertions.append(
-            self.enc_param_concentration_levels_assertion())
+                self.enc_concentration_levels_assertion(level, path_idx)
+            )
+        additional_assertions.append(self.enc_param_concentration_levels_assertion())
 
         return additional_assertions
 
@@ -750,22 +799,25 @@ class SmtCheckerRSCParam(object):
         return enc_trans
 
     def print_level(self):
-        print(
-            "{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
+        print("{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
 
     def check_rsltl(
-            self, formulae_list,
-            print_witness=True,
-            print_time=True, print_mem=True,
-            max_level=None, cont_if_sat=False,
-            param_constr=None):
+        self,
+        formulae_list,
+        print_witness=True,
+        print_time=True,
+        print_mem=True,
+        max_level=None,
+        cont_if_sat=False,
+        param_constr=None,
+    ):
         """
         Bounded Model Checking for rsLTL properties
 
             * print_witness   -- prints the decoded witness
             * print_time      -- prints the time consumed
             * print_mem       -- prints the memory consumed
-            * max_level       -- if not None, the methods 
+            * max_level       -- if not None, the methods
                                  stops at the specified level
             * cont_if_sat     -- if True, then the method
                                  continues up until max_level is
@@ -783,7 +835,7 @@ class SmtCheckerRSCParam(object):
         print_info("Running rsLTL bounded model checking")
         print_info("Tested formulae:")
         for form in formulae_list:
-            print_info(" "*4 + str(form))
+            print_info(" " * 4 + str(form))
 
         print_info("INITIALISING...")
 
@@ -804,8 +856,8 @@ class SmtCheckerRSCParam(object):
 
         # assertions for all the paths and parameters
         self.solver_add(
-            self.enc_concentration_levels_assertions_for_paths(
-                0, num_of_paths))
+            self.enc_concentration_levels_assertions_for_paths(0, num_of_paths)
+        )
         self.solver_add(self.enc_param_concentration_levels_assertion())
         self.solver_add(self.enc_param_sanity_for_reactions())
 
@@ -822,9 +874,11 @@ class SmtCheckerRSCParam(object):
         print_info("STARTING TO ITERATE...")
 
         while True:
-
             print(
-                "\n{:-^70}".format("[ Working at level=" + str(self.current_level) + " ]"))
+                "\n{:-^70}".format(
+                    "[ Working at level=" + str(self.current_level) + " ]"
+                )
+            )
 
             # reachability test:
             self.solver.push()
@@ -841,8 +895,9 @@ class SmtCheckerRSCParam(object):
             print_info("Testing satisfiability...")
             result = self.solver.check()
             if result == sat:
-                print_positive(green_str(
-                    "SAT at level={:d}".format(self.current_level)))
+                print_positive(
+                    green_str("SAT at level={:d}".format(self.current_level))
+                )
                 # print(self.solver.model())
                 if print_witness:
                     self.print_witness(formulae_list)
@@ -861,11 +916,14 @@ class SmtCheckerRSCParam(object):
             # assertions for all the paths
             self.solver_add(
                 self.enc_concentration_levels_assertions_for_paths(
-                    self.current_level + 1, num_of_paths))
+                    self.current_level + 1, num_of_paths
+                )
+            )
 
             print_info("Unrolling the transition relation")
-            self.solver_add(self.enc_transition_relation_for_paths(
-                self.current_level, num_of_paths))
+            self.solver_add(
+                self.enc_transition_relation_for_paths(self.current_level, num_of_paths)
+            )
 
             self.print_level()
 
@@ -880,22 +938,24 @@ class SmtCheckerRSCParam(object):
         stop = resource.getrusage(resource.RUSAGE_SELF).ru_utime
         self.verification_time = stop - start
         print()
-        print_info("{: >60}".format(
-            " Time: " + repr(self.verification_time) + " s"))
+        print_info("{: >60}".format(" Time: " + repr(self.verification_time) + " s"))
 
     def print_mem(self):
         print_info(
             "{: >60}".format(
-                " Memory: " +
-                repr(
-                    resource.getrusage(resource.RUSAGE_SELF).ru_maxrss /
-                    (1024 * 1024)) + " MB"))
+                " Memory: "
+                + repr(
+                    resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (1024 * 1024)
+                )
+                + " MB"
+            )
+        )
 
     def dummy_unroll(self, levels):
         """Unrolls the variables for testing purposes"""
 
         self.current_level = -1
-        for i in range(levels+1):
+        for i in range(levels + 1):
             self.prepare_all_variables()
             self.current_level += 1
 
@@ -916,7 +976,6 @@ class SmtCheckerRSCParam(object):
         return eq_enc
 
     def get_loop_encodings(self):
-
         k = self.current_level
         loop_var = self.loop_position
 
@@ -928,9 +987,10 @@ class SmtCheckerRSCParam(object):
         Therefore, the encoding starts at 1, not at 0.
         """
 
-        for i in range(1, k+1):
-            loop_enc = simplify(And(loop_enc, Implies(
-                loop_var == i, self.state_equality(i-1, k))))
+        for i in range(1, k + 1):
+            loop_enc = simplify(
+                And(loop_enc, Implies(loop_var == i, self.state_equality(i - 1, k)))
+            )
 
         return loop_enc
 
@@ -947,8 +1007,9 @@ class SmtCheckerRSCParam(object):
 
         self.solver.add(expression)
 
-    def check_reachability(self, state, print_witness=True,
-                           print_time=True, print_mem=True, max_level=1000):
+    def check_reachability(
+        self, state, print_witness=True, print_time=True, print_mem=True, max_level=1000
+    ):
         """Main testing function"""
 
         self.reset()
@@ -968,27 +1029,30 @@ class SmtCheckerRSCParam(object):
         while True:
             self.prepare_all_variables()
             self.solver_add(
-                self.enc_concentration_levels_assertion(
-                    self.current_level + 1))
+                self.enc_concentration_levels_assertion(self.current_level + 1)
+            )
 
             print(
-                "\n{:-^70}".format("[ Working at level=" + str(self.current_level) + " ]"))
+                "\n{:-^70}".format(
+                    "[ Working at level=" + str(self.current_level) + " ]"
+                )
+            )
             stdout.flush()
 
             # reachability test:
-            print("[" + colour_str(C_BOLD, "i") +
-                  "] Adding the reachability test...")
+            print("[" + colour_str(C_BOLD, "i") + "] Adding the reachability test...")
             self.solver.push()
 
-            self.solver_add(self.enc_state_with_blocking(
-                self.current_level, state))
+            self.solver_add(self.enc_state_with_blocking(self.current_level, state))
 
             result = self.solver.check()
             if result == sat:
                 print(
-                    "[" + colour_str(C_BOLD, "+") + "] " +
-                    colour_str(
-                        C_GREEN, "SAT at level=" + str(self.current_level)))
+                    "["
+                    + colour_str(C_BOLD, "+")
+                    + "] "
+                    + colour_str(C_GREEN, "SAT at level=" + str(self.current_level))
+                )
                 if print_witness:
                     print("\n{:=^70}".format("[ WITNESS ]"))
                     self.decode_witness(self.current_level)
@@ -996,12 +1060,10 @@ class SmtCheckerRSCParam(object):
             else:
                 self.solver.pop()
 
-            print("[" + colour_str(C_BOLD, "i") +
-                  "] Unrolling the transition relation")
+            print("[" + colour_str(C_BOLD, "i") + "] Unrolling the transition relation")
             self.solver_add(self.enc_transition_relation(self.current_level))
 
-            print(
-                "{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
+            print("{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
             self.current_level += 1
 
             if self.current_level > max_level:
@@ -1011,25 +1073,35 @@ class SmtCheckerRSCParam(object):
         if print_time:
             # stop = time()
             stop = resource.getrusage(resource.RUSAGE_SELF).ru_utime
-            self.verification_time = stop-start
+            self.verification_time = stop - start
             print()
             print(
-                "\n[i] {: >60}".format(
-                    " Time: " + repr(self.verification_time) + " s"))
+                "\n[i] {: >60}".format(" Time: " + repr(self.verification_time) + " s")
+            )
 
         if print_mem:
             print(
                 "[i] {: >60}".format(
-                    " Memory: " +
-                    repr(
-                        resource.getrusage(resource.RUSAGE_SELF).ru_maxrss /
-                        (1024 * 1024)) + " MB"))
+                    " Memory: "
+                    + repr(
+                        resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+                        / (1024 * 1024)
+                    )
+                    + " MB"
+                )
+            )
 
     def get_verification_time(self):
         return self.verification_time
 
-    def show_encoding(self, state, print_witness=True,
-                      print_time=False, print_mem=False, max_level=100):
+    def show_encoding(
+        self,
+        state,
+        print_witness=True,
+        print_time=False,
+        print_mem=False,
+        max_level=100,
+    ):
         """Encoding debug function"""
 
         self.reset()
@@ -1045,8 +1117,7 @@ class SmtCheckerRSCParam(object):
         while True:
             self.prepare_all_variables()
 
-            print(
-                "-----[ Working at level=" + str(self.current_level) + " ]-----")
+            print("-----[ Working at level=" + str(self.current_level) + " ]-----")
             stdout.flush()
 
             # reachability test:
@@ -1061,9 +1132,9 @@ class SmtCheckerRSCParam(object):
             result = self.solver.check()
             if result == sat:
                 print(
-                    "\n[+] " +
-                    colour_str(
-                        C_RED, "SAT at level=" + str(self.current_level)))
+                    "\n[+] "
+                    + colour_str(C_RED, "SAT at level=" + str(self.current_level))
+                )
                 if print_witness:
                     self.decode_witness(self.current_level)
                 break

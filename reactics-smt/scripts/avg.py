@@ -5,7 +5,6 @@ from os import listdir
 
 
 def proc_files(files):
-
     fs = []
     for f in files:
         try:
@@ -17,7 +16,6 @@ def proc_files(files):
     done = False
     result = []
     while not done:
-
         index = "NONE"
         val_sum = 0
 
@@ -30,7 +28,7 @@ def proc_files(files):
 
             sline = line.split()
 
-            assert(len(sline) == 2)
+            assert len(sline) == 2
 
             index, value = sline
             value = float(value)
@@ -40,7 +38,7 @@ def proc_files(files):
             # print(sline)
 
         else:
-            val_avg = val_sum/len(fs)
+            val_avg = val_sum / len(fs)
             result.append("{:s}\t{:f}".format(index, val_avg))
 
     result.append("")
@@ -48,7 +46,6 @@ def proc_files(files):
 
 
 def proc_dirs(dirs):
-
     first_dir = dirs[0]
 
     for f in listdir(first_dir):
@@ -59,7 +56,6 @@ def proc_dirs(dirs):
 
 
 def main():
-
     proc_dirs(sys.argv[1:])
 
     # proc_files(sys.argv[1:])

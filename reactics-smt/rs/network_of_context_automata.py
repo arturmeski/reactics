@@ -3,7 +3,6 @@ from colour import *
 
 
 class NetworkOfContextAutomata(object):
-
     def __init__(self, reaction_system, context_automata):
         self.automata = []
         self._reaction_system = reaction_system
@@ -44,14 +43,14 @@ class NetworkOfContextAutomata(object):
         for automaton in self.automata:
             if automaton.reaction_system != self._reaction_system:
                 print_error(
-                    "Mismatching reaction system used in \"" +
-                    str(automaton.name) + "\"!!!")
+                    'Mismatching reaction system used in "'
+                    + str(automaton.name)
+                    + '"!!!'
+                )
                 exit(1)
 
     def show_prod_entities(self):
-        print(
-            C_MARK_INFO +
-            " Possible context-products for the network of automata:")
+        print(C_MARK_INFO + " Possible context-products for the network of automata:")
         for entity in self.prod_entities:
             print(" - " + self._reaction_system.get_entity_name(entity))
 
@@ -96,7 +95,8 @@ class NetworkOfContextAutomata(object):
         for entity in aut.prod_entities:
             self._actions_for_products.setdefault(entity, set())
             self._actions_for_products[entity] |= aut.get_actions_producing_entity(
-                entity)
+                entity
+            )
 
     def show(self):
         print()
@@ -107,5 +107,6 @@ class NetworkOfContextAutomata(object):
         print()
         self.show_prod_entities()
         self.show_actions()
+
 
 # EOF
