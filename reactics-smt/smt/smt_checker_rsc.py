@@ -16,9 +16,7 @@ from logics import rsLTL_Encoder
 
 
 class SmtCheckerRSC(object):
-
     def __init__(self, rsca):
-
         rsca.sanity_check()
 
         if not rsca.is_with_concentrations():
@@ -62,7 +60,7 @@ class SmtCheckerRSC(object):
 
         variables = []
         for entity in self.rs.background_set:
-            variables.append(Int("C"+str(level)+"_"+entity))
+            variables.append(Int("C" + str(level) + "_" + entity))
 
         self.v_ctx.append(variables)
 
@@ -73,10 +71,10 @@ class SmtCheckerRSC(object):
 
         variables = []
         for entity in self.rs.background_set:
-            variables.append(Int("L"+str(level)+"_"+entity))
+            variables.append(Int("L" + str(level) + "_" + entity))
         self.v.append(variables)
 
-        self.ca_state.append(Int("CA"+str(level)+"_state"))
+        self.ca_state.append(Int("CA" + str(level) + "_state"))
 
     def enc_concentration_levels_assertion(self, level):
         """Encodes assertions that (some) variables need to be >0
@@ -92,7 +90,8 @@ class SmtCheckerRSC(object):
             v_ctx = self.v_ctx[level][e_i]
             e_max = self.rs.get_max_concentration_level(e_i)
             enc_nz = simplify(
-                And(enc_nz, v >= 0, v_ctx >= 0, v <= e_max, v_ctx <= e_max))
+                And(enc_nz, v >= 0, v_ctx >= 0, v <= e_max, v_ctx <= e_max)
+            )
 
         return enc_nz
 
@@ -116,8 +115,7 @@ class SmtCheckerRSC(object):
 
         rcts_for_prod_entity = []
         if prod_entity in self.rs.get_reactions_by_product():
-            rcts_for_prod_entity = self.rs.get_reactions_by_product()[
-                prod_entity]
+            rcts_for_prod_entity = self.rs.get_reactions_by_product()[prod_entity]
 
         meta_reactions = []
         if prod_entity in self.rs.meta_reactions:
@@ -129,7 +127,7 @@ class SmtCheckerRSC(object):
 
         if rcts_for_prod_entity == [] and meta_reactions == []:
             # this should never happen
-            return simplify(self.v[level+1][prod_entity] == 0)
+            return simplify(self.v[level + 1][prod_entity] == 0)
 
         enc_enabledness = False
 
@@ -140,30 +138,42 @@ class SmtCheckerRSC(object):
         enc_ordinary_reactions_enabledness = False
 
         for reactants, inhibitors, products in rcts_for_prod_entity:
-
             enc_reactants = True
             for reactant, concentration in reactants:
-                enc_reactants = simplify(And(enc_reactants, Or(
-                    self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
+                enc_reactants = simplify(
+                    And(
+                        enc_reactants,
+                        Or(
+                            self.v[level][reactant] >= concentration,
+                            self.v_ctx[level][reactant] >= concentration,
+                        ),
+                    )
+                )
 
             enc_inhibitors = True
             for inhibitor, concentration in inhibitors:
-                enc_inhibitors = simplify(And(enc_inhibitors, And(
-                    self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
+                enc_inhibitors = simplify(
+                    And(
+                        enc_inhibitors,
+                        And(
+                            self.v[level][inhibitor] < concentration,
+                            self.v_ctx[level][inhibitor] < concentration,
+                        ),
+                    )
+                )
 
             enc_rct_enabled = And(enc_reactants, enc_inhibitors)
-            enc_products = self.v[level+1][products[0][0]] == products[0][1]
-            enc_rct_prod = simplify(
-                If(enc_rct_enabled, enc_products, enc_rct_prod))
+            enc_products = self.v[level + 1][products[0][0]] == products[0][1]
+            enc_rct_prod = simplify(If(enc_rct_enabled, enc_products, enc_rct_prod))
             enc_enabledness = simplify(Or(enc_enabledness, enc_rct_enabled))
 
             enc_ordinary_reactions_enabledness = simplify(
-                Or(enc_ordinary_reactions_enabledness, enc_rct_enabled))
+                Or(enc_ordinary_reactions_enabledness, enc_rct_enabled)
+            )
 
         # -------- meta reactions ---------------------------------------------------
 
         for r_type, command_entity, reactants, inhibitors in meta_reactions:
-
             # command entity is e.g. 'inc' for incrementation operation
             # (inc,W) gives us the value W by which the given entity's value should be incremented
 
@@ -171,100 +181,127 @@ class SmtCheckerRSC(object):
             enc_inhibitors = True
 
             for reactant, concentration in reactants:
-                enc_reactants = simplify(And(enc_reactants, Or(
-                    self.v[level][reactant] >= concentration, self.v_ctx[level][reactant] >= concentration)))
+                enc_reactants = simplify(
+                    And(
+                        enc_reactants,
+                        Or(
+                            self.v[level][reactant] >= concentration,
+                            self.v_ctx[level][reactant] >= concentration,
+                        ),
+                    )
+                )
 
             # command entity needs to be present (with concentration level > 0) in order to perform the operation
-            enc_reactants = simplify(And(enc_reactants, Or(
-                self.v[level][command_entity] > 0, self.v_ctx[level][command_entity] > 0)))
+            enc_reactants = simplify(
+                And(
+                    enc_reactants,
+                    Or(
+                        self.v[level][command_entity] > 0,
+                        self.v_ctx[level][command_entity] > 0,
+                    ),
+                )
+            )
 
             for inhibitor, concentration in inhibitors:
-                enc_inhibitors = simplify(And(enc_inhibitors, And(
-                    self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
+                enc_inhibitors = simplify(
+                    And(
+                        enc_inhibitors,
+                        And(
+                            self.v[level][inhibitor] < concentration,
+                            self.v_ctx[level][inhibitor] < concentration,
+                        ),
+                    )
+                )
 
             if r_type == "inc":
                 value_after_inc = If(
-                    self.v[level][prod_entity] > self.v_ctx[level]
-                    [prod_entity],
+                    self.v[level][prod_entity] > self.v_ctx[level][prod_entity],
                     self.v[level][prod_entity],
-                    self.v_ctx[level][prod_entity]) + If(
-                    self.v[level][command_entity] > self.
-                    v_ctx[level][command_entity],
+                    self.v_ctx[level][prod_entity],
+                ) + If(
+                    self.v[level][command_entity] > self.v_ctx[level][command_entity],
                     self.v[level][command_entity],
-                    self.v_ctx[level][command_entity])
-                enc_products = self.v[level+1][prod_entity] == value_after_inc
+                    self.v_ctx[level][command_entity],
+                )
+                enc_products = self.v[level + 1][prod_entity] == value_after_inc
 
             elif r_type == "dec":
                 value_after_dec = simplify(
                     If(
-                        self.v[level][prod_entity] >
-                        self.v_ctx[level]
-                        [prod_entity],
+                        self.v[level][prod_entity] > self.v_ctx[level][prod_entity],
                         self.v[level][prod_entity],
-                        self.v_ctx[level]
-                        [prod_entity]) -
-                    If(
-                        self.v[level]
-                        [command_entity] > self.
-                        v_ctx[level][command_entity],
-                        self.v[level]
-                        [command_entity],
-                        self.v_ctx[level]
-                        [command_entity]))
-                enc_products = self.v[level+1][prod_entity] == If(
-                    value_after_dec < 0, 0, value_after_dec)
+                        self.v_ctx[level][prod_entity],
+                    )
+                    - If(
+                        self.v[level][command_entity]
+                        > self.v_ctx[level][command_entity],
+                        self.v[level][command_entity],
+                        self.v_ctx[level][command_entity],
+                    )
+                )
+                enc_products = self.v[level + 1][prod_entity] == If(
+                    value_after_dec < 0, 0, value_after_dec
+                )
 
             else:
-                raise RuntimeError(
-                    "Unknown meta-reaction type: " + repr(r_type))
+                raise RuntimeError("Unknown meta-reaction type: " + repr(r_type))
 
             enc_meta_reaction_enabledness = And(
-                enc_reactants, enc_inhibitors,
-                Not(enc_ordinary_reactions_enabledness))
+                enc_reactants, enc_inhibitors, Not(enc_ordinary_reactions_enabledness)
+            )
             enc_enabledness = simplify(
-                Or(enc_enabledness, enc_meta_reaction_enabledness))
-            enc_rct_prod = simplify(Or(enc_rct_prod, And(
-                enc_meta_reaction_enabledness, enc_products)))
+                Or(enc_enabledness, enc_meta_reaction_enabledness)
+            )
+            enc_rct_prod = simplify(
+                Or(enc_rct_prod, And(enc_meta_reaction_enabledness, enc_products))
+            )
 
         # -----------------------------------------------------------------------------
 
         if not permanency_inhibition == None:
-
-            enc_reactants = Or(self.v[level][prod_entity] >= concentration,
-                               self.v_ctx[level][prod_entity] >= concentration)
+            enc_reactants = Or(
+                self.v[level][prod_entity] >= concentration,
+                self.v_ctx[level][prod_entity] >= concentration,
+            )
 
             enc_inhibitors = True
             for inhibitor, concentration in permanency_inhibition:
-                enc_inhibitors = simplify(And(enc_inhibitors, And(
-                    self.v[level][inhibitor] < concentration, self.v_ctx[level][inhibitor] < concentration)))
+                enc_inhibitors = simplify(
+                    And(
+                        enc_inhibitors,
+                        And(
+                            self.v[level][inhibitor] < concentration,
+                            self.v_ctx[level][inhibitor] < concentration,
+                        ),
+                    )
+                )
             enc_products = simplify(
-                self.v[level + 1][prod_entity] ==
-                If(
-                    self.v[level][prod_entity] > self.v_ctx[level]
-                    [prod_entity],
+                self.v[level + 1][prod_entity]
+                == If(
+                    self.v[level][prod_entity] > self.v_ctx[level][prod_entity],
                     self.v[level][prod_entity],
-                    self.v_ctx[level][prod_entity]))
+                    self.v_ctx[level][prod_entity],
+                )
+            )
 
             enc_permanency_enabledness = And(
-                enc_reactants, enc_inhibitors,
-                Not(enc_ordinary_reactions_enabledness))
-            enc_enabledness = simplify(
-                Or(enc_enabledness, enc_permanency_enabledness))
+                enc_reactants, enc_inhibitors, Not(enc_ordinary_reactions_enabledness)
+            )
+            enc_enabledness = simplify(Or(enc_enabledness, enc_permanency_enabledness))
             enc_permanency = And(enc_permanency_enabledness, enc_products)
             enc_rct_prod = simplify(Or(enc_rct_prod, enc_permanency))
 
         # -----------------------------------------------------------------------------
 
         enc_when_to_produce_zero_conc = simplify(
-            And(Not(enc_enabledness), self.v[level+1][prod_entity] == 0))
+            And(Not(enc_enabledness), self.v[level + 1][prod_entity] == 0)
+        )
 
         enc_rct_prod = Or(enc_rct_prod, enc_when_to_produce_zero_conc)
         return enc_rct_prod
 
     def enc_transition_relation(self, level):
-        return simplify(
-            And(self.enc_rs_trans(level),
-                self.enc_automaton_trans(level)))
+        return simplify(And(self.enc_rs_trans(level), self.enc_automaton_trans(level)))
 
     def enc_rs_trans(self, level):
         """Encodes the transition relation"""
@@ -279,11 +316,11 @@ class SmtCheckerRSC(object):
         for prod_entity in chain(reactions, meta_reactions):
             unused_entities.discard(prod_entity)
             enc_trans = simplify(
-                And(enc_trans, self.enc_produced_concentration(level, prod_entity)))
+                And(enc_trans, self.enc_produced_concentration(level, prod_entity))
+            )
 
         for prod_entity in unused_entities:
-            enc_trans = simplify(
-                And(enc_trans, self.v[level+1][prod_entity] == 0))
+            enc_trans = simplify(And(enc_trans, self.v[level + 1][prod_entity] == 0))
 
         return enc_trans
 
@@ -294,7 +331,7 @@ class SmtCheckerRSC(object):
 
         for src, ctx, dst in self.ca.transitions:
             src_enc = self.ca_state[level] == src
-            dst_enc = self.ca_state[level+1] == dst
+            dst_enc = self.ca_state[level + 1] == dst
 
             all_ent = set(range(len(self.rs.background_set)))
 
@@ -346,14 +383,12 @@ class SmtCheckerRSC(object):
         return simplify(enc)
 
     def decode_witness(self, max_level, print_model=False):
-
         m = self.solver.model()
 
         if print_model:
             print(m)
 
-        for level in range(max_level+1):
-
+        for level in range(max_level + 1):
             print("\n{: >70}".format("[ level=" + repr(level) + " ]"))
 
             print("  State: {", end=""),
@@ -361,11 +396,10 @@ class SmtCheckerRSC(object):
                 var_rep = repr(m[self.v[level][var_id]])
                 if not var_rep.isdigit():
                     raise RuntimeError(
-                        "unexpected: representation is not a positive integer")
+                        "unexpected: representation is not a positive integer"
+                    )
                 if int(var_rep) > 0:
-                    print(
-                        " " + self.rs.get_entity_name(var_id) + "=" + var_rep,
-                        end="")
+                    print(" " + self.rs.get_entity_name(var_id) + "=" + var_rep, end="")
                 # print(" " + repr(m[self.v[level][var_id]]), end="")
             print(" }")
 
@@ -376,22 +410,28 @@ class SmtCheckerRSC(object):
                     var_rep = repr(m[self.v_ctx[level][var_id]])
                     if not var_rep.isdigit():
                         raise RuntimeError(
-                            "unexpected: representation is not a positive integer")
+                            "unexpected: representation is not a positive integer"
+                        )
                     if int(var_rep) > 0:
                         print(
                             " " + self.rs.get_entity_name(var_id) + "=" + var_rep,
-                            end="")
+                            end="",
+                        )
                 print(" }")
 
     def check_rsltl(
-            self, formula, print_witness=True, print_time=True, print_mem=True,
-            max_level=None):
+        self,
+        formula,
+        print_witness=True,
+        print_time=True,
+        print_mem=True,
+        max_level=None,
+    ):
         """Bounded Model Checking for rsLTL properties"""
 
         self.reset()
 
-        print("[" + colour_str(C_BOLD, "i") +
-              "] Running rsLTL bounded model checking")
+        print("[" + colour_str(C_BOLD, "i") + "] Running rsLTL bounded model checking")
         print("[" + colour_str(C_BOLD, "i") + "] Formula: " + str(formula))
 
         if print_time:
@@ -408,48 +448,61 @@ class SmtCheckerRSC(object):
 
         encoder = rsLTL_Encoder(self)
         encoder.load_variables(
-            var_rs=self.v,
-            var_ctx=self.v_ctx,
-            var_loop_pos=self.loop_position)
+            var_rs=self.v, var_ctx=self.v_ctx, var_loop_pos=self.loop_position
+        )
 
         while True:
             self.prepare_all_variables()
             self.solver.add(
-                self.enc_concentration_levels_assertion(
-                    self.current_level + 1))
+                self.enc_concentration_levels_assertion(self.current_level + 1)
+            )
 
             print(
-                "\n{:-^70}".format("[ Working at level=" + str(self.current_level) + " ]"))
+                "\n{:-^70}".format(
+                    "[ Working at level=" + str(self.current_level) + " ]"
+                )
+            )
             stdout.flush()
 
             # reachability test:
             self.solver.push()
 
-            print("[" + colour_str(C_BOLD, "i") +
-                  "] Generating the formula encoding...")
+            print(
+                "[" + colour_str(C_BOLD, "i") + "] Generating the formula encoding..."
+            )
 
             f = encoder.get_encoding(formula, self.current_level)
             ncalls = encoder.get_ncalls()
 
-            print("[" + colour_str(C_BOLD, "i") + "] Cache hits: " +
-                  str(encoder.get_cache_hits()) + ", encode calls: " +
-                  str(ncalls[0]) + " (approx: " + str(ncalls[1]) + ")")
-            print("[" + colour_str(C_BOLD, "i") +
-                  "] Adding the formula to the solver...")
+            print(
+                "["
+                + colour_str(C_BOLD, "i")
+                + "] Cache hits: "
+                + str(encoder.get_cache_hits())
+                + ", encode calls: "
+                + str(ncalls[0])
+                + " (approx: "
+                + str(ncalls[1])
+                + ")"
+            )
+            print(
+                "[" + colour_str(C_BOLD, "i") + "] Adding the formula to the solver..."
+            )
 
             encoder.flush_cache()
             self.solver.add(f)
 
-            print("[" + colour_str(C_BOLD, "i") +
-                  "] Adding the loops encoding...")
+            print("[" + colour_str(C_BOLD, "i") + "] Adding the loops encoding...")
             self.solver.add(self.get_loop_encodings())
 
             result = self.solver.check()
             if result == sat:
                 print(
-                    "[" + colour_str(C_BOLD, "+") + "] " +
-                    colour_str(
-                        C_GREEN, "SAT at level=" + str(self.current_level)))
+                    "["
+                    + colour_str(C_BOLD, "+")
+                    + "] "
+                    + colour_str(C_GREEN, "SAT at level=" + str(self.current_level))
+                )
                 if print_witness:
                     print("\n{:=^70}".format("[ WITNESS ]"))
                     self.decode_witness(self.current_level)
@@ -457,12 +510,10 @@ class SmtCheckerRSC(object):
             else:
                 self.solver.pop()
 
-            print("[" + colour_str(C_BOLD, "i") +
-                  "] Unrolling the transition relation")
+            print("[" + colour_str(C_BOLD, "i") + "] Unrolling the transition relation")
             self.solver.add(self.enc_transition_relation(self.current_level))
 
-            print(
-                "{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
+            print("{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
             self.current_level += 1
 
             if not max_level is None and self.current_level > max_level:
@@ -472,25 +523,29 @@ class SmtCheckerRSC(object):
         if print_time:
             # stop = time()
             stop = resource.getrusage(resource.RUSAGE_SELF).ru_utime
-            self.verification_time = stop-start
+            self.verification_time = stop - start
             print()
             print(
-                "\n[i] {: >60}".format(
-                    " Time: " + repr(self.verification_time) + " s"))
+                "\n[i] {: >60}".format(" Time: " + repr(self.verification_time) + " s")
+            )
 
         if print_mem:
             print(
                 "[i] {: >60}".format(
-                    " Memory: " +
-                    repr(
-                        resource.getrusage(resource.RUSAGE_SELF).ru_maxrss /
-                        (1024 * 1024)) + " MB"))
+                    " Memory: "
+                    + repr(
+                        resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+                        / (1024 * 1024)
+                    )
+                    + " MB"
+                )
+            )
 
     def dummy_unroll(self, levels):
         """Unrolls the variables for testing purposes"""
 
         self.current_level = -1
-        for i in range(levels+1):
+        for i in range(levels + 1):
             self.prepare_all_variables()
             self.current_level += 1
 
@@ -511,7 +566,6 @@ class SmtCheckerRSC(object):
         return eq_enc
 
     def get_loop_encodings(self):
-
         k = self.current_level
         loop_var = self.loop_position
 
@@ -523,14 +577,16 @@ class SmtCheckerRSC(object):
         Therefore, the encoding starts at 1, not at 0.
         """
 
-        for i in range(1, k+1):
-            loop_enc = simplify(And(loop_enc, Implies(
-                loop_var == i, self.state_equality(i-1, k))))
+        for i in range(1, k + 1):
+            loop_enc = simplify(
+                And(loop_enc, Implies(loop_var == i, self.state_equality(i - 1, k)))
+            )
 
         return loop_enc
 
-    def check_reachability(self, state, print_witness=True,
-                           print_time=True, print_mem=True, max_level=1000):
+    def check_reachability(
+        self, state, print_witness=True, print_time=True, print_mem=True, max_level=1000
+    ):
         """Main testing function"""
 
         self.reset()
@@ -550,27 +606,30 @@ class SmtCheckerRSC(object):
         while True:
             self.prepare_all_variables()
             self.solver.add(
-                self.enc_concentration_levels_assertion(
-                    self.current_level + 1))
+                self.enc_concentration_levels_assertion(self.current_level + 1)
+            )
 
             print(
-                "\n{:-^70}".format("[ Working at level=" + str(self.current_level) + " ]"))
+                "\n{:-^70}".format(
+                    "[ Working at level=" + str(self.current_level) + " ]"
+                )
+            )
             stdout.flush()
 
             # reachability test:
-            print("[" + colour_str(C_BOLD, "i") +
-                  "] Adding the reachability test...")
+            print("[" + colour_str(C_BOLD, "i") + "] Adding the reachability test...")
             self.solver.push()
 
-            self.solver.add(self.enc_state_with_blocking(
-                self.current_level, state))
+            self.solver.add(self.enc_state_with_blocking(self.current_level, state))
 
             result = self.solver.check()
             if result == sat:
                 print(
-                    "[" + colour_str(C_BOLD, "+") + "] " +
-                    colour_str(
-                        C_GREEN, "SAT at level=" + str(self.current_level)))
+                    "["
+                    + colour_str(C_BOLD, "+")
+                    + "] "
+                    + colour_str(C_GREEN, "SAT at level=" + str(self.current_level))
+                )
                 if print_witness:
                     print("\n{:=^70}".format("[ WITNESS ]"))
                     self.decode_witness(self.current_level)
@@ -578,12 +637,10 @@ class SmtCheckerRSC(object):
             else:
                 self.solver.pop()
 
-            print("[" + colour_str(C_BOLD, "i") +
-                  "] Unrolling the transition relation")
+            print("[" + colour_str(C_BOLD, "i") + "] Unrolling the transition relation")
             self.solver.add(self.enc_transition_relation(self.current_level))
 
-            print(
-                "{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
+            print("{:->70}".format("[ level=" + str(self.current_level) + " done ]"))
             self.current_level += 1
 
             if self.current_level > max_level:
@@ -593,25 +650,35 @@ class SmtCheckerRSC(object):
         if print_time:
             # stop = time()
             stop = resource.getrusage(resource.RUSAGE_SELF).ru_utime
-            self.verification_time = stop-start
+            self.verification_time = stop - start
             print()
             print(
-                "\n[i] {: >60}".format(
-                    " Time: " + repr(self.verification_time) + " s"))
+                "\n[i] {: >60}".format(" Time: " + repr(self.verification_time) + " s")
+            )
 
         if print_mem:
             print(
                 "[i] {: >60}".format(
-                    " Memory: " +
-                    repr(
-                        resource.getrusage(resource.RUSAGE_SELF).ru_maxrss /
-                        (1024 * 1024)) + " MB"))
+                    " Memory: "
+                    + repr(
+                        resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+                        / (1024 * 1024)
+                    )
+                    + " MB"
+                )
+            )
 
     def get_verification_time(self):
         return self.verification_time
 
-    def show_encoding(self, state, print_witness=True,
-                      print_time=False, print_mem=False, max_level=100):
+    def show_encoding(
+        self,
+        state,
+        print_witness=True,
+        print_time=False,
+        print_mem=False,
+        max_level=100,
+    ):
         """Encoding debug function"""
 
         self.reset()
@@ -627,8 +694,7 @@ class SmtCheckerRSC(object):
         while True:
             self.prepare_all_variables()
 
-            print(
-                "-----[ Working at level=" + str(self.current_level) + " ]-----")
+            print("-----[ Working at level=" + str(self.current_level) + " ]-----")
             stdout.flush()
 
             # reachability test:
@@ -643,9 +709,9 @@ class SmtCheckerRSC(object):
             result = self.solver.check()
             if result == sat:
                 print(
-                    "\n[+] " +
-                    colour_str(
-                        C_RED, "SAT at level=" + str(self.current_level)))
+                    "\n[+] "
+                    + colour_str(C_RED, "SAT at level=" + str(self.current_level))
+                )
                 if print_witness:
                     self.decode_witness(self.current_level)
                 break

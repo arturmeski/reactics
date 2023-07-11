@@ -3,7 +3,6 @@ from colour import *
 
 
 class ContextAutomaton(object):
-
     def __init__(self, reaction_system):
         self._states = []
         self._transitions = []
@@ -40,7 +39,7 @@ class ContextAutomaton(object):
         if name not in self._states:
             self._states.append(name)
         else:
-            print("\'%s\' already added. skipping..." % (name,))
+            print("'%s' already added. skipping..." % (name,))
 
     def add_states(self, states_set):
         for st in states_set:
@@ -101,15 +100,14 @@ class ContextAutomaton(object):
 
         if not self.is_valid_context(context_set):
             raise RuntimeError(
-                "one of the entities in the context set is unknown (undefined)!")
+                "one of the entities in the context set is unknown (undefined)!"
+            )
 
         if not self.is_state(src):
-            raise RuntimeError(
-                "\"" + src + "\" is an unknown (undefined) state")
+            raise RuntimeError('"' + src + '" is an unknown (undefined) state')
 
         if not self.is_state(dst):
-            raise RuntimeError(
-                "\"" + dst + "\" is an unknown (undefined) state")
+            raise RuntimeError('"' + dst + '" is an unknown (undefined) state')
 
         new_context_set = set()
         for e in set(context_set):
@@ -118,8 +116,8 @@ class ContextAutomaton(object):
         self._prod_entities |= new_context_set
 
         self._transitions.append(
-            (self.get_state_id(src),
-             new_context_set, self.get_state_id(dst)))
+            (self.get_state_id(src), new_context_set, self.get_state_id(dst))
+        )
 
     def rsset2str(self, elements):
         """Converts the set of entities ids into the string with their names"""
@@ -167,5 +165,6 @@ class ContextAutomaton(object):
         self.show_states()
         self.show_transitions()
         self.show_prod_entities()
+
 
 # EOF

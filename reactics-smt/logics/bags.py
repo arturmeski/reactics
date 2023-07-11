@@ -1,10 +1,9 @@
 from enum import Enum
-BagDesc_oper = Enum(
-    'BagDesc_oper', 'entity true l_and l_or l_not lt le eq ge gt')
+
+BagDesc_oper = Enum("BagDesc_oper", "entity true l_and l_or l_not lt le eq ge gt")
 
 
 class BagDescription(object):
-
     def __init__(self, f_type, L_oper=None, R_oper=None, entity=""):
         self.f_type = f_type
         self.left_operand = L_oper
@@ -19,9 +18,13 @@ class BagDescription(object):
         if self.f_type == BagDesc_oper.true:
             return "TRUE"
         if self.f_type == BagDesc_oper.l_and:
-            return "(" + repr(self.left_operand) + " & " + repr(self.right_operand) + ")"
+            return (
+                "(" + repr(self.left_operand) + " & " + repr(self.right_operand) + ")"
+            )
         if self.f_type == BagDesc_oper.l_or:
-            return "(" + repr(self.left_operand) + " | " + repr(self.right_operand) + ")"
+            return (
+                "(" + repr(self.left_operand) + " | " + repr(self.right_operand) + ")"
+            )
         if self.f_type == BagDesc_oper.l_not:
             return "~(" + repr(self.left_operand) + ")"
         if self.f_type == BagDesc_oper.lt:
@@ -39,12 +42,14 @@ class BagDescription(object):
         """Sanity checks"""
         for operand in (self.left_operand, self.right_operand):
             if operand:
-                if not(
-                        isinstance(operand, BagDescription)
-                        or isinstance(operand, int)):
+                if not (
+                    isinstance(operand, BagDescription) or isinstance(operand, int)
+                ):
                     raise RuntimeError(
                         "Unexpected operand type for a bag: {:s} (type: {:s})".format(
-                            str(operand), str(type(operand))))
+                            str(operand), str(type(operand))
+                        )
+                    )
 
     @classmethod
     def f_entity(cls, entity_name):
@@ -85,5 +90,6 @@ class BagDescription(object):
 
     def __invert__(self):
         return BagDescription(BagDesc_oper.l_not, L_oper=self)
+
 
 # EOF

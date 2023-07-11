@@ -75,23 +75,24 @@ class ExtendedContextAutomaton(ContextAutomaton):
 
         if not self.is_valid_rs_set(ctx_reactants):
             raise RuntimeError(
-                "one of the entities in the reactants set is unknown (undefined)!")
+                "one of the entities in the reactants set is unknown (undefined)!"
+            )
 
         if not self.is_valid_rs_set(ctx_inhibitors):
             raise RuntimeError(
-                "one of the entities in the inhibitors set is unknown (undefined)!")
+                "one of the entities in the inhibitors set is unknown (undefined)!"
+            )
 
         if not self.is_valid_rs_set(ctx_products):
             raise RuntimeError(
-                "one of the entities in the context set is unknown (undefined)!")
+                "one of the entities in the context set is unknown (undefined)!"
+            )
 
         if not self.is_state(src):
-            raise RuntimeError(
-                "\"" + src + "\" is an unknown (undefined) state")
+            raise RuntimeError('"' + src + '" is an unknown (undefined) state')
 
         if not self.is_state(dst):
-            raise RuntimeError(
-                "\"" + dst + "\" is an unknown (undefined) state")
+            raise RuntimeError('"' + dst + '" is an unknown (undefined) state')
 
         src_id = self.get_state_id(src)
         dst_id = self.get_state_id(dst)
@@ -119,8 +120,15 @@ class ExtendedContextAutomaton(ContextAutomaton):
         for src_id, act_id, reaction, dst_id in self._transitions:
             str_transition = self.get_state_name(src_id) + " --( "
             str_transition += "<" + self.get_actions_str(act_id) + "> | "
-            str_transition += "( " + self.rsset2str(reaction[0]) + "," + self.rsset2str(
-                reaction[1]) + "," + self.rsset2str(reaction[2]) + " )"
+            str_transition += (
+                "( "
+                + self.rsset2str(reaction[0])
+                + ","
+                + self.rsset2str(reaction[1])
+                + ","
+                + self.rsset2str(reaction[2])
+                + " )"
+            )
             str_transition += " )--> " + self.get_state_name(dst_id)
             print(" - " + str_transition)
 
@@ -130,7 +138,7 @@ class ExtendedContextAutomaton(ContextAutomaton):
         if action_name not in self._actions:
             self._actions.append(action_name)
         else:
-            print("\'%s\' already added. skipping..." % (action_name,))
+            print("'%s' already added. skipping..." % (action_name,))
 
     def get_action_id(self, action_name):
         """For an action name returns its id"""
@@ -138,8 +146,7 @@ class ExtendedContextAutomaton(ContextAutomaton):
         try:
             return self._actions.index(action_name)
         except ValueError:
-            print_error("Undefined context automaton action: " +
-                        repr(action_name))
+            print_error("Undefined context automaton action: " + repr(action_name))
             exit(1)
 
     def get_action_name(self, action_id):
@@ -172,5 +179,6 @@ class ExtendedContextAutomaton(ContextAutomaton):
     def show(self):
         super(ExtendedContextAutomaton, self).show()
         self.show_actions()
+
 
 # EOF

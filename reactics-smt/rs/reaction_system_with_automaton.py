@@ -1,10 +1,11 @@
 from rs.reaction_system_with_concentrations import ReactionSystemWithConcentrations
-from rs.reaction_system_with_concentrations_param import ReactionSystemWithConcentrationsParam
+from rs.reaction_system_with_concentrations_param import (
+    ReactionSystemWithConcentrationsParam,
+)
 from rs.context_automaton_with_concentrations import ContextAutomatonWithConcentrations
 
 
 class ReactionSystemWithAutomaton(object):
-
     def __init__(self, reaction_system, context_automaton):
         self.rs = reaction_system
         self.ca = context_automaton
@@ -15,7 +16,7 @@ class ReactionSystemWithAutomaton(object):
 
     def is_concentr_and_param_compatible(self):
         """
-        Checks if the underlying RS/CA are compatible 
+        Checks if the underlying RS/CA are compatible
         with parameters and concentrations
         """
         if not isinstance(self.rs, ReactionSystemWithConcentrationsParam):
@@ -35,7 +36,6 @@ class ReactionSystemWithAutomaton(object):
         pass
 
     def get_ordinary_reaction_system_with_automaton(self):
-
         if not self.is_with_concentrations():
             raise RuntimeError("Not RS/CA with concentrations")
 

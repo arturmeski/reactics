@@ -3,9 +3,7 @@ from colour import *
 
 
 class ReactionSystem(object):
-
     def __init__(self):
-
         self.reactions = []
         self.background_set = []
 
@@ -30,8 +28,7 @@ class ReactionSystem(object):
 
     def assume_not_in_bgset(self, name):
         if self.is_in_background_set(name):
-            raise RuntimeError(
-                "The entity " + name + " is already on the list")
+            raise RuntimeError("The entity " + name + " is already on the list")
 
     def add_bg_set_entity(self, name):
         self.assume_not_in_bgset(name)
@@ -106,7 +103,6 @@ class ReactionSystem(object):
         self.init_contexts.append(integers)
 
     def set_context_entities(self, entities):
-
         for entity in entities:
             entity_id = self.get_entity_id(entity)
             self.context_entities.append(entity_id)
@@ -131,20 +127,36 @@ class ReactionSystem(object):
     def show_reactions(self, soft=False):
         print(C_MARK_INFO + " Reactions:")
         if soft and len(self.reactions) > 50:
-            print(" -> there are more than 50 reactions (" +
-                  str(len(self.reactions)) + ")")
+            print(
+                " -> there are more than 50 reactions ("
+                + str(len(self.reactions))
+                + ")"
+            )
         else:
             print(
-                " "*4 + "{0: ^35}{1: ^25}{2: ^15}".format("reactants", " inhibitors", " products"))
+                " " * 4
+                + "{0: ^35}{1: ^25}{2: ^15}".format(
+                    "reactants", " inhibitors", " products"
+                )
+            )
             for reaction in self.reactions:
                 # print("\t( R={" + self.state_to_str(reaction[0]) + "}, I={" + self.state_to_str(reaction[1]) + "}, P={" + self.state_to_str(reaction[2]) + "} )")
-                print(" " + "- {0: ^35}{1: ^25}{2: ^15}".format("{ " + self.state_to_str(reaction[0]) + " }",
-                                                                " { " + self.state_to_str(reaction[1]) + " }",
-                                                                " { " + self.state_to_str(reaction[2]) + " }"))
+                print(
+                    " "
+                    + "- {0: ^35}{1: ^25}{2: ^15}".format(
+                        "{ " + self.state_to_str(reaction[0]) + " }",
+                        " { " + self.state_to_str(reaction[1]) + " }",
+                        " { " + self.state_to_str(reaction[2]) + " }",
+                    )
+                )
 
     def show_background_set(self):
         print(
-            C_MARK_INFO + " Background set: {" + self.entities_names_set_to_str(self.background_set) + "}")
+            C_MARK_INFO
+            + " Background set: {"
+            + self.entities_names_set_to_str(self.background_set)
+            + "}"
+        )
 
     def show_initial_contexts(self):
         if len(self.init_contexts) > 0:
@@ -155,10 +167,12 @@ class ReactionSystem(object):
     def show_context_entities(self):
         if len(self.context_entities) > 0:
             print(
-                C_MARK_INFO + " Context entities: " + self.entities_ids_set_to_str(self.context_entities))
+                C_MARK_INFO
+                + " Context entities: "
+                + self.entities_ids_set_to_str(self.context_entities)
+            )
 
     def show(self, soft=False):
-
         self.show_background_set()
         self.show_initial_contexts()
         self.show_reactions(soft)
@@ -181,8 +195,7 @@ class ReactionSystem(object):
             reactions_by_prod[prod_entity] = []
             for reaction in self.reactions:
                 if prod_entity in reaction[2]:
-                    reactions_by_prod[prod_entity].append(
-                        [reaction[0], reaction[1]])
+                    reactions_by_prod[prod_entity].append([reaction[0], reaction[1]])
 
         # save in cache
         self.reactions_by_prod = reactions_by_prod
@@ -199,5 +212,6 @@ class ReactionSystem(object):
         if self.background_set == []:
             print("Empty background set")
             exit(1)
+
 
 # EOF

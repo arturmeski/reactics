@@ -9,9 +9,7 @@ import resource
 
 
 class SmtCheckerRS(object):
-
     def __init__(self, rsca):
-
         rsca.sanity_check()
 
         self.rs = rsca.rs
@@ -40,7 +38,7 @@ class SmtCheckerRS(object):
 
         variables = []
         for entity in self.rs.background_set:
-            variables.append(Bool("C"+str(level)+"_"+entity))
+            variables.append(Bool("C" + str(level) + "_" + entity))
 
         self.v_ctx.append(variables)
 
@@ -51,7 +49,7 @@ class SmtCheckerRS(object):
 
         variables = []
         for entity in self.rs.background_set:
-            variables.append(Bool("L"+str(level)+"_"+entity))
+            variables.append(Bool("L" + str(level) + "_" + entity))
         self.v.append(variables)
 
     def prepare_context_controller_variables(self):
@@ -59,7 +57,7 @@ class SmtCheckerRS(object):
 
         level = self.next_level_to_encode
 
-        self.ca_state.append(Int("CA"+str(level)+"_state"))
+        self.ca_state.append(Int("CA" + str(level) + "_state"))
 
     def prepare_state_variables(self):
         """Encodes all the state variables"""
@@ -84,8 +82,12 @@ class SmtCheckerRS(object):
     def enc_init_state(self, level):
         """Encodes the initial state at the given level"""
 
-        init_state_enc = simplify(And(self.enc_rs_init_state(
-            level), self.enc_context_controller_init_state(level)))
+        init_state_enc = simplify(
+            And(
+                self.enc_rs_init_state(level),
+                self.enc_context_controller_init_state(level),
+            )
+        )
 
         return init_state_enc
 
@@ -102,14 +104,23 @@ class SmtCheckerRS(object):
             enc_reactants = True
             enc_inhibitors = True
             for reactant in reactants:
-                enc_reactants = simplify(And(enc_reactants, Or(
-                    self.v[level][reactant], self.v_ctx[level][reactant])))
+                enc_reactants = simplify(
+                    And(
+                        enc_reactants,
+                        Or(self.v[level][reactant], self.v_ctx[level][reactant]),
+                    )
+                )
             for inhibitor in inhibitors:
-                enc_inhibitors = simplify(And(enc_inhibitors, Not(
-                    Or(self.v[level][inhibitor], self.v_ctx[level][inhibitor]))))
+                enc_inhibitors = simplify(
+                    And(
+                        enc_inhibitors,
+                        Not(Or(self.v[level][inhibitor], self.v_ctx[level][inhibitor])),
+                    )
+                )
 
             enc_rct_prod = simplify(
-                Or(enc_rct_prod, And(enc_reactants, enc_inhibitors)))
+                Or(enc_rct_prod, And(enc_reactants, enc_inhibitors))
+            )
 
         return enc_rct_prod
 
@@ -120,17 +131,15 @@ class SmtCheckerRS(object):
 
         enc_ent_prod = Or(
             And(enc_enab_cond, self.v[level + 1][prod_entity]),
-            And(Not(enc_enab_cond),
-                Not(self.v[level + 1][prod_entity])))
+            And(Not(enc_enab_cond), Not(self.v[level + 1][prod_entity])),
+        )
 
         return simplify(enc_ent_prod)
 
     def enc_transition_relation(self, level):
         """Encodes the combined transition relation"""
 
-        return simplify(
-            And(self.enc_rs_trans(level),
-                self.enc_automaton_trans(level)))
+        return simplify(And(self.enc_rs_trans(level), self.enc_automaton_trans(level)))
 
     def enc_rs_trans(self, level):
         """Encodes the transition relation"""
@@ -143,20 +152,19 @@ class SmtCheckerRS(object):
             unused_entities.remove(prod_entity)
 
             enc_trans = simplify(
-                And(enc_trans, self.enc_entity_production(level, prod_entity)))
+                And(enc_trans, self.enc_entity_production(level, prod_entity))
+            )
 
         for prod_entity in unused_entities:
-            enc_trans = simplify(
-                And(enc_trans, Not(self.v[level+1][prod_entity])))
+            enc_trans = simplify(And(enc_trans, Not(self.v[level + 1][prod_entity])))
 
         return enc_trans
 
     def enc_automaton_single_trans(self, level, transition):
-
         src, ctx, dst = transition
 
         src_enc = self.ca_state[level] == src
-        dst_enc = self.ca_state[level+1] == dst
+        dst_enc = self.ca_state[level + 1] == dst
 
         all_ent = set(range(len(self.rs.background_set)))
         incl_ctx = ctx
@@ -179,7 +187,8 @@ class SmtCheckerRS(object):
         enc_trans = False
         for transition in self.ca.transitions:
             enc_trans = simplify(
-                Or(enc_trans, self.enc_automaton_single_trans(level, transition)))
+                Or(enc_trans, self.enc_automaton_single_trans(level, transition))
+            )
 
         return enc_trans
 
@@ -231,14 +240,12 @@ class SmtCheckerRS(object):
         return simplify(enc)
 
     def decode_witness(self, max_level, print_model=False):
-
         m = self.solver.model()
 
         if print_model:
             print(m)
 
-        for level in range(max_level+1):
-
+        for level in range(max_level + 1):
             print("\n[Level=" + repr(level) + "]")
 
             print("  State: {", end=""),
@@ -256,7 +263,8 @@ class SmtCheckerRS(object):
                 print(" }")
 
     def check_reachability(
-            self, state, print_witness=True, print_time=True, print_mem=True):
+        self, state, print_witness=True, print_time=True, print_mem=True
+    ):
         """Main testing function"""
 
         if not type(state) is tuple:
@@ -299,16 +307,18 @@ class SmtCheckerRS(object):
         if print_time:
             # stop = time()
             stop = resource.getrusage(resource.RUSAGE_SELF).ru_utime
-            self.verification_time = stop-start
+            self.verification_time = stop - start
             print()
             print("[i] Time: " + repr(self.verification_time))
 
         if print_mem:
             print(
-                "[i] Memory: " +
-                repr(
-                    resource.getrusage(resource.RUSAGE_SELF).ru_maxrss /
-                    (1024 * 1024)) + " MB")
+                "[i] Memory: "
+                + repr(
+                    resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / (1024 * 1024)
+                )
+                + " MB"
+            )
 
     def get_verification_time(self):
         return self.verification_time

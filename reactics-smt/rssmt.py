@@ -24,12 +24,16 @@ if profiling:
 ##################################################################
 
 version = "2.99"
-rsmc_banner = """
+rsmc_banner = (
+    """
 Reaction Systems SMT-Based Model Checking
 
-Version:  """ + version + """
+Version:  """
+    + version
+    + """
 Author:   Artur Meski <artur.meski@gmail.com>
 """
+)
 
 ##################################################################
 
@@ -40,6 +44,7 @@ def print_banner():
         print(colour_str(C_GREEN, " " + 3 * "-" + " "), line)
     print()
 
+
 ##################################################################
 
 
@@ -48,21 +53,29 @@ def main():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-v", "--verbose",
-                        help="turn verbosity on", action="store_true")
-    parser.add_argument("-o", "--optimise",
-                        help="minimise the parametric computation result",
-                        action="store_true")
     parser.add_argument(
-        "-n", "--scaling-parameter",
-        help="scaling parameter value (used in some benchmarks)")
-    parser.add_argument("-s", "--special_mode",
-                        help="special mode (used in some benchmarks)")
+        "-v", "--verbose", help="turn verbosity on", action="store_true"
+    )
+    parser.add_argument(
+        "-o",
+        "--optimise",
+        help="minimise the parametric computation result",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-n",
+        "--scaling-parameter",
+        help="scaling parameter value (used in some benchmarks)",
+    )
+    parser.add_argument(
+        "-s", "--special_mode", help="special mode (used in some benchmarks)"
+    )
 
     args = parser.parse_args()
 
     print_banner()
     rs_testing.run_tests(args)
+
 
 ##################################################################
 
@@ -71,7 +84,8 @@ if __name__ == "__main__":
     try:
         if profiling:
             import profile
-            profile.run('main()')
+
+            profile.run("main()")
         else:
             main()
     except KeyboardInterrupt:
