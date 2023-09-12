@@ -91,12 +91,13 @@ class Automaton:
 
 
 class DRSGenerator:
-    def __init__(self, x, y, z, n):
+    def __init__(self, x, y, z, aut, n):
         assert y >= z
         assert x >= 2 and y >= 2 and z >= 2
         self.x = x
         self.y = y
         self.z = z
+        self.aut_id = aut
         self.n = n
         self.reactions = {}
 
@@ -153,9 +154,58 @@ class DRSGenerator:
 
         print("};")
 
-        self.generate_automaton(self.n)
+        if self.aut_id == "a":
+            self.generate_automaton_4(self.n)
+        elif self.aut_id == "b":
+            self.generate_automaton_5(self.n)
+        else:
+            raise RuntimeError(f"Unknown automaton identifier: {self.aut_id}")
 
-    def generate_automaton(self, n):
+    def generate_automaton_4(self, n):
+        aut = self.automaton
+
+        aut.add_state("qI")
+        aut.add_state("qS")
+        for i in range(1, n + 1):
+            aut.add_state(f"q{i}A")
+            aut.add_state(f"q{i}B")
+            aut.add_state(f"q{i}C")
+            aut.add_state(f"q{i}D")
+
+        aut.set_init_state("qI")
+
+        aut.add_transition(
+            Transition("qI", "qS", "", [(f"proc{i}", ["GF"]) for i in range(0, n + 1)])
+        )
+
+        for i in range(1, n + 1):
+            aut.add_transition(Transition("qS", f"q{i}A", "", [(f"proc{i}", [])]))
+            aut.add_transition(
+                Transition(
+                    f"q{i}A", f"q{i}B", "", [(f"proc{v}", []) for v in range(0, n + 1)]
+                )
+            )
+            aut.add_transition(Transition(f"q{i}B", f"q{i}C", "", [(f"proc{i}", [])]))
+            aut.add_transition(
+                Transition(
+                    f"q{i}C", f"q{i}D", "", [(f"proc{v}", []) for v in range(0, n + 1)]
+                )
+            )
+
+        for i in range(1, n + 1):
+            for j in range(1, n + 1):
+                if i == j:
+                    continue
+                aut.add_transition(
+                    Transition(f"q{i}B", f"q{j}A", "", [(f"proc{j}", [])])
+                )
+                aut.add_transition(
+                    Transition(f"q{i}D", f"q{j}A", "", [(f"proc{j}", [])])
+                )
+
+        print(aut)
+
+    def generate_automaton_5(self, n):
 
         aut = self.automaton
 
@@ -177,7 +227,7 @@ class DRSGenerator:
                     f"q{4*i+2}",
                     f"q{4*i+3}",
                     "",
-                    [(f"proc{i}", []) for i in range(0, n + 1)],
+                    [(f"proc{v}", []) for v in range(0, n + 1)],
                 )
             )
             aut.add_transition(
@@ -190,7 +240,7 @@ class DRSGenerator:
                     f"q{4*i+4}",
                     f"q{4*i+5}",
                     "",
-                    [(f"proc{i}", []) for i in range(0, n + 1)],
+                    [(f"proc{v}", []) for v in range(0, n + 1)],
                 )
             )
 
@@ -202,12 +252,19 @@ class DRSGenerator:
 
 
 def main():
-    if len(sys.argv) < 1 + 4:
-        print(f"Usage: {sys.argv[0]} <x> <y> <z> <n>")
+    if len(sys.argv) < 1 + 5:
+        print(f"Usage: {sys.argv[0]} <x> <y> <z> <Aut> <n>")
         print("\twhere x,y,z >= 2 and y >= z")
+        print("\tAut: a, b")
         sys.exit(1)
 
-    g = DRSGenerator(x=int(sys.argv[1]), y=int(sys.argv[2]), z=int(sys.argv[3]), n=int(sys.argv[4]))
+    g = DRSGenerator(
+        x=int(sys.argv[1]),
+        y=int(sys.argv[2]),
+        z=int(sys.argv[3]),
+        aut=sys.argv[4],
+        n=int(sys.argv[5]),
+    )
 
 
 if __name__ == "__main__":
