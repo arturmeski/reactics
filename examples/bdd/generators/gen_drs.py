@@ -58,7 +58,10 @@ class Transition:
         return "{ " + r + " }"
 
     def __str__(self):
-        return f"{self.get_context_str()}: {self.src} -> {self.dst} : {self.guard};"
+        if self.guard:
+            return f"{self.get_context_str()}: {self.src} -> {self.dst} : {self.guard};"
+        else:
+            return f"{self.get_context_str()}: {self.src} -> {self.dst};"
 
 
 class Automaton:
@@ -161,6 +164,8 @@ class DRSGenerator:
         else:
             raise RuntimeError(f"Unknown automaton identifier: {self.aut_id}")
 
+        self.generate_formula()
+
     def generate_automaton_4(self, n):
         aut = self.automaton
 
@@ -249,6 +254,23 @@ class DRSGenerator:
         )
 
         print(aut)
+
+    def generate_formula(self):
+
+        r = "rsctlk-property { f4 : AG( proc0.in IMPLIES C[proc0,proc1,proc2](~proc1.in AND ~proc2.in) ) };"
+
+        disjunction = " OR ".join([f"proc{i}.TF" for i in range(1, self.x + 1)])
+        conjunction = " AND ".join([f"~proc{i}.TF" for i in range(1, self.x + 1)])
+
+        r = (
+            "rsctlk-property { f0 : AG( K[proc0]( "
+            + disjunction
+            + " ) OR K[proc0]( "
+            + conjunction
+            + " ) ) };"
+        )
+
+        print(r)
 
 
 def main():
