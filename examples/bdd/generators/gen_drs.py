@@ -94,14 +94,14 @@ class Automaton:
 
 
 class DRSGenerator:
-    def __init__(self, x, y, z, aut, n):
+    def __init__(self, x, y, z, aut):
         assert y >= z
         assert x >= 2 and y >= 2 and z >= 2
         self.x = x
         self.y = y
         self.z = z
         self.aut_id = aut
-        self.n = n
+        self.n = self.y
         self.reactions = {}
 
         self.automaton = Automaton()
@@ -274,8 +274,8 @@ class DRSGenerator:
 
 
 def main():
-    if len(sys.argv) < 1 + 5:
-        print(f"Usage: {sys.argv[0]} <x> <y> <z> <Aut> <n>")
+    if len(sys.argv) < 1 + 4:
+        print(f"Usage: {sys.argv[0]} <x> <y> <z> <Aut>")
         print("\twhere x,y,z >= 2 and y >= z")
         print("\tAut: a, b")
         sys.exit(1)
@@ -285,7 +285,6 @@ def main():
         y=int(sys.argv[2]),
         z=int(sys.argv[3]),
         aut=sys.argv[4],
-        n=int(sys.argv[5]),
     )
 
 
