@@ -257,10 +257,8 @@ class DRSGenerator:
 
     def generate_formula(self):
 
-        r = "rsctlk-property { f4 : AG( proc0.in IMPLIES C[proc0,proc1,proc2](~proc1.in AND ~proc2.in) ) };"
-
-        disjunction = " OR ".join([f"proc{i}.TF" for i in range(1, self.x + 1)])
-        conjunction = " AND ".join([f"~proc{i}.TF" for i in range(1, self.x + 1)])
+        disjunction = " OR ".join([f"proc{i}.TF" for i in range(1, self.y + 1)])
+        conjunction = " AND ".join([f"~proc{i}.TF" for i in range(1, self.y + 1)])
 
         r = (
             "rsctlk-property { f0 : AG( K[proc0]( "
