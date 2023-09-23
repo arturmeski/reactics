@@ -32,8 +32,10 @@ then
     mkdir -p $outdir
 fi
 
-ulimit -t 3600
-ulimit -v 2097152
+#ulimit -t 3600
+#ulimit -v 2097152
+ulimit -t 360
+ulimit -v 1000000
 
 for a in $aut_values
 do
@@ -49,16 +51,37 @@ do
                     # Skip undesired values
                     continue
                 fi
-                
+
+                bench_identifier="${benchname}_F${formname}_A${a}"
+
                 filename_base="${outdir}/${benchname}_F${formname}__x${x}_y${y}_z${z}_A${a}" 
                 outfile="${filename_base}.out"
                 infile="${filename_base}.drs"
+
+		stopfile="DONE_${bench_identifier}"
+
+                if [[ -e "$stopfile" ]]
+                then
+                    echo "Time limit -- SKIPPING"
+                    continue
+                fi
 
                 $input_generator $x $y $z $a > ${infile}
 
                 $reactics $reactics_opts $formname $infile > ${outfile} 2>&1 
                 exitcode=$?
                 echo "ReactICS exit code: $exitcode"
+
+                result="$(tail -1 $outfile | grep -E '.*;.*;.*;.*'| sed "s/STAT/$n /")" 
+                if [ "$result" = "" ]
+                then
+                    echo "TIME LIMIT; marking as finished"
+                    touch $stopfile
+                else
+                    echo $result >> $outdir/summary_${bench_identifier}.txt
+                    echo $result | sed 's/;/ /g' >> $outdir/${bench_identifier}.dat
+                    echo $result
+                fi
 
             done
         done
