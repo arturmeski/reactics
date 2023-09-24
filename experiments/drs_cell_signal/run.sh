@@ -78,8 +78,8 @@ do
                     echo "TIME LIMIT; marking as finished"
                     touch $stopfile
                 else
-                    echo $result >> $outdir/summary_${bench_identifier}.txt
-                    echo $result | sed 's/;/ /g' >> $outdir/${bench_identifier}.dat
+                    echo "$x ; $y ; $z ; $a ; $exitcode $result" >> $outdir/summary_${bench_identifier}.txt
+                    echo "$x $y $z $a $(echo $result | sed 's/;/ /g')" >> $outdir/${bench_identifier}.dat
                     echo $result
                 fi
 
