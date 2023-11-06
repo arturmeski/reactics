@@ -52,7 +52,7 @@ then
   then
     python3 $* 
   else
-    echo "Nothing to do"
+    echo "Provide path to an example script (typically from ./examples/smt)"
   fi
   
 elif [[ "$mode" == "setup" ]]
