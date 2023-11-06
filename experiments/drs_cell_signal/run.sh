@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-x_values="`seq 2 20`"
+x_values="2 3 4"
 y_values="`seq 2 20`"
 z_values="`seq 2 20`"
 aut_values="a b"
 
 reactics="$1"
-reactics_opts="-z -v -B -c"
+reactics_opts="-z -x -vv -B -c"
 
 input_generator="../../examples/bdd/generators/gen_drs.py"
 
@@ -34,21 +34,27 @@ fi
 
 #ulimit -t 3600
 #ulimit -v 2097152
-ulimit -t 360
-ulimit -v 1000000
+ulimit -t 3600
+#ulimit -v 1000000
 
 for a in $aut_values
 do
-    for x in $x_values
+    for z in $z_values
     do
         for y in $y_values
         do
-            for z in $z_values
+            for x in $x_values
             do
 
                 if [[ $y -lt $z ]]
                 then
                     # Skip undesired values
+                    continue
+                fi
+
+                if [[ $y -ne $z ]]
+                then
+                    # More aggressive skipping
                     continue
                 fi
 
@@ -58,7 +64,7 @@ do
                 outfile="${filename_base}.out"
                 infile="${filename_base}.drs"
 
-		stopfile="DONE_${bench_identifier}"
+                stopfile="DONE_${bench_identifier}"
 
                 if [[ -e "$stopfile" ]]
                 then
@@ -68,7 +74,7 @@ do
 
                 $input_generator $x $y $z $a > ${infile}
 
-                $reactics $reactics_opts $formname $infile > ${outfile} 2>&1 
+                $reactics $reactics_opts $formname $infile |& tee ${outfile}
                 exitcode=$?
                 echo "ReactICS exit code: $exitcode"
 
@@ -76,7 +82,7 @@ do
                 if [ "$result" = "" ]
                 then
                     echo "TIME LIMIT; marking as finished"
-                    touch $stopfile
+                    #touch $stopfile
                 else
                     echo "$x ; $y ; $z ; $a ; $exitcode $result" >> $outdir/summary_${bench_identifier}.txt
                     echo "$x $y $z $a $(echo $result | sed 's/;/ /g')" >> $outdir/${bench_identifier}.dat

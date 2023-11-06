@@ -28,7 +28,6 @@ import resource
 
 
 def chain_reaction(print_system=False):
-
     if len(sys.argv) < 1 + 3:
         print("{source} <N> <M> <type>".format(source=sys.argv[0]))
         print()
@@ -39,7 +38,7 @@ def chain_reaction(print_system=False):
         print()
         exit(1)
 
-    chainLen = int(sys.argv[1])  
+    chainLen = int(sys.argv[1])
     maxConc = int(sys.argv[2])  # depth (max concentration)
 
     verify_rsc = bool(int(sys.argv[3]))
@@ -115,7 +114,6 @@ def chain_reaction(print_system=False):
 
 
 def main():
-
     chain_reaction()
 
 
