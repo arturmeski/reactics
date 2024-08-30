@@ -135,7 +135,6 @@ class DRSGenerator:
             rcts.add(SingleReaction(reactants, ["h"], ["TF"]))
 
     def generate(self):
-
         print(f"# Generated for: x = {self.x}, y = {self.y}, z = {self.z}")
 
         print("options { use-context-automaton; make-progressive; };")
@@ -211,7 +210,6 @@ class DRSGenerator:
         print(aut)
 
     def generate_automaton_5(self, n):
-
         aut = self.automaton
 
         for i in range(0, (4 * n + 1)):
@@ -256,7 +254,6 @@ class DRSGenerator:
         print(aut)
 
     def generate_formula(self):
-
         disjunction = " OR ".join([f"proc{i}.TF" for i in range(1, self.y + 1)])
         conjunction = " AND ".join([f"~proc{i}.TF" for i in range(1, self.y + 1)])
 
