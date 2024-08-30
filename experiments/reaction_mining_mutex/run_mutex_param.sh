@@ -14,13 +14,11 @@ do
     for special_mode in "p" "np-p" "np-np"
     do
         echo "$i (sm=${special_mode})"
-        if [[ $special_mode -eq 1 ]]
+        if [[ $special_mode == "p" ]]
         then
-            $REACTICS_SCRIPT $i $special_mode
             $REACTICS_SCRIPT -o $i $special_mode
-        else
-            $REACTICS_SCRIPT $i $special_mode
         fi
+        $REACTICS_SCRIPT $i $special_mode
     done
 done
 

@@ -26,6 +26,9 @@ class ReactionSystem(object):
     def ordered_list_of_bgset_ids(self):
         return list(range(self.background_set_size))
 
+    def rs_stats(self):
+        print(f"Reactions: {len(self.reactions)}") 
+
     def assume_not_in_bgset(self, name):
         if self.is_in_background_set(name):
             raise RuntimeError("The entity " + name + " is already on the list")

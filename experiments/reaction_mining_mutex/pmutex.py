@@ -350,6 +350,8 @@ def mutex_nonparam_bench_oldimpl(cmd_args):
         [E("out", n_proc - 1)], [("s", 1)], [("done", 1), E("req", n_proc - 1)]
     )
 
+    r.rs_stats()
+
     ###################################################
 
     c = ContextAutomatonWithConcentrations(r)
