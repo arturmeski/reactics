@@ -319,7 +319,9 @@ class SymRS
     BDD compContext(const BDD &context) const;
 
     std::string decodedRctSysStateToStr(const BDD &state);
+    std::string decodedRctSysStateWithCtxAutToStr(const BDD &state);
     void printDecodedRctSysStates(const BDD &states);
+    void printDecodedRctSysWithCtxAutStates(const BDD &states);
 
     DecompReactions getProductionConditions(Process proc_id);
 
