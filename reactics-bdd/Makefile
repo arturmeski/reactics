@@ -11,7 +11,7 @@ CXXFLAGS = -std=c++14 -O3 -DPUBLIC_RELEASE -DNDEBUG #-g
 CXXFLAGS = -std=c++14 -O3 -DPUBLIC_RELEASE #-g
 LDLIBS = $(CUDD_INCLUDE)
 
-OBJ = rs.o ctx_aut.o symrs.o mc.o rsin_driver.o rsin_parser.o rsin_parser.lex.o formrsctlk.o stateconstr.o
+OBJ = rs.o ctx_aut.o symrs.o mc.o rsin_driver.o rsin_parser.o rsin_parser.lex.o formrsctlk.o stateconstr.o export.o
 
 all: reactics
 

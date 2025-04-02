@@ -16,6 +16,7 @@ int main(int argc, char **argv)
   bool rstl_model_checking = false;
   bool reach_states = false;
   bool reach_states_succ = false;
+  bool export_to_ispl = false;
   bool bmc = true;
   bool benchmarking = false;
   bool dump_help_message = false;
@@ -31,7 +32,7 @@ int main(int argc, char **argv)
   int c;
   int option_index = 0;
 
-  while ((c = getopt_long(argc, argv, "c:bBmpPrsStTvxzXh", long_options,
+  while ((c = getopt_long(argc, argv, "c:bBmpPrsStTvxzXhe", long_options,
                           &option_index)) != -1) {
     switch (c) {
       case 0:
@@ -50,6 +51,10 @@ int main(int argc, char **argv)
           driver.trace_scanning = true;
         }
 
+        break;
+
+      case 'e':
+        export_to_ispl = true;
         break;
 
       //case 'b':
@@ -136,8 +141,8 @@ int main(int argc, char **argv)
   }
 
   if (!(reach_states || reach_states_succ || rstl_model_checking
-        || show_reactions || print_parsed_sys)) {
-    FERROR("No task specified: -c, -P, -r, or -s needs to be used");
+        || show_reactions || print_parsed_sys || export_to_ispl)) {
+    FERROR("No task specified: -c, -P, -r, -s, or -e needs to be used");
   }
 
   if (opts->verbose > 0) {
@@ -171,7 +176,7 @@ int main(int argc, char **argv)
     rs.printSystem();
   }
 
-  if (reach_states || reach_states_succ || rstl_model_checking) {
+  if (reach_states || reach_states_succ || rstl_model_checking || export_to_ispl) {
     SymRS srs(&rs, opts);
 
     ModelChecker mc(&srs, opts);
@@ -182,6 +187,11 @@ int main(int argc, char **argv)
 
     if (reach_states_succ) {
       mc.printReachWithSucc();
+    }
+
+    if (export_to_ispl) {
+      RSExporter exp(&rs, &driver);
+      exp.exportToISPL();
     }
 
     if (rstl_model_checking) {
@@ -268,6 +278,8 @@ void print_help(std::string path_str)
        << " Benchmarking options:" << endl
        << "  -m       -- measure and display time and memory usage" << endl
        << "  -B       -- display an easy to parse summary (enables -m)" << endl
+       << "  -e       -- exports to ISPL (MCMAS input format)" << endl
+
        << endl;
 }
 

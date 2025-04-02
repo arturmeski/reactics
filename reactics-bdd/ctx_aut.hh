@@ -27,6 +27,7 @@ class StateConstr;
 class CtxAut
 {
     friend class SymRS;
+    friend class RSExporter;
 
   public:
     CtxAut(Options *opts, RctSys *parent_rctsys);

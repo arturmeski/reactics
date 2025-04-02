@@ -23,9 +23,12 @@
 #define STC_IS_VALID(a) (STC_COND_1ARG(a) || STC_COND_2ARG(a) || (a) == STC_PV || (a) == STC_TF)
 
 class SymRS;
+class RSExporter;
 
 class StateConstr
 {
+    friend class RSExporter;
+
     Oper oper;
     StateConstr *arg[2];
     std::string entity_name;

@@ -28,6 +28,7 @@ class RctSys
 {
     friend class SymRS;
     friend class SymRSstate;
+    friend class RSExporter;
 
   public:
     RctSys(void);

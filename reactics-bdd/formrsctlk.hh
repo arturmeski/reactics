@@ -62,9 +62,12 @@ using std::endl;
 typedef std::set<std::string> Agents_f;
 
 class StateConstr;
+class RSExporter;
 
 class FormRSCTLK
 {
+  friend class RSExporter;
+  
     Oper oper;
     FormRSCTLK *arg[2];
     std::string entity_name;
