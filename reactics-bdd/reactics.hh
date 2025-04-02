@@ -18,6 +18,7 @@
 #include "rsin_driver.hh"
 #include "options.hh"
 #include "memtime.hh"
+#include "export.hh"
 
 #define VERSION     "2.0"
 //#define AUTHOR      "Artur Meski <artur.meski@gmail.com>"
