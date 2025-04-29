@@ -200,13 +200,13 @@ void ModelChecker::printReachWithSucc(void)
     t = unproc.PickOneMinterm(*pv);
     if (opts->backend_mode)
     {
-        cout << "G " << srs->decodedRctSysStateToStr(t) << endl;
+        cout << "G " << srs->decodedRctSysStateWithCtxAutToStr(t) << endl;
     }
     else
     {
-        cout << "Successors of " << srs->decodedRctSysStateToStr(t) << ":" << endl;
+        cout << "Successors of " << srs->decodedRctSysStateWithCtxAutToStr(t) << ":" << endl;
     }
-    srs->printDecodedRctSysStates(getSucc(t));
+    srs->printDecodedRctSysWithCtxAutStates(getSucc(t));
     unproc -= t;
   }
 

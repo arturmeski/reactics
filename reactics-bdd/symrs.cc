@@ -567,6 +567,21 @@ std::string SymRS::decodedRctSysStateToStr(const BDD &state)
   return s;
 }
 
+std::string SymRS::decodedRctSysStateWithCtxAutToStr(const BDD &state)
+{
+  std::string s = "( ";
+  s += decodedRctSysStateToStr(state) + " ";
+  for (const auto &aut_state : rs->ctx_aut->states_ids) {
+    const auto state_id = rs->ctx_aut->getStateID(aut_state);
+    if (!(encCtxAutState(state_id) * state).IsZero()) {
+      s += aut_state + " ";
+      break;
+    }
+  }
+  s += ")";
+  return s;
+}
+
 void SymRS::printDecodedRctSysStates(const BDD &states)
 {
   BDD unproc = states;
@@ -590,6 +605,31 @@ void SymRS::printDecodedRctSysStates(const BDD &states)
     unproc -= t;
   }
 }
+
+void SymRS::printDecodedRctSysWithCtxAutStates(const BDD &states)
+{
+  BDD unproc = states;
+
+  while (!unproc.IsZero()) {
+    BDD t = unproc.PickOneMinterm(*pv);
+    if (opts->backend_mode)
+    {
+        cout << "s " << decodedRctSysStateWithCtxAutToStr(t) << endl;
+    }
+    else
+    {
+        cout << decodedRctSysStateWithCtxAutToStr(t) << endl;
+    }
+
+    if (opts->verbose > 9) {
+      BDD_PRINT(t);
+      cout << endl;
+    }
+
+    unproc -= t;
+  }
+}
+
 
 DecompReactions SymRS::getProductionConditions(Process proc_id)
 {
