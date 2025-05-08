@@ -32,7 +32,7 @@ int main(int argc, char **argv)
   int c;
   int option_index = 0;
 
-  while ((c = getopt_long(argc, argv, "c:bBmpPrsStTvxzXhe", long_options,
+  while ((c = getopt_long(argc, argv, "c:bBmpPrsStTvXheEG", long_options,
                           &option_index)) != -1) {
     switch (c) {
       case 0:
@@ -102,13 +102,13 @@ int main(int argc, char **argv)
         opts->verbose++;
         break;
 
-      case 'x':
-        opts->part_tr_rel = true;
+      case 'E':
+        opts->reorder_reach = false;
+        opts->reorder_trans = false;
         break;
 
-      case 'z':
-        opts->reorder_reach = true;
-        opts->reorder_trans = true;
+      case 'G':
+        opts->part_tr_rel = false;
         break;
 
       case 'X':
@@ -266,14 +266,13 @@ void print_help(std::string path_str)
        << endl
        << endl << " OTHER:" << endl
        << "  -b       -- disable bounded model checking (BMC) heuristic" << endl
-       << "  -x       -- use partitioned transition relation" <<
-       endl
-       << "  -z       -- use reordering of the BDD variables" << endl
-       << "  -v       -- verbose (use more than once to increase verbosity)" <<
-       endl
+       << "  -v       -- verbose (use more than once to increase verbosity)" << endl
        << "  -p       -- show progress (where possible)" << endl
-       << endl
        << "  -X       -- backend mode (makes output parsing easier)" << endl
+       << endl
+       << " Optimisations:" << endl
+       << "  -E       -- disable auto-reordering optimisation of BDDs" << endl
+       << "  -G       -- disable partitioned transition relation optimisation" << endl
        << endl
        << " Benchmarking options:" << endl
        << "  -m       -- measure and display time and memory usage" << endl

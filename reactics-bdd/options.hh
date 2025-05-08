@@ -24,10 +24,10 @@ class Options
       show_progress = false;
       measure = false;
 
-      part_tr_rel = false;
+      part_tr_rel = true;
 
-      reorder_reach = false;
-      reorder_trans = false;
+      reorder_reach = true;
+      reorder_trans = true;
 
       backend_mode = false;
 
