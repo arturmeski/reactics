@@ -225,7 +225,7 @@ public class ReacticsGUI extends JFrame {
         JPanel formulaEditorPanel = new JPanel();
         formulaEditorPanel.setLayout(new BorderLayout());
         formulaEditor = new FormulaEditor();
-        formulaEditorPanel.add(new JScrollPane(formulaEditor), BorderLayout.CENTER);
+        formulaEditorPanel.add(formulaEditor, BorderLayout.CENTER);
 
         JPanel formulaCtrlPanel = new JPanel();
         JButton addButton = new JButton("Add formula");
@@ -311,6 +311,8 @@ public class ReacticsGUI extends JFrame {
         reactionSystem.clearModificationStatus();
         contextAutomaton.clearModificationStatus();
         formulaEditor.clearModificationStatus();
+        transitionSystem.clearModificationStatus();
+        compressedTransitionSystem.clearModificationStatus();
     }
 
     private void updateReactionSystem()  {

@@ -15,7 +15,10 @@ import javax.swing.JToolTip;
 import javax.swing.Icon;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class TransitionSystemViewer extends JPanel {
@@ -60,6 +63,8 @@ public class TransitionSystemViewer extends JPanel {
 
     // Is transition system graph already computed?
     boolean isComputed() { return computed; }
+
+    void clearModificationStatus() { computed = false; }
 
     private void createGraphViever() {
         graphLayout = new FRLayout<TSState, TSTransition>(tsGraph);
@@ -278,6 +283,7 @@ class TSState {
 
     private final int id;
     private final String rsDetails;
+    private final String toolTipText;
     private final String aState;
     private boolean initial = false;
 
@@ -285,12 +291,14 @@ class TSState {
         this.id = id;
         this.rsDetails = formatRSDetails(stateStr.substring(1, stateStr.length() - 1).strip());
         this.aState = null;
+        this.toolTipText = formatToolTipText();
     }
 
     public TSState(int id, String stateStr, String aState) {
         this.id = id;
         this.rsDetails = formatRSDetails(stateStr.substring(1, stateStr.length() - 1).strip());
         this.aState = aState;
+        this.toolTipText = formatToolTipText();
     }
 
     public boolean isInitial() {
@@ -318,19 +326,34 @@ class TSState {
     }
 
     public String getTooltipText() {
-        if (aState != null)
-            return "<html>"+
-                    "<b>CA</b> " + aState+ "<br/><hr>" + rsDetails +
-                    "</html>";
-        else
-            return "<html>"+
-                    rsDetails +
-                    "</html>";
+        return toolTipText;
     }
 
     private String formatRSDetails(String rsDetails) {
         return rsDetails.replaceAll("\\} (proc\\d+=\\{)", "}<br/>$1");
     }
+
+    private String formatToolTipText() {
+        Pattern pattern = Pattern.compile("\\w+=\\{[^}]*\\}");
+        Matcher matcher = pattern.matcher(rsDetails);
+
+        ArrayList<String> blocks = new ArrayList<String>();
+
+        while (matcher.find()) {
+            blocks.add(matcher.group());
+        }
+
+        if (aState != null)
+            return "<html>" +
+                    "<b>CA</b> " + aState+ "<br/><hr>" +
+                    String.join("<br/>", blocks) +
+                    "</html>";
+        else
+            return "<html>" +
+                    String.join("<br/>", blocks) +
+                    "</html>";
+    }
+
 }
 
 

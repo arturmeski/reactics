@@ -59,7 +59,7 @@ public class HelpWindow extends JFrame {
         JScrollPane helpScroller = new JScrollPane();
         JViewport helpVp = new JViewport();
         Dimension screenSize =  Toolkit.getDefaultToolkit().getScreenSize();
-        helpVp.setPreferredSize(new Dimension(screenSize.width-200, screenSize.height-200));
+        helpVp.setPreferredSize(new Dimension(screenSize.width/2, screenSize.height-200));
         helpVp.add(helpPane);
         helpScroller.setViewport(helpVp);
         mainPanel.add(helpScroller, BorderLayout.CENTER);

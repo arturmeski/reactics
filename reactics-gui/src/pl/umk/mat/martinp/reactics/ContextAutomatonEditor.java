@@ -335,7 +335,7 @@ public class ContextAutomatonEditor extends JPanel {
         boolean idOk = false;
 
         do {
-            String newLabel = JOptionPane.showInputDialog(null, "State label", state.getLabel());
+            String newLabel = JOptionPane.showInputDialog(this, "State label", state.getLabel());
 
             if (newLabel == null)
                 return;

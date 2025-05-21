@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ReactICS GUI Help</title>
+</head>
+<body>
+
+<hr>
+<center><a name="top"><h1>ReactICS - Reaction Systems Model Checker</h1></a></center>
+<hr>
+
+
+<p align="justify">
+    <b>ReactICS</b> is a toolkit that allows for verification of Reaction Systems.
+    The toolkit consists of two separate modules implementing:
+    <ul>
+    <li>Methods using binary decision diagrams (BDD)
+        for storing and manipulating the state space of the verified system.</li>
+    <li>Methods translating the verification problems into satisfiability modulo theories (SMT).</li>
+</ul>
+</p>
+<p align="justify">
+    <b>ReactICS GUI</b> offers a graphical user interface allowing for editing the reaction system details
+    and model checking using BDD module.
+</p>
+<p align="justify">
+    More on <b>ReactICS</b> can be found at <a href="https://reactics.org">The Reactics Webpage</a>.
+</p>
+
+<br/>
+<hr/>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#reaction-systems">Reaction systems</a><br/></li>
+<li><a href="#gui">Application functions</a><br/></li>
+<li><a href="#rs-edit">Reaction system editor</a><br/></li>
+<li><a href="#ctx-edit">Context automaton editor</a><br/></li>
+<li><a href="#trs-view">Transition system viewer</a><br/></li>
+<li><a href="#model-checking">Model checking</a><br/></li>
+</ul>
+<br/>
+
+
+<hr/>
+<a name="reaction-systems"><h2>Reaction Systems</h2></a>
+<hr/>
+
+<p align="justify">
+    <b>Reaction Systems</b> are a formalism inspired by the functioning of living cells.
+    They allow for specifying and analysing computational processes in which reactions operate on sets of molecules.
+</p>
+
+<p align="justify">
+    The behaviour of a reaction system is determined by the interactions of its reactions, which are based on
+    the mechanisms of facilitation and inhibition.
+    The formal treatment of reaction systems is qualitative and there is no direct representation of the number
+    of molecules involved in reactions.
+</p>
+
+<p align="justify">
+    A <b>Distributed Reaction System</b> is a computational model in which multiple autonomous processes (aka. agents)
+    interact locally through rule-based reactions.
+    Each agent operates independently (without any central controller—coordination),
+    processing inputs and producing outputs based on predefined reactions,
+    and their collective behavior leads to complex system dynamics.
+</p>
+
+<p align="justify">
+    More on reaction system can be found at <a href="https://www.reactionsystems.org">The Reaction System Webpage</a>
+</p>
+
+<center><a href="#top">Back to top</a></center>
+<br/>
+
+<hr/>
+<a name="gui"><h2>Application functions</h2></a>
+<hr/>
+
+<p align="justify">
+    <b>ReactICS GUI</b> allows to:
+<ul>
+    <li>Edit the reaction system structure (the number of processes/agents, reactions for each process/agent, etc.)</li>
+    <li>Edit the context automaton structure (adding/removing states and transitions,
+        edit context for active processes/agents, setting guards for transitions, etc.). </li>
+    <li>Preview of the state space represented as a transition system.</li>
+    <li>Verification of properties defined by formulas using rsCTLK semantics.</li>
+    <li>Save/load the reaction system structure to/from XML file.</li>
+    <li>Export/import the reaction system to/from RSSL file.</li>
+    <li>Export the reaction system structure and behaviour to ISPL file.</li>
+</ul>
+</p>
+
+<center><a href="#top">Back to top</a></center>
+
+<br/>
+
+
+<hr/>
+<a name="rs-edit"><h2>Reaction system editor</h2></a>
+<hr/>
+
+<p align=""justify">
+    <b>-- TODO --</b>
+</p>
+
+<center><a href="#top">Back to top</a></center>
+
+<br/>
+
+
+<hr/>
+<a name="ctx-edit"><h2>Context automaton editor</h2></a>
+<hr/>
+
+<p align="justify">
+    To create or edit the context automaton structure a proper edit mode should be set using the <b>edit mode panel</b>.
+</p>
+<br/>
+<center><img src="img/ctx-automaton-panel.png"/></center>
+
+<p align="justify">
+    The type of the newly created object (state or edge) is set by checking the proper toggle button.
+    With no button checked, one can transform the net by moving states around, etc.
+    (see below for more details).
+</p>
+
+<br/>
+
+<h3>States</h3>
+
+<p align="justify">
+    A new state is created by left-clicking the edit area (the main part of the component).
+    As it is customary in automata theory, states are numbered separately starting from 1.
+    The types of states are distinguished by shape and colour:
+    the initial state is depicted as a square, all other states are depicted as circles.
+    Moreover, hovering the mouse above a state allows to see its full description containing both
+    its name and its (distinct) number.
+</p>
+<br/>
+<center><img src="img/ctx-automaton-state.png"/></center>
+
+<p align="justify">
+    The details of a state can be edited by right-clicking the existing
+    state and choosing the right option from the popup menu:
+    <ul>
+    <li><b>Set as initial</b> - Makes the selected state the initial state of the context automaton.</li>
+    <li><b>Set label</b> - Allows to set the custom label for the selected state. Note that state labels have to be unique.</li>
+    </ul>
+</p>
+<br/>
+<center><img src="img/ctx-automaton-state.png"/></center>
+
+<h3>Edges</h3>
+
+<p align="justify">
+    A directed edge between two states is created by left-clicking both its endpoints in correct order.
+    Each edge may contain several transitions, each of them defined by a <i>context</i> (additional entities
+    provided for active processes/agents) and a <i>guard</i> (a condition required by the transition to execute).
+    The list of transitions may be edited by right-clicking the existing
+    edge and choosing the <b>Nondeterministic transitions</b> popup menu.
+</p>
+<center><img src="img/ctx-automaton-transition-edit.png"/></center>
+<p align="justify">
+    Hovering the mouse above an edge allows to see the full list of transitions
+    including context and guards.
+</p>
+<center><img src="img/ctx-automaton-edge-details.png"/></center>
+
+<br/>
+
+<h3>Removing context automaton elements</h3>
+
+<p align="justify">
+    Switching the toggle button <b>Delete</b> on allows removing context automaton elements.
+    Each left-clicked element is removed from the automaton grapn.
+    Moreover, the entire context automaton graph may be deleted by clicking the <b>Clear</b> button.
+</p>
+
+<br/>
+
+<h3>Transforming the context automaton graph</h3>
+
+<p align="justify">
+    Any state of the automaton may be picked and dragged around the edit area to obtain the desired graph shape.
+    It is also possible to select multiple states and move them together at the same time.
+    After <b>CTRL + left-click</b> on a particular state the entire automaton graph is shifted to be centered
+    on the clicked state.
+    Checking the <b>Lock relative nodes positions</b> checkbox locks the relative positions of the states.
+    In that case, dragging a single state moves the entire automaton graph.
+    Moreover, using mouse scroll the automaton graph view can be zoomed in and out.
+</p>
+
+<center><a href="#top">Back to top</a></center>
+
+<br/>
+
+
+<hr/>
+<a name="trs-view"><h2>Transition system viewer</h2></a>
+<hr/>
+
+<p align="justify">
+    The component offers the visualisation of the transition system representing the state space of the reaction systems.
+    The initial state is depicted as a square, all other states are depicted as circles.
+    There is a directed edge connecting the state S<sub>i</sub> to the state S<sub>j</sub>
+    if S<sub>f</sub> is reachable from S<sub>i</sub> by a single computation step of the reaction system.
+</p>
+
+<p align="justify">
+    The component has two separate instances represented by two separate tabs in the application window.
+    The first visualises the complete state space of the reaction system,
+    where each state is represented by sets of entities possessed by each agent and the current context automaton state.
+    The second visualises the compressed state space, where context automaton states are ignored
+    (states are represented only by the sets of entities possessed by each agent).
+</p>
+
+<p align="justify">
+    Computation is done by pressing <b>Update transition system</b> button.
+    The reaction system structure should be loaded from the file or edited manually for the computation to be possible.
+</p>
+
+<p align="justify">
+    Note that no matter in which component the <b>Update transition system</b> button
+    is pressed, the transition system structure will be updated in both.
+</p>
+
+<p align="justify">
+    Hovering the mouse above a state allows to see its full description: entities possessed by each process/agent
+    and the context automaton state (not present in the case of the compressed graph).
+</p>
+<center><img src="img/ctx-automaton-edge-details.png"/></center>
+
+<br/>
+
+<h3>Transforming the transition system graph</h3>
+
+<p align="justify">
+    Any state of the transition system may be picked and dragged around the edit area to obtain the desired graph shape.
+    It is also possible to select multiple states and move them together at the same time.
+    After <b>CTRL + left-click</b> on a particular state the entire transition system graph is shifted to be centered
+    on the clicked state.
+    Checking the <b>Lock relative nodes positions</b> checkbox locks the relative positions of the states.
+    In that case, dragging a single state moves the entire transition system graph.
+    Moreover, using mouse scroll the transition system graph view can be zoomed in and out.
+</p>
+
+<center><a href="#top">Back to top</a></center>
+
+<br/>
+
+<hr/>
+<a name="model-checking"><h2>Model checking</h2></a>
+<hr/>
+
+<p align=""justify">
+<b>-- TODO --</b>
+</p>
+
+<center><a href="#top">Back to top</a></center>
+
+<br/>
+<br/>
+</body>
+</html>

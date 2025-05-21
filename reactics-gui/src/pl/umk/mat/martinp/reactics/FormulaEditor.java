@@ -59,7 +59,7 @@ public class FormulaEditor extends JPanel {
         formTable.createDefaultColumnsFromModel();
 
         setLayout(new BorderLayout());
-        add(formTable, BorderLayout.CENTER);
+        add(new JScrollPane(formTable), BorderLayout.CENTER);
     }
 
     public boolean isModified() { return modified; }
