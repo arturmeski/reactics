@@ -17,6 +17,7 @@ int main(int argc, char **argv)
   bool reach_states = false;
   bool reach_states_succ = false;
   bool export_to_ispl = false;
+  bool export_to_xml = false;
   bool bmc = true;
   bool benchmarking = false;
   bool dump_help_message = false;
@@ -32,7 +33,7 @@ int main(int argc, char **argv)
   int c;
   int option_index = 0;
 
-  while ((c = getopt_long(argc, argv, "c:bBmpPrsStTvXheEG", long_options,
+  while ((c = getopt_long(argc, argv, "c:bBmpPrsStTvXheyEG", long_options,
                           &option_index)) != -1) {
     switch (c) {
       case 0:
@@ -55,6 +56,10 @@ int main(int argc, char **argv)
 
       case 'e':
         export_to_ispl = true;
+        break;
+
+      case 'y':
+        export_to_xml = true;
         break;
 
       //case 'b':
@@ -141,7 +146,7 @@ int main(int argc, char **argv)
   }
 
   if (!(reach_states || reach_states_succ || rstl_model_checking
-        || show_reactions || print_parsed_sys || export_to_ispl)) {
+        || show_reactions || print_parsed_sys || export_to_ispl || export_to_xml)) {
     FERROR("No task specified: -c, -P, -r, -s, or -e needs to be used");
   }
 
@@ -176,7 +181,7 @@ int main(int argc, char **argv)
     rs.printSystem();
   }
 
-  if (reach_states || reach_states_succ || rstl_model_checking || export_to_ispl) {
+  if (reach_states || reach_states_succ || rstl_model_checking || export_to_ispl || export_to_xml) {
     SymRS srs(&rs, opts);
 
     ModelChecker mc(&srs, opts);
@@ -192,6 +197,11 @@ int main(int argc, char **argv)
     if (export_to_ispl) {
       RSExporter exp(&rs, &driver);
       exp.exportToISPL();
+    }
+
+    if (export_to_xml) {
+      RSExporter exp(&rs, &driver);
+      exp.exportToXML();
     }
 
     if (rstl_model_checking) {
@@ -269,6 +279,7 @@ void print_help(std::string path_str)
        << "  -v       -- verbose (use more than once to increase verbosity)" << endl
        << "  -p       -- show progress (where possible)" << endl
        << "  -X       -- backend mode (makes output parsing easier)" << endl
+       << "  -y       -- export to XML (for GUI tool)" << endl
        << endl
        << " Optimisations:" << endl
        << "  -E       -- disable auto-reordering optimisation of BDDs" << endl

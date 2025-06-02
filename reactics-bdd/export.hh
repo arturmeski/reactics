@@ -14,6 +14,8 @@ public:
     RSExporter(RctSys *rs, rsin_driver *drv, std::ostream & outStream = std::cout);
 
     void exportToISPL();
+    void exportToXML();
+    
 private:
     RctSys *rs;
     rsin_driver *drv;
