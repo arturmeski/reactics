@@ -808,3 +808,106 @@ string RSExporter::formulaToStr(const FormRSCTLK * form) {
             return "??";
     }
 }
+
+
+void RSExporter::exportToXML() {
+    output << "<xml version=\"1.0\">\n"
+           << indent << "<reaction-system>\n";
+
+    for (Process proc=0; proc<rs->getNumberOfProcesses(); ++proc) {
+        output << indent << indent << "<process name=\"" << rs->processes_ids[proc] << "\">\n";
+
+        for (const auto & reaction : rs->proc_reactions[proc]) {
+            output << indent << indent << indent << "<reaction>\n";
+
+            for (const Entity & e : reaction.rctt) {
+                output << indent << indent << indent << indent
+                       << "<reactant>" << rs->getEntityName(e) << "</reactant>\n";
+            }
+
+            for (const Entity & e : reaction.inhib) {
+                output << indent << indent << indent << indent
+                       << "<inhibitor>" << rs->getEntityName(e) << "</inhibitor>\n";
+            }
+
+            for (const Entity & e : reaction.prod) {
+                output << indent << indent << indent << indent
+                       << "<product>" << rs->getEntityName(e) << "</product>\n";
+            }
+
+            output << indent << indent << indent << "</reaction>\n";
+        }
+
+        output << indent << indent << "</process>\n";
+    }
+
+    output << indent << "</reaction-system>\n";
+
+    output << indent << "<context-automaton>\n";
+
+    for (unsigned stId=0; stId<rs->ctx_aut->states_ids.size(); ++stId) {
+        if (rs->ctx_aut->states_ids[stId] == "T")
+            continue;
+
+        output << indent << indent << "<state id=\"" << stId + 1 << "\" name=\"" 
+               << rs->ctx_aut->states_ids[stId] << "\" x=\"0\" y=\"0\"";
+
+        if (rs->ctx_aut->init_state_defined && stId == rs->ctx_aut->init_state_id)
+            output << " initial=\"true\"";
+
+        output << "/>\n";
+    }
+
+    vector<map<State, vector<CtxAutTransition>>> edges(rs->ctx_aut->states_ids.size());
+
+    for (const CtxAutTransition & trans : rs->ctx_aut->transitions) {
+        if (rs->ctx_aut->states_ids[trans.src_state] == "T" || rs->ctx_aut->states_ids[trans.dst_state] == "T")
+            continue;
+
+        edges[trans.src_state][trans.dst_state].push_back(trans);
+    }
+
+    for (unsigned src=0; src<edges.size(); ++src) {
+        for (const auto &dst : edges[src]) {
+            output << indent << indent << "<edge from=\"" << rs->ctx_aut->getStateName(src)
+                   << "\" to=\"" << rs->ctx_aut->getStateName(dst.first) << "\">\n"; 
+
+            for (const CtxAutTransition &trans : dst.second) {
+                output << indent << indent << indent << "<transition context=\"" << rs->procEntitiesToStr(trans.ctx) << "\"";
+                
+                if (trans.state_constr)
+                    output << " guard=\"" << trans.state_constr->toStr() << "\"";
+                    
+                output << "/>\n";
+            }
+            
+
+            output << indent << indent << "</edge>\n";
+        }
+    }
+
+    output << indent << "</context-automaton>\n";
+
+    output << indent << "<formulas>\n";
+
+    for (const auto & prop : drv->properties) {
+        string fStr = "";
+
+        for (const char ch : prop.second->toStr()) {
+            if (ch == '<')
+                fStr += "&lt;";
+            else if (ch =='>')
+                fStr += "&gt;";
+            else
+                fStr += ch;
+        }
+
+        output << indent << indent << indent << "<formula label=\"" << prop.first <<"\">"
+               << fStr << "</formula>\n";
+
+    }
+
+    output << indent << "</formulas>\n";
+
+    output << "</xml>" << endl;
+}
