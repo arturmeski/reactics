@@ -21,7 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class TransitionSystemViewer extends JPanel {
+public class TransitionSystemViewer extends JPanel implements RSObserver {
 
     //---------------------------------------------------------------
     // Visual configuration settings
@@ -266,6 +266,10 @@ public class TransitionSystemViewer extends JPanel {
         }
     }
 
+    public void onRSUpdate() {
+        clear();
+    }
+
 }
 
 
@@ -353,7 +357,6 @@ class TSState {
                     String.join("<br/>", blocks) +
                     "</html>";
     }
-
 }
 
 

@@ -17,10 +17,8 @@ import java.util.*;
 class ProcessEditor extends JPanel {
     private JTable reactionList;
     private RSTableModel reactionsModel;
-    private Vector<Reaction> reactions;
 
-    private final int id;
-    private String label;
+    private RSProcess rsProcess;
     private boolean modified = false;
 
     private JCheckBox selectBox;
@@ -30,32 +28,12 @@ class ProcessEditor extends JPanel {
     private final Color selectedBorderColor = new Color(150, 10, 10);
     private static final int borderThickness = 4;
 
-    private static int nextId = 1;
-
-
-    public ProcessEditor() {
-        id = nextId;
-        ++nextId;
-        label = new String("Process_" + id);
+    public ProcessEditor(RSProcess rsProc) {
+        rsProcess = rsProc;
         init();
     }
 
-    ProcessEditor(String name) {
-        id = nextId;
-        ++nextId;
-        label = name;
-        init();
-    }
-
-    ProcessEditor(ProcessEditor procEdt) {
-        id = nextId;
-        ++nextId;
-        label = "Copy_of_" + procEdt.label;
-        init();
-        reactions.addAll(procEdt.reactions);
-        reactionsModel.fireTableDataChanged();
-        modified = procEdt.modified;
-    }
+    public RSProcess getProcess() { return rsProcess; }
 
     public boolean isSelected() {
         return selectBox.isSelected();
@@ -66,17 +44,12 @@ class ProcessEditor extends JPanel {
     public void clearModificationStatus() { modified = false; }
 
     public String getLabel() {
-        return label;
-    }
-
-    public void addReaction(Reaction rr) {
-        reactions.add(rr);
-        reactionsModel.fireTableDataChanged();
+        return rsProcess.label;
     }
 
     private void init() {
         // Create border for the component
-        outBorder = BorderFactory.createTitledBorder(label);
+        outBorder = BorderFactory.createTitledBorder(rsProcess.label);
         Font font = outBorder.getTitleFont();
         Font newFont = new Font (font.getFamily(), Font.BOLD, font.getSize() + 2);
         outBorder.setTitleFont(new Font (font.getFamily(), Font.BOLD, font.getSize() + 2));
@@ -85,7 +58,6 @@ class ProcessEditor extends JPanel {
         setBorder(outBorder);
 
         // Create reactions list component
-        reactions = new Vector<Reaction>();
         reactionsModel = new RSTableModel();
         reactionList = new JTable(reactionsModel);
 
@@ -122,14 +94,6 @@ class ProcessEditor extends JPanel {
         });
         buttonPanel.add(rmButton);
 
-        JButton optButton = new JButton("Options");
-        optButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                editOptions();
-            }
-        });
-        buttonPanel.add(optButton);
-
         selectBox = new JCheckBox("Select");
         selectBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
@@ -145,7 +109,7 @@ class ProcessEditor extends JPanel {
         setPreferredSize(new Dimension(-1, 200));
     }
 
-    private boolean showReactionEditDialog(Reaction rr) {
+    private boolean showReactionEditDialog(JComponent parent, Reaction rr) {
         final int Select = 0;
         final int Approve = 1;
 
@@ -221,7 +185,7 @@ class ProcessEditor extends JPanel {
             inhibitorsInput.setText(inhibitorsStr);
             productsInput.setText(productsStr);
 
-            int result = JOptionPane.showConfirmDialog(null, myPanel,
+            int result = JOptionPane.showConfirmDialog(parent, myPanel,
                     "Reaction details", JOptionPane.OK_CANCEL_OPTION);
 
             if (result != JOptionPane.OK_OPTION) {
@@ -251,16 +215,12 @@ class ProcessEditor extends JPanel {
                 continue;
             }
 
-            //TODO: Validate entities names against a regular expression
-
             rr.reactants.clear();
             rr.reactants.addAll(reactantsSet);
             rr.inhibitors.clear();
             rr.inhibitors.addAll(inhibitorsSet);
             rr.products.clear();
             rr.products.addAll(productsSet);
-
-
 
             opStatus = Approve;
         }
@@ -272,25 +232,25 @@ class ProcessEditor extends JPanel {
     public Set<String> getReactantsSet() {
         HashSet<String> rset = new HashSet<String>();
 
-        for (Reaction rr : reactions)
+        for (Reaction rr : rsProcess.reactions)
             rset.addAll(rr.getReactantsSet());
 
         return rset;
     }
 
     public void exportToXML(PrintWriter output) {
-        output.println("        <process name=\"" + this.label + "\">");
+        output.println("        <process name=\"" + rsProcess.label + "\">");
 
-        for (Reaction rr : reactions)
+        for (Reaction rr : rsProcess.reactions)
             rr.exportToXML(output);
 
         output.println("        </process>");
     }
 
     public String toRSSLString() {
-        StringBuilder rsslString = new StringBuilder("    " + this.label + " {\n");
+        StringBuilder rsslString = new StringBuilder("    " + rsProcess.label + " {\n");
 
-        for (Reaction rr : reactions) {
+        for (Reaction rr : rsProcess.reactions) {
             rsslString.append(rr.toRSSLString());
         }
 
@@ -299,42 +259,25 @@ class ProcessEditor extends JPanel {
         return rsslString.toString();
     }
 
-    private void editOptions() {
-        String idRegex = "[a-zA-Z][a-zA-Z_0-9:-]*";
-        boolean idOk = false;
+    void rename(String newLabel) {
+        rsProcess.label = newLabel;
+        outBorder.setTitle(rsProcess.label);
 
-        do {
-            String newLabel = JOptionPane.showInputDialog(this, "Process name", label);
-            if (newLabel == null)
-                return;
-
-            newLabel = newLabel.trim();
-
-            if (!newLabel.matches(idRegex)) {
-                JOptionPane.showMessageDialog(this,
-                        "<html>Process name should start with a letter and may contain only:<br/>" +
-                                "letters, numbers, colons (:), underscores (_) and hyphens (-)</html>",
-                        "Error", JOptionPane.ERROR_MESSAGE);
-            }
-            else {
-                idOk = true;
-                label = newLabel;
-                outBorder.setTitle(label);
-            }
-        }
-        while (!idOk);
-
-        modified = true;
         this.repaint();
     }
 
     // Add new reaction
+    public void addReaction(Reaction rr) {
+        rsProcess.reactions.add(rr);
+        reactionsModel.fireTableDataChanged();
+    }
+
     private void addReaction() {
         Reaction rr = new Reaction();
-        if (!showReactionEditDialog(rr))
+        if (!showReactionEditDialog(this, rr))
             return;
 
-        reactions.add(rr);
+        rsProcess.reactions.add(rr);
         modified = true;
         reactionsModel.fireTableDataChanged();
     }
@@ -348,13 +291,13 @@ class ProcessEditor extends JPanel {
             return;
         }
 
-        Reaction rr = new Reaction(reactions.get(rIdx));
+        Reaction rr = new Reaction(rsProcess.reactions.get(rIdx));
         reactionList.clearSelection();
-        if (!showReactionEditDialog(rr)) {
+        if (!showReactionEditDialog(this, rr)) {
             return;
         }
 
-        reactions.setElementAt(rr, rIdx);
+        rsProcess.reactions.setElementAt(rr, rIdx);
         modified = true;
         reactionsModel.fireTableDataChanged();
     }
@@ -368,7 +311,7 @@ class ProcessEditor extends JPanel {
             return;
         }
 
-        reactions.remove(rIdx);
+        rsProcess.reactions.remove(rIdx);
         reactionList.clearSelection();
         reactionsModel.fireTableDataChanged();
         modified = true;
@@ -398,7 +341,7 @@ class ProcessEditor extends JPanel {
         }
 
         public int getRowCount() {
-            return reactions.size();
+            return rsProcess.reactions.size();
         }
 
         public int getColumnCount() {
@@ -406,7 +349,7 @@ class ProcessEditor extends JPanel {
         }
 
         public Object getValueAt(int row, int column) {
-            Reaction rr = reactions.get(row);
+            Reaction rr = rsProcess.reactions.get(row);
 
             return switch (column) {
                 case 0 -> rr.reactants;

@@ -17,9 +17,10 @@ import java.util.Collection;
 import java.util.Vector;
 
 
-public class FormulaEditor extends JPanel {
+public class FormulaEditor extends JPanel implements RSObserver {
     private FormulaTableModel ftModel;
     private JTable formTable;
+    private ReactionSystem rs;
     private Vector<Formula> formulaList;
 
     boolean modified = false;
@@ -34,8 +35,9 @@ public class FormulaEditor extends JPanel {
     static final Border  selectedBorder = BorderFactory.createLineBorder(Color.RED, 2);
 
 
-    public FormulaEditor() {
-        formulaList = new Vector<Formula>();
+    public FormulaEditor(ReactionSystem rs) {
+        this.rs = rs;
+        formulaList = rs.formulas;
 
         // Create the table for displaying formulas. Prevent default selection modes.
         ftModel = new FormulaTableModel();
@@ -106,7 +108,7 @@ public class FormulaEditor extends JPanel {
         ftModel.fireTableDataChanged();
     }
 
-    private boolean showFormulaEditDialog(Formula ff) {
+    private boolean showFormulaEditDialog(JFrame parent, Formula ff) {
         final int Select = 0;
         final int Approve = 1;
 
@@ -149,7 +151,7 @@ public class FormulaEditor extends JPanel {
             labelInput.setText(labelStr);
             formulaInput.setText(formulaStr);
 
-            int result = JOptionPane.showConfirmDialog(null, myPanel,
+            int result = JOptionPane.showConfirmDialog(parent, myPanel,
                     "Formula details", JOptionPane.OK_CANCEL_OPTION);
 
             if (result != JOptionPane.OK_OPTION) {
@@ -158,8 +160,6 @@ public class FormulaEditor extends JPanel {
 
             labelStr = labelInput.getText();
             formulaStr = formulaInput.getText();
-
-            //TODO: Validate the data entered to the text fields
 
             ff.label = labelStr;
             ff.formula = formulaStr;
@@ -171,10 +171,10 @@ public class FormulaEditor extends JPanel {
         return true;
     }
 
-    public void addFormula() {
+    public void addFormula(JFrame parent) {
         Formula ff = new Formula();
 
-        if (showFormulaEditDialog(ff)) {
+        if (showFormulaEditDialog(parent, ff)) {
             formulaList.add(ff);
             modified = true;
             ftModel.fireTableDataChanged();
@@ -182,11 +182,11 @@ public class FormulaEditor extends JPanel {
     }
 
     // If more than one formula is selected throw an exception only the first can be edited
-    public void editFormula() {
+    public void editFormula(JFrame parent) {
         int[] selected = formTable.getSelectedRows();
 
         if (selected.length != 1) {
-            JOptionPane.showMessageDialog(this, "Select a single formula to edit.", "Select formula", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(parent, "Select a single formula to edit.", "Select formula", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -195,7 +195,7 @@ public class FormulaEditor extends JPanel {
         if (fEdt == null)
             return;
 
-        showFormulaEditDialog(fEdt);
+        showFormulaEditDialog(parent, fEdt);
         fEdt.status = Formula.FormulaStatus.None;
         modified = true;
         ftModel.fireTableDataChanged();
@@ -240,6 +240,10 @@ public class FormulaEditor extends JPanel {
         ftModel.fireTableDataChanged();
     }
 
+    public void onRSUpdate() {
+        resetFormulasStatus();
+        refreshStatus();
+    }
 
     static class FormulaColumnModel extends DefaultTableColumnModel {
         int colno = 0;

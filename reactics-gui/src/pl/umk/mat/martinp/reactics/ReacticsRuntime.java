@@ -153,6 +153,29 @@ public class ReacticsRuntime {
             throw new ReacticsRuntimeException(errMsg.toString());
     }
 
+
+    public File convertToXMLFile(File rsslInputFile) throws IOException, ReacticsRuntimeException {
+        File xmlFile = Files.createTempFile("_" + rsslInputFile.getName(), ".xml").toFile();
+        xmlFile.deleteOnExit();
+
+        ProcessBuilder procBuilder = new ProcessBuilder(rctPath + rctRuntime, "-y", rsslInputFile.getAbsolutePath());
+        procBuilder.redirectOutput(new File(xmlFile.getAbsolutePath()));
+        Process proc = procBuilder.start();
+
+        String line;
+        StringBuilder errMsg = new StringBuilder();
+        BufferedReader procErrStr = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+        while ((line = procErrStr.readLine()) != null) {
+            errMsg.append(line).append("\n");
+        }
+
+        if (!errMsg.isEmpty())
+            throw new ReacticsRuntimeException(errMsg.toString());
+
+        return xmlFile;
+    }
+
+
     record EvalResult(Formula.FormulaStatus result, String mcTime, String totalTime, String memory) {}
 }
 

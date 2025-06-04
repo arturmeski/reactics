@@ -22,13 +22,15 @@ import java.util.Vector;
  *  A distributed reaction system contains a number of processes.
  *  Each process contains a list of reactions.
  */
-public class ReactionSystemEditor extends JPanel {
-    private Vector<ProcessEditor> processes = new Vector<ProcessEditor>();
+public class ReactionSystemEditor extends JPanel implements RSObserver {
+    ReactionSystem rs;
+    private Vector<ProcessEditor> procEditors = new Vector<ProcessEditor>();
     private JPanel processPanel = new JPanel();
-    private boolean modified = false;
 
 
     public ReactionSystemEditor() {
+        rs = ReactionSystem.getInstance();
+
         processPanel.setLayout(new BoxLayout(processPanel, BoxLayout.Y_AXIS));
 
         final Dimension buttonSize = new Dimension(150, 25);
@@ -63,6 +65,16 @@ public class ReactionSystemEditor extends JPanel {
             }
         });
 
+        JButton renameButton = new JButton("Rename");
+        renameButton.setMaximumSize(buttonSize);
+        renameButton.setPreferredSize(buttonSize);
+        renameButton.setMaximumSize(buttonSize);
+        renameButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                renameProcess();
+            }
+        });
+
         JButton upButton = new JButton("Move up");
         upButton.setMaximumSize(buttonSize);
         upButton.setPreferredSize(buttonSize);
@@ -89,6 +101,7 @@ public class ReactionSystemEditor extends JPanel {
         buttonPanel.add(addButton);
         buttonPanel.add(rmButton);
         buttonPanel.add(copyButton);
+        buttonPanel.add(renameButton);
         buttonPanel.add(upButton);
         buttonPanel.add(downButton);
 
@@ -102,23 +115,23 @@ public class ReactionSystemEditor extends JPanel {
     public boolean isModified() {
         boolean procModified = false;
 
-        for (ProcessEditor pe : processes)
+        for (ProcessEditor pe : procEditors)
             procModified |= pe.isModified();
 
-        return modified | procModified;
+        return rs.modified | procModified;
     }
 
     public void clearModificationStatus() {
-        for (ProcessEditor pe : processes)
+        for (ProcessEditor pe : procEditors)
             pe.clearModificationStatus();
 
-        modified = false;
+        rs.modified = false;
     }
 
     public Set<String> getReactantsSet() {
         HashSet<String> rset = new HashSet<String>();
 
-        for (ProcessEditor pe : processes)
+        for (ProcessEditor pe : procEditors)
             rset.addAll(pe.getReactantsSet());
 
         return rset;
@@ -127,20 +140,20 @@ public class ReactionSystemEditor extends JPanel {
     public void exportToXML(PrintWriter output) {
         output.println("    <reaction-system>");
 
-        for (ProcessEditor process : processes)
+        for (ProcessEditor process : procEditors)
             process.exportToXML(output);
 
         output.println("    </reaction-system>");
     }
 
     public void loadFromXML(Document input) throws ReactionSystemStructureError {
-        NodeList rsSextions = input.getElementsByTagName("reaction-system");
+        NodeList rsSections = input.getElementsByTagName("reaction-system");
 
-        if (rsSextions.getLength() == 0 || rsSextions.getLength() > 1) {
+        if (rsSections.getLength() == 0 || rsSections.getLength() > 1) {
             throw new ReactionSystemStructureError("An XML file should contain a single reaction system description.");
         }
 
-        NodeList processList = rsSextions.item(0).getChildNodes();
+        NodeList processList = rsSections.item(0).getChildNodes();
 
         for (int idx=0; idx<processList.getLength(); ++idx) {
             Node processNode = processList.item(idx);
@@ -149,10 +162,10 @@ public class ReactionSystemEditor extends JPanel {
                 continue;
 
             String procName = processNode.getAttributes().getNamedItem("name").getNodeValue();
-            ProcessEditor processEditor = new ProcessEditor(procName);
+            ProcessEditor processEditor = new ProcessEditor(rs.createProcess(procName));
 
             //----------------------------------------------------------------------------------------------------------
-            // Reactins details
+            // Reactions details
             //----------------------------------------------------------------------------------------------------------
 
             NodeList reactionList = processNode.getChildNodes();
@@ -194,7 +207,7 @@ public class ReactionSystemEditor extends JPanel {
                 processEditor.addReaction(reaction);
             }
 
-            processes.add(processEditor);
+            procEditors.add(processEditor);
             processPanel.add(processEditor);
         }
 
@@ -204,7 +217,7 @@ public class ReactionSystemEditor extends JPanel {
     public String toRSSLString() {
         StringBuilder rsString = new StringBuilder("reactions {\n");
 
-        for (ProcessEditor pe : processes) {
+        for (ProcessEditor pe : procEditors) {
             rsString.append(pe.toRSSLString());
         }
 
@@ -215,114 +228,175 @@ public class ReactionSystemEditor extends JPanel {
 
     public void clear() {
         processPanel.removeAll();
-        processes.clear();
+        procEditors.clear();
+        rs.clearProcesses();
     }
 
     private void createProcess() {
-        ProcessEditor newProcess = new ProcessEditor();
-        processes.add(newProcess);
-        processPanel.add(newProcess);
-        modified = true;
+        ProcessEditor newProcEdt = new ProcessEditor(rs.createProcess());
+        procEditors.add(newProcEdt);
+        processPanel.add(newProcEdt);
+        rs.modified = true;
         revalidate();
     }
 
     private void createProcess(String label) {
-        ProcessEditor newProcess = new ProcessEditor(label);
-        processes.add(newProcess);
-        processPanel.add(newProcess);
-        modified = true;
+        ProcessEditor newProcEdt = new ProcessEditor(rs.createProcess(label));
+        procEditors.add(newProcEdt);
+        processPanel.add(newProcEdt);
+        rs.modified = true;
         revalidate();
     }
 
     private void removeProcesses() {
         Vector<ProcessEditor> toRemove = new Vector<ProcessEditor>();
-        for (ProcessEditor edt : processes) {
+        for (ProcessEditor edt : procEditors) {
             if (edt.isSelected()) {
                 toRemove.add(edt);
             }
         }
 
-        if (toRemove.size() == processes.size()) {
+        if (toRemove.size() == procEditors.size()) {
             JOptionPane.showMessageDialog(this, "There should be at least a single process in the system.",
                     "Warning", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         for (ProcessEditor edt : toRemove) {
-            processPanel.remove(edt);
-            processes.remove(edt);
+            if (rs.removeProcess(edt.getProcess())) {
+                processPanel.remove(edt);
+                procEditors.remove(edt);
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "Process " + edt.getLabel() +
+                                " appears in a formula or a context automaton guard.\n" +
+                                "Update them before removing the process.",
+                        "Warning", JOptionPane.WARNING_MESSAGE);
+            }
         }
 
-        modified = true;
+        rs.modified = true;
         revalidate();
     }
 
     private void copyProcesses() {
         Vector<ProcessEditor> toBeCopied = new Vector<ProcessEditor>();
 
-        for (ProcessEditor edt : processes) {
+        for (ProcessEditor edt : procEditors) {
             if (edt.isSelected()) {
                 toBeCopied.add(edt);
             }
         }
 
         for (ProcessEditor edt : toBeCopied) {
-            ProcessEditor newEdt = new ProcessEditor(edt);
+            ProcessEditor newEdt = new ProcessEditor(rs.copyProcess(edt.getProcess()));
             processPanel.add(newEdt);
-            processes.add(newEdt);
+            procEditors.add(newEdt);
         }
 
-        modified = true;
+        rs.modified = true;
         revalidate();
+    }
+
+    private void renameProcess() {
+        ProcessEditor toRename = null;
+        boolean fail = false;
+
+        for (ProcessEditor edt : procEditors) {
+            if (edt.isSelected()) {
+                if (toRename == null) {
+                    toRename = edt;
+                }
+                else {
+                    fail = true;
+                    break;
+                }
+            }
+        }
+
+        if (fail || toRename == null) {
+            JOptionPane.showMessageDialog(this, "Select a single process to rename.", "Select process", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String idRegex = "[a-zA-Z][a-zA-Z_0-9:-]*";
+        boolean idOk = false;
+
+        do {
+            String newLabel = JOptionPane.showInputDialog(this, "Process name", toRename.getProcess().label);
+            if (newLabel == null)
+                return;
+
+            newLabel = newLabel.trim();
+
+            if (!newLabel.matches(idRegex)) {
+                JOptionPane.showMessageDialog(this,
+                        "<html>Process name should start with a letter and may contain only:<br/>" +
+                                "letters, numbers, colons (:), underscores (_) and hyphens (-)</html>",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            else {
+                idOk = true;
+                rs.renameProcess(toRename.getProcess(), newLabel);
+                toRename.rename(newLabel);
+                rs.notifyObservers();
+            }
+        }
+        while (!idOk);
+
     }
 
     private void moveSelectedUp() {
         Vector<Integer> toBeMovedIds = new Vector<Integer>();
-        for (int i=0; i<processes.size(); ++i) {
-            if (processes.elementAt(i).isSelected())
+        for (int i = 0; i< procEditors.size(); ++i) {
+            if (procEditors.elementAt(i).isSelected())
                 toBeMovedIds.add(i);
         }
 
         for (int pos : toBeMovedIds) {
-            if (pos == 0 || processes.elementAt(pos-1).isSelected())
+            if (pos == 0 || procEditors.elementAt(pos-1).isSelected())
                 continue;
 
-            Collections.swap(processes, pos, pos-1);
+            Collections.swap(procEditors, pos, pos-1);
         }
 
         processPanel.removeAll();
 
-        for (ProcessEditor edt : processes) {
+        for (ProcessEditor edt : procEditors) {
             processPanel.add(edt);
         }
 
-        modified = true;
+        rs.modified = true;
         revalidate();
     }
 
     private void moveSelectedDown() {
         Vector<Integer> toBeMovedIds = new Vector<Integer>();
 
-        for (int i=processes.size()-1; i>=0; --i) {
-            if (processes.elementAt(i).isSelected())
+        for (int i = procEditors.size()-1; i>=0; --i) {
+            if (procEditors.elementAt(i).isSelected())
                 toBeMovedIds.add(i);
         }
 
         for (int pos : toBeMovedIds) {
-            if (pos == processes.size()-1 || processes.elementAt(pos+1).isSelected())
+            if (pos == procEditors.size()-1 || procEditors.elementAt(pos+1).isSelected())
                 continue;
 
-            Collections.swap(processes, pos, pos+1);
+            Collections.swap(procEditors, pos, pos+1);
         }
 
         processPanel.removeAll();
 
-        for (ProcessEditor edt : processes) {
+        for (ProcessEditor edt : procEditors) {
             processPanel.add(edt);
         }
 
-        modified = true;
+        rs.modified = true;
         revalidate();
+    }
+
+    public void onRSUpdate() {
+        repaint();
     }
 
 }

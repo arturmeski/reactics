@@ -254,8 +254,11 @@ class ContextAutomatonGraph extends DirectedSparseGraph<CAState, CAEdge> {
     public void addEdge(CAState from, CAState to, Collection<Transition> transitionList) {
         CAEdge edge = this.findEdge(from, to);
 
-        if (edge == null)
-            this.addEdge(new CAEdge(transitionList), from, to);
+        if (edge == null) {
+            CAEdge caEdge = ReactionSystem.getInstance().createCAEdge();
+            caEdge.addTransitions(transitionList);
+            this.addEdge(caEdge, from, to);
+        }
         else
             edge.addTransitions(transitionList);
 
@@ -378,9 +381,9 @@ class CAEdge {
         this.id = nextId++;
     }
 
-    public CAEdge(Collection<Transition> transitionList) {
-        this.transitions.addAll(transitionList);
-    }
+//    public CAEdge(Collection<Transition> transitionList) {
+//        this.transitions.addAll(transitionList);
+//    }
 
     Vector<Transition> getTransitions() {
         return transitions;

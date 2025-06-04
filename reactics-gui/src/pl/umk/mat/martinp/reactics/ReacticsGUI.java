@@ -13,8 +13,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.TreeSet;
 
@@ -26,20 +28,25 @@ public class ReacticsGUI extends JFrame {
 
     private static final String defaultConfigFileName = "reactics.conf";
 
+    private JFrame window;
     private JTabbedPane modulePane;
     private ReactantSetPanel reactantSetPanel;
-    private ReactionSystemEditor reactionSystem;
-    private ContextAutomatonEditor contextAutomaton;
-    private TransitionSystemViewer transitionSystem;
-    private TransitionSystemViewer compressedTransitionSystem;
+    private ReactionSystemEditor reactionSystemEditor;
+    private ContextAutomatonEditor contextAutomatonEditor;
+    private TransitionSystemViewer transitionSystemViewer;
+    private TransitionSystemViewer compressedTransitionSystemViewer;
     private FormulaEditor formulaEditor;
 
     private FileSelector fileSelector;
+
+    private ReactionSystem reactionSystem;
     private ReacticsRuntime reactics;
 
 
     public ReacticsGUI() {
         super(ApplicationName);
+
+        reactionSystem = ReactionSystem.getInstance();
 
         try {
             reactics = ReacticsRuntime.getInstance();
@@ -74,6 +81,8 @@ public class ReacticsGUI extends JFrame {
                             "however not model checking will be possible.",
                     "Reactics Runtime Error", JOptionPane.ERROR_MESSAGE);
         }
+
+        window = this;
     }
 
     private void createMenuBar() {
@@ -104,7 +113,6 @@ public class ReacticsGUI extends JFrame {
                 importFromRSSL();
             }
         });
-        rsslImportItem.setEnabled(false);
         fileMenu.add(rsslImportItem);
 
         JMenuItem rsslExportItem = new JMenuItem("Save to RSSL file");
@@ -156,23 +164,28 @@ public class ReacticsGUI extends JFrame {
         // Reaction System Editor
         //-----------------------------------------------------------------------------------------
 
-        reactionSystem = new ReactionSystemEditor();
-        modulePane.addTab("Reaction System", reactionSystem);
+        reactionSystemEditor = new ReactionSystemEditor();
+        modulePane.addTab("Reaction System", reactionSystemEditor);
+        reactionSystem.addObserver(reactionSystemEditor);
+
 
         //-----------------------------------------------------------------------------------------
         // Context Automaton Editor
         //-----------------------------------------------------------------------------------------
 
-        contextAutomaton = new ContextAutomatonEditor(getSize());
-        modulePane.addTab("Context Automaton", contextAutomaton);
+        contextAutomatonEditor = new ContextAutomatonEditor(getSize());
+        modulePane.addTab("Context Automaton", contextAutomatonEditor);
+        reactionSystem.addObserver(contextAutomatonEditor);
+
 
         //-----------------------------------------------------------------------------------------
         // Transition System Viewer
         //-----------------------------------------------------------------------------------------
 
         JPanel transitionSystemPanel = new JPanel(new BorderLayout());
-        transitionSystem = new TransitionSystemViewer(getSize(), false);
-        transitionSystemPanel.add(transitionSystem, BorderLayout.CENTER);
+        transitionSystemViewer = new TransitionSystemViewer(getSize(), false);
+        transitionSystemPanel.add(transitionSystemViewer, BorderLayout.CENTER);
+        reactionSystem.addObserver(transitionSystemViewer);
 
         JPanel tsCtrlPanel = new JPanel();
         JButton tsUpdateBtn = new JButton("Update transition system");
@@ -184,7 +197,7 @@ public class ReacticsGUI extends JFrame {
         JCheckBox tsLockCBox = new JCheckBox("Lock relative nodes positions");
         tsLockCBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                transitionSystem.lockNodesPositions(tsLockCBox.isSelected());
+                transitionSystemViewer.lockNodesPositions(tsLockCBox.isSelected());
             }
         });
         tsCtrlPanel.add(tsLockCBox);
@@ -197,8 +210,9 @@ public class ReacticsGUI extends JFrame {
         //-----------------------------------------------------------------------------------------
 
         JPanel compressedTransitionSystemPanel = new JPanel(new BorderLayout());
-        compressedTransitionSystem = new TransitionSystemViewer(getSize(), true);
-        compressedTransitionSystemPanel.add(compressedTransitionSystem, BorderLayout.CENTER);
+        compressedTransitionSystemViewer = new TransitionSystemViewer(getSize(), true);
+        compressedTransitionSystemPanel.add(compressedTransitionSystemViewer, BorderLayout.CENTER);
+        reactionSystem.addObserver(compressedTransitionSystemViewer);
 
         JPanel ctsCtrlPanel = new JPanel();
         JButton ctsUpdateBtn = new JButton("Update transition system");
@@ -210,7 +224,7 @@ public class ReacticsGUI extends JFrame {
         JCheckBox ctsLockCBox = new JCheckBox("Lock relative nodes positions");
         ctsLockCBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                compressedTransitionSystem.lockNodesPositions(ctsLockCBox.isSelected());
+                compressedTransitionSystemViewer.lockNodesPositions(ctsLockCBox.isSelected());
             }
         });
         ctsCtrlPanel.add(ctsLockCBox);
@@ -224,20 +238,21 @@ public class ReacticsGUI extends JFrame {
 
         JPanel formulaEditorPanel = new JPanel();
         formulaEditorPanel.setLayout(new BorderLayout());
-        formulaEditor = new FormulaEditor();
+        formulaEditor = new FormulaEditor(reactionSystem);
+        reactionSystem.addObserver(formulaEditor);
         formulaEditorPanel.add(formulaEditor, BorderLayout.CENTER);
 
         JPanel formulaCtrlPanel = new JPanel();
         JButton addButton = new JButton("Add formula");
         addButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) { formulaEditor.addFormula(); }
+            public void actionPerformed(ActionEvent actionEvent) { formulaEditor.addFormula(window); }
         });
         formulaCtrlPanel.add(addButton);
 
         JButton edtButton = new JButton("Edit formula");
         edtButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                formulaEditor.editFormula();
+                formulaEditor.editFormula(window);
             }
         });
         formulaCtrlPanel.add(edtButton);
@@ -304,15 +319,14 @@ public class ReacticsGUI extends JFrame {
     }
 
     private boolean isModified() {
-        return reactionSystem.isModified() || contextAutomaton.isModified() || formulaEditor.isModified();
+        return reactionSystemEditor.isModified() || contextAutomatonEditor.isModified();
     }
 
     private void clearModificationStatus() {
-        reactionSystem.clearModificationStatus();
-        contextAutomaton.clearModificationStatus();
-        formulaEditor.clearModificationStatus();
-        transitionSystem.clearModificationStatus();
-        compressedTransitionSystem.clearModificationStatus();
+        reactionSystemEditor.clearModificationStatus();
+        contextAutomatonEditor.clearModificationStatus();
+        transitionSystemViewer.clearModificationStatus();
+        compressedTransitionSystemViewer.clearModificationStatus();
     }
 
     private void updateReactionSystem()  {
@@ -335,18 +349,16 @@ public class ReacticsGUI extends JFrame {
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
 
+        reactionSystem.notifyObservers();
         updateReactantSet();
-        transitionSystem.clear();
-        compressedTransitionSystem.clear();
-        formulaEditor.resetFormulasStatus();
         clearModificationStatus();
     }
 
     private void updateReactantSet() {
         TreeSet<String> rset = new TreeSet<String>();
 
-        rset.addAll(reactionSystem.getReactantsSet());
-        rset.addAll(contextAutomaton.getReactantsSet());
+        rset.addAll(reactionSystemEditor.getReactantsSet());
+        rset.addAll(contextAutomatonEditor.getReactantsSet());
         rset.remove("");
         reactantSetPanel.updateReactants(rset);
     }
@@ -355,23 +367,24 @@ public class ReacticsGUI extends JFrame {
         if (isModified()) {
             updateReactionSystem();
         }
-        else if (transitionSystem.isComputed()) {
+        else if (transitionSystemViewer.isComputed()) {
             // Skip re-computing transition system structure
             return;
         }
 
         try {
             String tsStructure = reactics.getTransitionSystemStructure();
-            transitionSystem.updateTransitionSystemStructure(tsStructure);
-            compressedTransitionSystem.updateTransitionSystemStructure(tsStructure);
+            transitionSystemViewer.updateTransitionSystemStructure(tsStructure);
+            compressedTransitionSystemViewer.updateTransitionSystemStructure(tsStructure);
         }
         catch (IOException ioe) {
-            System.out.println("IOException: " + ioe.getMessage());
+            System.out.println("[ReactICS] I/O Error: " + ioe.getMessage());
             JOptionPane.showMessageDialog(this,
                     "Could not write reaction system structure to a temporary file\n" + ioe.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
         catch (ReacticsRuntimeException rre) {
+            System.out.println("[ReactICS] Runtime Error: " + rre.getMessage());
             JOptionPane.showMessageDialog(this,
                     rre.getMessage(),
                     "Reactics Runtime Error", JOptionPane.ERROR_MESSAGE);
@@ -379,14 +392,28 @@ public class ReacticsGUI extends JFrame {
     }
 
     private void evaluateFormulas() {
+        Collection<Formula> formulas = formulaEditor.getSelectedFormulas();
+
         if (isModified())
             updateReactionSystem();
 
-        Collection<Formula> formulas = formulaEditor.getSelectedFormulas();
+        Path rsslFile = reactics.getRSSLFile();
+        long originalSize = -1;
+
+        try {
+            originalSize = Files.size(rsslFile);
+        }
+        catch (IOException ioe) {
+            System.err.println("[ReactICS] Error: " + ioe.getMessage());
+            JOptionPane.showMessageDialog(this, ioe.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
 
         for (Formula ff : formulas) {
             try {
                 System.out.println("[ReactICS] Evaluate formula: " + ff.label);
+
+                Files.writeString(rsslFile, ff.toRSSLString() + "\n", StandardCharsets.UTF_8, StandardOpenOption.APPEND);
 
                 ReacticsRuntime.EvalResult result = reactics.evaluateFormula(ff.label);
                 ff.status = result.result();
@@ -405,6 +432,19 @@ public class ReacticsGUI extends JFrame {
                 JOptionPane.showMessageDialog(this,
                         rre.getMessage(),
                         "Reactics Runtime Error", JOptionPane.ERROR_MESSAGE);
+
+                ff.status = Formula.FormulaStatus.Invalid;
+            }
+            finally {
+                try {
+                    RandomAccessFile raf = new RandomAccessFile(rsslFile.toFile(), "rw");
+                    raf.setLength(originalSize);
+                }
+                catch (IOException ioe) {
+                    System.err.println("[ReactICS] Error: " + ioe.getMessage());
+                    JOptionPane.showMessageDialog(this, ioe.getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
     }
@@ -421,8 +461,8 @@ public class ReacticsGUI extends JFrame {
         try {
             PrintWriter xmlOut = new PrintWriter(new FileWriter(outFile));
             xmlOut.println("<xml version=\"1.0\">");
-            reactionSystem.exportToXML(xmlOut);
-            contextAutomaton.exportToXML(xmlOut);
+            reactionSystemEditor.exportToXML(xmlOut);
+            contextAutomatonEditor.exportToXML(xmlOut);
             formulaEditor.exportToXML(xmlOut);
             xmlOut.println("</xml>");
             xmlOut.flush();
@@ -435,92 +475,125 @@ public class ReacticsGUI extends JFrame {
     }
 
     private void loadFromXML() {
-        FileNameExtensionFilter rpnFilter = new FileNameExtensionFilter("Reaction System (XML)", "xml");
+        FileNameExtensionFilter fileTypeFilter = new FileNameExtensionFilter("Reaction System (XML)", "xml");
         JFileChooser fc = new JFileChooser();
-        fc.addChoosableFileFilter(rpnFilter);
+        fc.addChoosableFileFilter(fileTypeFilter);
         fc.setAcceptAllFileFilterUsed(true);
         fc.setCurrentDirectory(new File(System.getProperty("user.dir")));
 
 
         if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File xmlFile = fc.getSelectedFile();
-
-            System.out.println("[ReactICS] Load from XML file: " + xmlFile.getName());
-
-            reactionSystem.clear();
-            contextAutomaton.clear();
-            reactantSetPanel.clear();
-            transitionSystem.clear();
-            compressedTransitionSystem.clear();
-
-            try {
-                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-                Document doc = dBuilder.parse(xmlFile);
-                doc.getDocumentElement().normalize();
-                reactionSystem.loadFromXML(doc);
-                contextAutomaton.loadFromXML(doc);
-                formulaEditor.loadFromXML(doc);
-                updateReactionSystem();
-            }
-            catch(IOException ioe) {
-                System.err.println("[ReactICS] Error: " + ioe.getMessage());
-
-                JOptionPane.showMessageDialog(this, "Error reading file: " + xmlFile.getName() + "\n" + ioe.getMessage(),
-                        "Input error", JOptionPane.ERROR_MESSAGE);
-
-                reactionSystem.clear();
-                contextAutomaton.clear();
-                reactantSetPanel.clear();
-            }
-            catch(ParserConfigurationException pce) {
-                System.err.println("[ReactICS] Parse Configuration Error: " + pce.getMessage());
-
-                JOptionPane.showMessageDialog(this, pce.getMessage(),
-                        "Parse Configuration Error", JOptionPane.ERROR_MESSAGE);
-
-                reactionSystem.clear();
-                contextAutomaton.clear();
-                reactantSetPanel.clear();
-            }
-            catch(SAXException se) {
-                System.err.println("[ReactICS] SAXException: " + se.getMessage());
-
-                JOptionPane.showMessageDialog(this, se.getMessage(),
-                        "Parse error", JOptionPane.ERROR_MESSAGE);
-
-                reactionSystem.clear();
-                contextAutomaton.clear();
-                reactantSetPanel.clear();
-            }
-            catch(FileStructureError err) {
-                System.err.println("[ReactICS]: File Structure Error: " + err.getMessage());
-
-                JOptionPane.showMessageDialog(this, err.getMessage(),
-                        "XML file structure error", JOptionPane.ERROR_MESSAGE);
-
-                reactionSystem.clear();
-                contextAutomaton.clear();
-                reactantSetPanel.clear();
-            }
-            catch(Exception e) {
-                System.out.println("[ReactICS] Error: " + e.getMessage());
-
-                JOptionPane.showMessageDialog(this, "Unexpected error reading file: " + xmlFile.getName() +
-                                " " + e.getMessage(),
-                        "Input error", JOptionPane.ERROR_MESSAGE);
-
-                reactionSystem.clear();
-                contextAutomaton.clear();
-                reactantSetPanel.clear();
-            }
-
+            loadFromXMLFile(xmlFile);
             setTitle("ReactICS GUI : " + xmlFile.getName());
         }
 
         modulePane.setSelectedIndex(0);
         clearModificationStatus();
     }
+
+
+    private void loadFromXMLFile(File xmlFile) {
+        reactionSystemEditor.clear();
+        contextAutomatonEditor.clear();
+        reactantSetPanel.clear();
+        transitionSystemViewer.clear();
+        compressedTransitionSystemViewer.clear();
+
+        try {
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(xmlFile);
+            doc.getDocumentElement().normalize();
+            reactionSystemEditor.loadFromXML(doc);
+            contextAutomatonEditor.loadFromXML(doc);
+            formulaEditor.loadFromXML(doc);
+            updateReactionSystem();
+        }
+        catch(IOException ioe) {
+            System.err.println("[ReactICS] Error: " + ioe.getMessage());
+
+            JOptionPane.showMessageDialog(this, "Error reading file: " + xmlFile.getName() + "\n" + ioe.getMessage(),
+                    "Input error", JOptionPane.ERROR_MESSAGE);
+
+            reactionSystemEditor.clear();
+            contextAutomatonEditor.clear();
+            reactantSetPanel.clear();
+        }
+        catch(ParserConfigurationException pce) {
+            System.err.println("[ReactICS] Parse Configuration Error: " + pce.getMessage());
+
+            JOptionPane.showMessageDialog(this, pce.getMessage(),
+                    "Parse Configuration Error", JOptionPane.ERROR_MESSAGE);
+
+            reactionSystemEditor.clear();
+            contextAutomatonEditor.clear();
+            reactantSetPanel.clear();
+        }
+        catch(SAXException se) {
+            System.err.println("[ReactICS] SAXException: " + se.getMessage());
+
+            JOptionPane.showMessageDialog(this, se.getMessage(),
+                    "Parse error", JOptionPane.ERROR_MESSAGE);
+
+            reactionSystemEditor.clear();
+            contextAutomatonEditor.clear();
+            reactantSetPanel.clear();
+        }
+        catch(FileStructureError err) {
+            System.err.println("[ReactICS]: File Structure Error: " + err.getMessage());
+
+            JOptionPane.showMessageDialog(this, err.getMessage(),
+                    "XML file structure error", JOptionPane.ERROR_MESSAGE);
+
+            reactionSystemEditor.clear();
+            contextAutomatonEditor.clear();
+            reactantSetPanel.clear();
+        }
+        catch(Exception e) {
+            System.out.println("[ReactICS] Error: " + e.getMessage());
+
+            JOptionPane.showMessageDialog(this, "Unexpected error reading file: " + xmlFile.getName() +
+                            " " + e.getMessage(),
+                    "Input error", JOptionPane.ERROR_MESSAGE);
+
+            reactionSystemEditor.clear();
+            contextAutomatonEditor.clear();
+            reactantSetPanel.clear();
+        }
+    }
+
+
+    private void importFromRSSL() {
+        FileNameExtensionFilter fileTypeFilter = new FileNameExtensionFilter("Reaction System Specification Language (rs)", "rs");
+        JFileChooser fc = new JFileChooser();
+        fc.addChoosableFileFilter(fileTypeFilter);
+        fc.setAcceptAllFileFilterUsed(true);
+        fc.setCurrentDirectory(new File(System.getProperty("user.dir")));
+
+
+        if(fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File rsslFile = fc.getSelectedFile();
+
+            try {
+                File xmlFile = reactics.convertToXMLFile(rsslFile);
+                loadFromXMLFile(xmlFile);
+            } catch (IOException e) {
+                System.err.println("IOException: " + e.getMessage());
+                e.printStackTrace();
+            } catch (ReacticsRuntimeException e) {
+                System.err.println("ReacticsRuntimeException: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            setTitle("ReactICS GUI : " + rsslFile.getName());
+            contextAutomatonEditor.recalculateCoordinates();
+        }
+
+        modulePane.setSelectedIndex(0);
+        clearModificationStatus();
+    }
+
 
     private void exportToRSSLFile() {
         File outFile = fileSelector.selectOutputFile(this, new File(System.getProperty("user.dir")),
@@ -543,12 +616,17 @@ public class ReacticsGUI extends JFrame {
         }
     }
 
-    private void importFromRSSL() {
-        //TODO: Import reaction system structure from RSSL file
-    }
 
     private void exportToISPLFile() {
         updateReactionSystem();
+
+        if (!reactionSystem.isplTranslationAllowed()) {
+            JOptionPane.showMessageDialog(this,
+                    "Context automaton contains guards for some transitions.\n" +
+                    "Current version of ReactICS does not support translation to ISPL format in this case.\n",
+                    "Translation is not possible", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
 
         File outFile = fileSelector.selectOutputFile(this, new File(System.getProperty("user.dir")),
                 new FileNameExtensionFilter("Interpreted System Programming Language (ISPL)", "ispl"));
@@ -592,9 +670,9 @@ public class ReacticsGUI extends JFrame {
 
     private void printRSStructure(PrintWriter outStream) {
         outStream.println("options { use-context-automaton; make-progressive; };\n");
-        outStream.println(reactionSystem.toRSSLString());
-        outStream.println(contextAutomaton.toRSSLString());
-        outStream.println(formulaEditor.toRSSLString());
+        outStream.println(reactionSystemEditor.toRSSLString());
+        outStream.println(contextAutomatonEditor.toRSSLString());
+//        outStream.println(formulaEditor.toRSSLString());
     }
 
     private void showAboutWindow() {

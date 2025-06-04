@@ -1,5 +1,6 @@
 package pl.umk.mat.martinp.reactics;
 
+import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
@@ -29,10 +30,12 @@ import java.io.PrintWriter;
 import java.util.*;
 
 
-public class ContextAutomatonEditor extends JPanel {
+public class ContextAutomatonEditor extends JPanel implements RSObserver {
     private enum EditorState {STATE, EDGE, DELETE, CLEAR, NONE}
 
     private static final long serialVersionUID = 1L;
+
+    private ReactionSystem rs;
 
     //---------------------------------------------------------------
     // Visual configuration settings
@@ -79,6 +82,8 @@ public class ContextAutomatonEditor extends JPanel {
         createGraphEditor();
         createModeButtonsPanel();
         createContextMenus();
+
+        rs = ReactionSystem.getInstance();
     }
 
     public boolean isModified() { return graph.isModified(); }
@@ -98,6 +103,18 @@ public class ContextAutomatonEditor extends JPanel {
         clear();
         graph.loadFromXML(input);
     }
+
+
+    public void recalculateCoordinates() {
+        Layout<CAState, CAEdge> autoLayout = new FRLayout<CAState, CAEdge>(graph, graphViewer.getSize());
+        autoLayout.initialize();
+
+        for (CAState state : graph.getVertices()) {
+            Point2D pos = autoLayout.transform(state);
+            state.updateLocation(pos);
+        }
+    }
+
 
     public void clear() {
         graph.clear();
@@ -349,7 +366,6 @@ public class ContextAutomatonEditor extends JPanel {
                         "Error", JOptionPane.ERROR_MESSAGE);
             }
             else {
-                //TODO: State description should be unique
                 idOk = true;
                 state.setLabel(newLabel);
             }
@@ -391,6 +407,10 @@ public class ContextAutomatonEditor extends JPanel {
             relaxer.prerelax();
             relaxer.relax();
         }
+    }
+
+    public void onRSUpdate() {
+        repaint();
     }
 
     //---------------------------------------------------------------------------------------------
@@ -525,10 +545,16 @@ public class ContextAutomatonEditor extends JPanel {
                     edge = pickSupport.getEdge(layout, clickPt.getX(), clickPt.getY());
 
                     if (node != null) {
+                        Collection<CAEdge> edges = graph.getIncidentEdges(node);
+
+                        for (CAEdge e : edges)
+                            rs.removeCAEdge(e);
+
                         graph.removeState(node);
                     }
                     else if (edge != null) {
                         graph.removeEdge(edge);
+                        rs.removeCAEdge(edge);
                     }
 
                     break;
