@@ -314,6 +314,7 @@ public class ReacticsGUI extends JFrame {
         buttonPanel.add(updateButton);
         topPanel.add(buttonPanel, BorderLayout.WEST);
         reactantSetPanel = new ReactantSetPanel();
+        reactionSystem.addObserver(reactantSetPanel);
         topPanel.add(reactantSetPanel, BorderLayout.CENTER);
         getContentPane().add(topPanel, BorderLayout.NORTH);
     }
@@ -672,7 +673,6 @@ public class ReacticsGUI extends JFrame {
         outStream.println("options { use-context-automaton; make-progressive; };\n");
         outStream.println(reactionSystemEditor.toRSSLString());
         outStream.println(contextAutomatonEditor.toRSSLString());
-//        outStream.println(formulaEditor.toRSSLString());
     }
 
     private void showAboutWindow() {

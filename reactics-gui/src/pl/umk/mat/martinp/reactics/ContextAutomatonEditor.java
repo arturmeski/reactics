@@ -384,6 +384,7 @@ public class ContextAutomatonEditor extends JPanel implements RSObserver {
         transitionEditor.showTransitionEditDialog(this, edge.getTransitions(), endPoints.getFirst().getLabel(), endPoints.getSecond().getLabel());
         graph.markAsModified();
         graphViewer.repaint();
+        rs.notifyObservers();
     }
 
     /** Updates coordinates stored in each graph node (eg. after interactive graph modification).

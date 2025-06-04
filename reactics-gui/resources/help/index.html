@@ -7,7 +7,7 @@
 <body>
 
 <hr>
-<center><a name="top"><h1>ReactICS - Reaction Systems Model Checker</h1></a></center>
+<center><a name="top"><h1>ReactICS - Distributed Reaction Systems Model Checker</h1></a></center>
 <hr>
 
 
@@ -97,12 +97,46 @@
 
 
 <hr/>
-<a name="rs-edit"><h2>Reaction system editor</h2></a>
+<a name="rs-edit"><h2>Distributed reaction system editor</h2></a>
 <hr/>
 
-<p align=""justify">
-    <b>-- TODO --</b>
+
+<p align="justify">
+    The structure of distributed reaction system can be edited using the following buttons from the distributed reaction system control panel:
+<center><img src="img/rs-ctrl-buttons.png"/></center>
+<ul>
+    <li><b>New process</b> - Creates a new empty process.</li>
+    <li><b>Remove</b> - Removes selected processes.</li>
+    <li><b>Copy</b> - Makes copies of selected processes (together with all reactions).</li>
+    <li><b>Rename</b> - Renames a selected process. Note that process names should be unique.</li>
+    <li><b>Move up</b> - Moves selected process up the list of all processes.</li>
+    <li><b>Move down</b> - Moves selected process down the list of all processes.</li>
+</ul>
 </p>
+
+<p align="justify">
+    The details of a single process can be edited using the following buttons in the process panel:
+<center><img src="img/process-edit-button.png"/></center>
+<ul>
+    <li><b>Add reaction</b> - Creates a new reaction. The details of the reaction should be specified in dialog shown below.</li>
+    <li><b>Edit reaction</b> - Allows to edit the details of a selected reaction using dialog shown below.</li>
+    <li><b>Remove reaction</b> - Removes a selected reaction.</li>
+
+</ul>
+</p>
+<center><img src="img/reaction-details.png"/></center>
+<p align="justify">
+    Verification of formulas against a system specification is done after selecting desired formulas
+    and clicking <b>Evaluate</b> button.
+    The result of the verification (<b>True</b>/<b>False</b>), as well as time and memory used are presented next to each verified formula.
+</p>
+<center><img src="img/model-checking.png"/></center>
+<p align="justify">
+    Clicking the <b>Reset</b> button resets the status of the model checking.
+    Note that updating the reaction system specification (the list of processes, details of the reactions or the content automaton structure)
+    the results of model checking, if any, are reset automatically.
+</p>
+
 
 <center><a href="#top">Back to top</a></center>
 
@@ -253,8 +287,30 @@
 <a name="model-checking"><h2>Model checking</h2></a>
 <hr/>
 
-<p align=""justify">
-<b>-- TODO --</b>
+<p align="justify">
+Model checking is handled by the component at the bottom of the application window.
+The properties of the analysed system are expressed as formulas following <b>rsCTLK</b> syntax.
+</p>
+<p align="justify">
+The list of formulas may be modified using the following buttons:
+<ul>
+    <li><b>Add formula</b> - Creates an empty formula. The details of the formula should be specified in dialog shown below.</li>
+    <li><b>Edit formula</b> - Allows to edit the details of a selected formula using dialog shown below.</li>
+    <li><b>Remove formulas</b> - Removes selected formulas.</li>
+
+</ul>
+</p>
+<center><img src="img/formula-details.png"/></center>
+<p align="justify">
+Verification of formulas against a system specification is done after selecting desired formulas
+and clicking <b>Evaluate</b> button.
+The result of the verification (<b>True</b>/<b>False</b>), as well as time and memory used are presented next to each verified formula.
+</p>
+<center><img src="img/model-checking.png"/></center>
+<p align="justify">
+Clicking the <b>Reset</b> button resets the status of the model checking.
+Note that updating the reaction system specification (the list of processes, details of the reactions or the content automaton structure)
+the results of model checking, if any, are reset automatically.
 </p>
 
 <center><a href="#top">Back to top</a></center>

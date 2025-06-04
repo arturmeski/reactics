@@ -5,9 +5,10 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
-public class ReactantSetPanel extends JPanel {
+public class ReactantSetPanel extends JPanel implements RSObserver {
     private final int borderThickness = 2;
 
     JTextArea textArea = new JTextArea();
@@ -33,10 +34,16 @@ public class ReactantSetPanel extends JPanel {
 
     public void updateReactants(Set<String> reactantsSet) {
         textArea.setText("");
-        textArea.setText(Arrays.toString(reactantsSet.toArray()));
+//        textArea.setText(Arrays.toString(reactantsSet.toArray()));
+        textArea.setText(Arrays.stream(reactantsSet.toArray()).map(String::valueOf).collect(Collectors.joining(" ")));
     }
 
     public void clear() {
         textArea.setText("");
+    }
+
+    public void onRSUpdate() {
+        ReactionSystem rs = ReactionSystem.getInstance();
+        updateReactants(rs.getReactants());
     }
 }

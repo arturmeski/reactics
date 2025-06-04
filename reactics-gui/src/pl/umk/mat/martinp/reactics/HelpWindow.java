@@ -7,7 +7,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.net.*;
 
-
 public class HelpWindow extends JFrame {
     private static final long serialVersionUID = 327019113533268901L;
     private static final String startDocument = "index.html";
@@ -49,6 +48,9 @@ public class HelpWindow extends JFrame {
         try {
             URL helpUrl = this.getClass().getResource(docPath + startDocument);
             helpPane.setPage(helpUrl);
+
+            helpPane.revalidate();
+            helpPane.repaint();
         }
         catch (Exception e) {
             System.out.println("Exception: " + e.getMessage());

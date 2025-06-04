@@ -23,6 +23,7 @@ class ProcessEditor extends JPanel {
 
     private JCheckBox selectBox;
     private TitledBorder outBorder;
+    private ReactionSystem rs;
 
     private final Color borderColor = new Color(24, 104, 92);;
     private final Color selectedBorderColor = new Color(150, 10, 10);
@@ -107,6 +108,8 @@ class ProcessEditor extends JPanel {
         add(new JScrollPane(reactionList));
 
         setPreferredSize(new Dimension(-1, 200));
+
+        rs = ReactionSystem.getInstance();
     }
 
     private boolean showReactionEditDialog(JComponent parent, Reaction rr) {
@@ -280,6 +283,7 @@ class ProcessEditor extends JPanel {
         rsProcess.reactions.add(rr);
         modified = true;
         reactionsModel.fireTableDataChanged();
+        rs.notifyObservers();
     }
 
     // Edit details of an existing reaction
@@ -300,6 +304,7 @@ class ProcessEditor extends JPanel {
         rsProcess.reactions.setElementAt(rr, rIdx);
         modified = true;
         reactionsModel.fireTableDataChanged();
+        rs.notifyObservers();
     }
 
     // Remove an existing reaction
@@ -316,6 +321,7 @@ class ProcessEditor extends JPanel {
         reactionsModel.fireTableDataChanged();
         modified = true;
         this.repaint();
+        rs.notifyObservers();
     }
 
     private void toggleSelection() {
