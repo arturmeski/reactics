@@ -41,17 +41,24 @@ check_gen() {
     local tmpfile
     tmpfile=$(mktemp /tmp/reactics_gen_XXXXXX.drs)
 
-    eval "$gen_cmd" > "$tmpfile" 2>&1
+    if ! eval "$gen_cmd" > "$tmpfile" 2>&1; then
+        echo "  FAIL: $name (generator crashed)"
+        gen_fail=$((gen_fail + 1))
+        failed=1
+        rm -f "$tmpfile"
+        return
+    fi
+
     local result
     result=$("$REACTICS" -c "$property" "$tmpfile" 2>&1 | grep -oE "(holds|does not hold)" || true)
     rm -f "$tmpfile"
 
     if [[ "$result" == "$expected" ]]; then
         echo "  PASS: $name"
-        ((gen_pass++))
+        gen_pass=$((gen_pass + 1))
     else
         echo "  FAIL: $name (expected '$expected', got '$result')"
-        ((gen_fail++))
+        gen_fail=$((gen_fail + 1))
         failed=1
     fi
 }

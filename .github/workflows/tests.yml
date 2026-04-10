@@ -72,21 +72,30 @@ jobs:
           python-version: "3.12"
 
       - name: Run generator tests
+        shell: bash --noprofile --norc {0}
         run: |
+          set -uo pipefail
           REACTICS="$PWD/reactics-bdd/reactics"
           GENERATORS="$PWD/examples/bdd/generators"
+          passed=0
           failed=0
           check_gen() {
             local name="$1" gen_cmd="$2" property="$3" expected="$4"
             local tmpfile=$(mktemp /tmp/reactics_gen_XXXXXX.drs)
-            eval "$gen_cmd" > "$tmpfile" 2>&1
+            if ! eval "$gen_cmd" > "$tmpfile" 2>&1; then
+              echo "  FAIL: $name (generator crashed)"
+              failed=$((failed + 1))
+              rm -f "$tmpfile"
+              return
+            fi
             local result=$("$REACTICS" -c "$property" "$tmpfile" 2>&1 | grep -oE "(holds|does not hold)" || true)
             rm -f "$tmpfile"
             if [ "$result" = "$expected" ]; then
               echo "  PASS: $name"
+              passed=$((passed + 1))
             else
               echo "  FAIL: $name (expected '$expected', got '$result')"
-              failed=1
+              failed=$((failed + 1))
             fi
           }
           check_gen "tgc(3) f1"        "python3 $GENERATORS/gen_tgc.py 3"        f1 "holds"
@@ -96,4 +105,8 @@ jobs:
           check_gen "asm(3) f2"        "python3 $GENERATORS/gen_asm.py 3"        f2 "holds"
           check_gen "drs(2,2,2,a) f0"  "python3 $GENERATORS/gen_drs.py 2 2 2 a"  f0 "does not hold"
           check_gen "drs(2,2,2,b) f0"  "python3 $GENERATORS/gen_drs.py 2 2 2 b"  f0 "holds"
-          exit $failed
+          echo
+          echo "Generator results: $passed passed, $failed failed"
+          if [ "$failed" -gt 0 ]; then
+            exit 1
+          fi
