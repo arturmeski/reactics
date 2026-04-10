@@ -12,10 +12,10 @@ pip install z3-solver pytest
 ## Running all tests
 
 ```
-bash tests/run_all_tests.sh
+./run_tests.sh
 ```
 
-This runs both the BDD and SMT test suites in sequence.
+This runs the BDD, SMT, and generator test suites in sequence.
 
 ## BDD tests
 
@@ -53,3 +53,13 @@ python3 -m pytest tests/test_smt.py -v
   concentrations (chain reaction, heat shock response)
 - **SmtCheckerRSCParam** -- parametric verification
 - **RSC-to-RS translation** -- verifying the translated system
+
+## Generator tests
+
+7 tests that run each generator (from `examples/bdd/generators/`),
+feed the output into the BDD model checker, and verify the expected
+verification result (holds / does not hold).
+
+Generators using old syntax (`examples/bdd/generators/old_syntax/`)
+are not tested this way as they are not compatible with the current
+parser.
