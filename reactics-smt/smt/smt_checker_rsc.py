@@ -11,9 +11,6 @@ from colour import *
 
 from logics import rsLTL_Encoder
 
-# def simplify(x):
-#     return x
-
 
 class SmtCheckerRSC(object):
     def __init__(self, rsca):

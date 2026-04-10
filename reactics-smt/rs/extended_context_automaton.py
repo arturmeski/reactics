@@ -70,7 +70,7 @@ class ExtendedContextAutomaton(ContextAutomaton):
 
         ctx_reactants, ctx_inhibitors, ctx_products = ctx_reaction
 
-        if not type(ctx_products) is set and not type(ctx_products) is list:
+        if not isinstance(ctx_products, (set, list)):
             print("Contexts set (context products) must be of type set or list")
 
         if not self.is_valid_rs_set(ctx_reactants):

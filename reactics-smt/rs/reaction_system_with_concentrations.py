@@ -18,9 +18,9 @@ class ReactionSystemWithConcentrations(ReactionSystem):
     def add_bg_set_entity(self, e):
         name = ""
         def_max_conc = -1
-        if type(e) is tuple and len(e) == 2:
+        if isinstance(e, tuple) and len(e) == 2:
             name, def_max_conc = e
-        elif type(e) is str:
+        elif isinstance(e, str):
             name = e
             print("\nWARNING: no maximal concentration level specified for:", e, "\n")
         else:
@@ -46,18 +46,10 @@ class ReactionSystemWithConcentrations(ReactionSystem):
     def is_valid_entity_with_concentration(self, e):
         """Sanity check for entities with concentration"""
 
-        if type(e) is tuple:
-            if len(e) == 2 and type(e[1]) is int:
-                return True
+        if isinstance(e, (tuple, list)) and len(e) == 2 and isinstance(e[1], int):
+            return True
 
-        if type(e) is list:
-            if len(e) == 2 and type(e[1]) is int:
-                return True
-
-        print("FATAL. Invalid entity+concentration: {:s}".format(e))
-        exit(1)
-
-        return False
+        raise RuntimeError("Invalid entity+concentration: " + repr(e))
 
     def get_state_ids(self, state):
         """Returns entities of the given state without levels"""
@@ -413,35 +405,6 @@ class ReactionSystemWithConcentrations(ReactionSystem):
                 rs.add_reaction(new_reactants, new_inhibitors, new_products)
 
         return rs
-
-
-class ReactionSystemWithAutomaton(object):
-    def __init__(self, reaction_system, context_automaton):
-        self.rs = reaction_system
-        self.ca = context_automaton
-
-    def show(self, soft=False):
-        self.rs.show(soft)
-        self.ca.show()
-
-    def is_with_concentrations(self):
-        if not isinstance(self.rs, ReactionSystemWithConcentrations):
-            return False
-        if not isinstance(self.ca, ContextAutomatonWithConcentrations):
-            return False
-        return True
-
-    def sanity_check(self):
-        pass
-
-    def get_ordinary_reaction_system_with_automaton(self):
-        if not self.is_with_concentrations():
-            raise RuntimeError("Not RS/CA with concentrations")
-
-        ors = self.rs.get_reaction_system()
-        oca = self.ca.get_automaton_with_flat_contexts(ors)
-
-        return ReactionSystemWithAutomaton(ors, oca)
 
 
 # EOF

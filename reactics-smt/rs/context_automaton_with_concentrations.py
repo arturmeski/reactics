@@ -9,12 +9,9 @@ class ContextAutomatonWithConcentrations(ContextAutomaton):
         super(ContextAutomatonWithConcentrations, self).__init__(reaction_system)
 
     def is_valid_context(self, context):
-        if set([e for e, lvl in context]).issubset(
+        return set(e for e, lvl in context).issubset(
             self._reaction_system.background_set
-        ):
-            return True
-        else:
-            return False
+        )
 
     def context2str(self, ctx):
         if len(ctx) == 0:
@@ -26,7 +23,7 @@ class ContextAutomatonWithConcentrations(ContextAutomaton):
         return s
 
     def add_transition(self, src, context_set, dst):
-        if not type(context_set) is set and not type(context_set) is list:
+        if not isinstance(context_set, (set, list)):
             print("Contexts set must be of type set or list")
 
         if not self.is_valid_context(context_set):

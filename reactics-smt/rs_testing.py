@@ -1,12 +1,10 @@
 from rs import *
 from smt import *
-import rs_examples 
 from logics import *
 from rsltl_shortcuts import *
 
 from itertools import chain, combinations
 
-import sys
 import resource
 
 def powerset(iterable,N=None):

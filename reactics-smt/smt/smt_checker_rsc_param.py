@@ -14,9 +14,6 @@ from logics import ParamConstr_Encoder
 
 from rs.reaction_system_with_concentrations_param import ParameterObj, is_param
 
-# def simplify(x):
-#     return x
-
 
 def z3_max(a, b):
     return If(a > b, a, b)

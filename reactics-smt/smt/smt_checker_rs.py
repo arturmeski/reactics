@@ -267,7 +267,7 @@ class SmtCheckerRS(object):
     ):
         """Main testing function"""
 
-        if not type(state) is tuple:
+        if not isinstance(state, tuple):
             state = (state, [])
 
         if print_time:
