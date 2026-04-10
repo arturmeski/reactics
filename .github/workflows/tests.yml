@@ -1,0 +1,38 @@
+name: Tests
+
+on:
+  push:
+    branches: [master, refactor]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ make bison flex
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install z3-solver pytest
+
+      - name: Build CUDD
+        working-directory: reactics-bdd
+        run: ./build_cudd.sh
+
+      - name: Build ReactICS BDD module
+        working-directory: reactics-bdd
+        run: make
+
+      - name: Run all tests
+        run: ./run_tests.sh
