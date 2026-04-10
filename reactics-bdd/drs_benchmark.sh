@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TMPINPUT="tmp_$RANDOM$RANDOM.rs"
+TMPINPUT="tmp_$RANDOM$RANDOM.drs"
 
 CMD="./reactics -B"
 

@@ -15,7 +15,6 @@
 #include "types.hh"
 #include "macro.hh"
 #include "bdd_macro.hh"
-// #include "rs.hh"
 #include "options.hh"
 #include "memtime.hh"
 
@@ -240,16 +239,11 @@ class SymRS
     vector<BDDvec> *pv_proc_ctx;
     BDDvec *pv_proc_ctx_E;
 
-    // TODO: remove
-    BDDvec *pv_act;
-    BDD *pv_act_E;
-
     unsigned int totalEntities;
     unsigned int numberOfProc;         /*!< The number of DRS processes */
     unsigned int totalStateVars;
     unsigned int totalRctSysStateVars; /*!< Total number of different entities produced by reactions */
     unsigned int totalCtxEntities;     /*!< Total number of different (process,context) entities used */
-    unsigned int totalActions;
     unsigned int totalCtxAutStateVars;
 
     EntitiesForProc usedProducts;     /*!< Entities used in products (per process) */
@@ -308,13 +302,6 @@ class SymRS
     BDD encEntityCondition(Process proc_id, Entity entity_id);
 
     BDD encContext(const EntitiesForProc &proc_entities);
-
-    /**
-     * @brief Complements an encoding of a given state by negating all the variables that are not set to true
-     *
-     * @return Returns the encoded state
-     */
-    BDD compState(const BDD &state) const;
 
     BDD compContext(const BDD &context) const;
 

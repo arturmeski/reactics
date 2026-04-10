@@ -1,0 +1,80 @@
+{ proc0={ req } proc1={ approach } proc2={ req } proc3={ out leave } }
+{ proc0={ req } proc1={ req } proc2={ approach } proc3={ out leave } }
+{ proc0={ req } proc1={ req } proc2={ req } proc3={ out leave } }
+{ proc0={ approach } proc1={ approach } proc2={ req } proc3={ out leave } }
+{ proc0={ approach } proc1={ req } proc2={ req } proc3={ out leave } }
+{ proc0={ approach } proc1={ approach } proc2={ req in } proc3={ approach } }
+{ proc0={ approach } proc1={ req } proc2={ out leave } proc3={ req } }
+{ proc0={ approach } proc1={ req } proc2={ req in } proc3={ approach } }
+{ proc0={ req } proc1={ approach } proc2={ approach } proc3={ out leave } }
+{ proc0={ approach } proc1={ approach } proc2={ approach } proc3={ out leave } }
+{ proc0={ req } proc1={ approach } proc2={ req in } proc3={ req } }
+{ proc0={ approach } proc1={ req } proc2={ approach } proc3={ out leave } }
+{ proc0={ req } proc1={ approach } proc2={ req } proc3={ req in } }
+{ proc0={ approach } proc1={ req } proc2={ req in } proc3={ req } }
+{ proc0={ req } proc1={ approach } proc2={ out leave } proc3={ approach } }
+{ proc0={ req in } proc1={ approach } proc2={ req } proc3={ req } }
+{ proc0={ approach } proc1={ approach } proc2={ approach } proc3={ req in } }
+{ proc0={ req } proc1={ req } proc2={ out leave } proc3={ req } }
+{ proc0={ req } proc1={ approach } proc2={ out leave } proc3={ req } }
+{ proc0={ req } proc1={ req } proc2={ req in } proc3={ approach } }
+{ proc0={ approach } proc1={ approach } proc2={ out leave } proc3={ req } }
+{ proc0={ req } proc1={ req } proc2={ req in } proc3={ req } }
+{ proc0={ req } proc1={ approach } proc2={ req in } proc3={ approach } }
+{ proc0={ approach } proc1={ req } proc2={ out leave } proc3={ approach } }
+{ proc0={ req } proc1={ req } proc2={ out leave } proc3={ approach } }
+{ proc0={ } proc1={ } proc2={ } proc3={ } }
+{ proc0={ approach } proc1={ approach } proc2={ out leave } proc3={ approach } }
+{ proc0={ approach } proc1={ approach } proc2={ req in } proc3={ req } }
+{ proc0={ req } proc1={ approach } proc2={ approach } proc3={ req in } }
+{ proc0={ req in } proc1={ req } proc2={ approach } proc3={ req } }
+{ proc0={ req in } proc1={ approach } proc2={ approach } proc3={ approach } }
+{ proc0={ req } proc1={ req in } proc2={ req } proc3={ req } }
+{ proc0={ req in } proc1={ req } proc2={ approach } proc3={ approach } }
+{ proc0={ req } proc1={ req } proc2={ req } proc3={ req in } }
+{ proc0={ approach } proc1={ req } proc2={ req } proc3={ req in } }
+{ proc0={ approach } proc1={ approach } proc2={ req } proc3={ req in } }
+{ proc0={ out leave } proc1={ req } proc2={ approach } proc3={ approach } }
+{ proc0={ req in } proc1={ req } proc2={ req } proc3={ req } }
+{ proc0={ out leave } proc1={ req } proc2={ req } proc3={ approach } }
+{ proc0={ req } proc1={ req } proc2={ approach } proc3={ req in } }
+{ proc0={ req in } proc1={ approach } proc2={ approach } proc3={ req } }
+{ proc0={ req } proc1={ approach } proc2={ approach } proc3={ req } }
+{ proc0={ req in } proc1={ approach } proc2={ req } proc3={ approach } }
+{ proc0={ out leave } proc1={ approach } proc2={ req } proc3={ req } }
+{ proc0={ approach } proc1={ req } proc2={ approach } proc3={ req in } }
+{ proc0={ out leave } proc1={ req } proc2={ approach } proc3={ req } }
+{ proc0={ req } proc1={ out leave } proc2={ req } proc3={ req } }
+{ proc0={ req } proc1={ approach } proc2={ req } proc3={ req } }
+{ proc0={ out leave } proc1={ req } proc2={ req } proc3={ req } }
+{ proc0={ approach } proc1={ req in } proc2={ approach } proc3={ approach } }
+{ proc0={ out leave } proc1={ approach } proc2={ approach } proc3={ approach } }
+{ proc0={ approach } proc1={ approach } proc2={ approach } proc3={ approach } }
+{ proc0={ approach } proc1={ req } proc2={ req } proc3={ req } }
+{ proc0={ approach } proc1={ out leave } proc2={ approach } proc3={ approach } }
+{ proc0={ approach } proc1={ req } proc2={ approach } proc3={ approach } }
+{ proc0={ approach } proc1={ out leave } proc2={ req } proc3={ req } }
+{ proc0={ req } proc1={ out leave } proc2={ approach } proc3={ req } }
+{ proc0={ approach } proc1={ out leave } proc2={ approach } proc3={ req } }
+{ proc0={ approach } proc1={ req in } proc2={ req } proc3={ req } }
+{ proc0={ out leave } proc1={ approach } proc2={ req } proc3={ approach } }
+{ proc0={ approach } proc1={ approach } proc2={ req } proc3={ req } }
+{ proc0={ out leave } proc1={ approach } proc2={ approach } proc3={ req } }
+{ proc0={ req in } proc1={ req } proc2={ req } proc3={ approach } }
+{ proc0={ approach } proc1={ approach } proc2={ approach } proc3={ req } }
+{ proc0={ req } proc1={ req } proc2={ approach } proc3={ req } }
+{ proc0={ approach } proc1={ req } proc2={ req } proc3={ approach } }
+{ proc0={ req } proc1={ approach } proc2={ approach } proc3={ approach } }
+{ proc0={ approach } proc1={ req in } proc2={ approach } proc3={ req } }
+{ proc0={ approach } proc1={ approach } proc2={ req } proc3={ approach } }
+{ proc0={ approach } proc1={ req in } proc2={ req } proc3={ approach } }
+{ proc0={ req } proc1={ approach } proc2={ req } proc3={ approach } }
+{ proc0={ req } proc1={ req in } proc2={ approach } proc3={ req } }
+{ proc0={ approach } proc1={ req } proc2={ approach } proc3={ req } }
+{ proc0={ req } proc1={ req in } proc2={ approach } proc3={ approach } }
+{ proc0={ req } proc1={ out leave } proc2={ approach } proc3={ approach } }
+{ proc0={ req } proc1={ req } proc2={ approach } proc3={ approach } }
+{ proc0={ approach } proc1={ out leave } proc2={ req } proc3={ approach } }
+{ proc0={ req } proc1={ out leave } proc2={ req } proc3={ approach } }
+{ proc0={ req } proc1={ req in } proc2={ req } proc3={ approach } }
+{ proc0={ req } proc1={ req } proc2={ req } proc3={ approach } }

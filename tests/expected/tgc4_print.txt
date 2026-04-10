@@ -1,0 +1,58 @@
+# Context entities: out allowed
+# Reactions:
+
+  . proc = "proc0":
+     * (R={ out },I={ },P={ approach })
+     * (R={ approach },I={ req },P={ req })
+     * (R={ allowed },I={ },P={ in })
+     * (R={ in },I={ },P={ out leave })
+     * (R={ req },I={ in },P={ req })
+
+  . proc = "proc1":
+     * (R={ out },I={ },P={ approach })
+     * (R={ approach },I={ req },P={ req })
+     * (R={ allowed },I={ },P={ in })
+     * (R={ in },I={ },P={ out leave })
+     * (R={ req },I={ in },P={ req })
+
+  . proc = "proc2":
+     * (R={ out },I={ },P={ approach })
+     * (R={ approach },I={ req },P={ req })
+     * (R={ allowed },I={ },P={ in })
+     * (R={ in },I={ },P={ out leave })
+     * (R={ req },I={ in },P={ req })
+
+  . proc = "proc3":
+     * (R={ out },I={ },P={ approach })
+     * (R={ approach },I={ req },P={ req })
+     * (R={ allowed },I={ },P={ in })
+     * (R={ in },I={ },P={ out leave })
+     * (R={ req },I={ in },P={ req })
+
+# Context Automaton States:
+ = Init state: init
+ * init
+ * green
+ * red
+ * T
+# Context Automaton Transitions:
+ * [init -> green]: { proc0={ out } proc1={ out } proc2={ out } proc3={ out } }
+ * [green -> red]: { proc0={ allowed } } proc0.req
+ * [green -> red]: { proc1={ allowed } } proc1.req
+ * [green -> red]: { proc2={ allowed } } proc2.req
+ * [green -> red]: { proc3={ allowed } } proc3.req
+ * [green -> green]: { proc0={ } } (((~proc0.req AND ~proc1.req) AND ~proc2.req) AND ~proc3.req)
+ * [green -> green]: { proc1={ } } (((~proc0.req AND ~proc1.req) AND ~proc2.req) AND ~proc3.req)
+ * [green -> green]: { proc2={ } } (((~proc0.req AND ~proc1.req) AND ~proc2.req) AND ~proc3.req)
+ * [green -> green]: { proc3={ } } (((~proc0.req AND ~proc1.req) AND ~proc2.req) AND ~proc3.req)
+ * [red -> green]: { proc0={ } } proc0.leave
+ * [red -> green]: { proc1={ } } proc1.leave
+ * [red -> green]: { proc2={ } } proc2.leave
+ * [red -> green]: { proc3={ } } proc3.leave
+ * [red -> red]: { proc0={ } } (((~proc0.leave AND ~proc1.leave) AND ~proc2.leave) AND ~proc3.leave)
+ * [red -> red]: { proc1={ } } (((~proc0.leave AND ~proc1.leave) AND ~proc2.leave) AND ~proc3.leave)
+ * [red -> red]: { proc2={ } } (((~proc0.leave AND ~proc1.leave) AND ~proc2.leave) AND ~proc3.leave)
+ * [red -> red]: { proc3={ } } (((~proc0.leave AND ~proc1.leave) AND ~proc2.leave) AND ~proc3.leave)
+ * [green -> T]: { } ~((((((((true OR proc0.req) OR proc1.req) OR proc2.req) OR proc3.req) OR (((~proc0.req AND ~proc1.req) AND ~proc2.req) AND ~proc3.req)) OR (((~proc0.req AND ~proc1.req) AND ~proc2.req) AND ~proc3.req)) OR (((~proc0.req AND ~proc1.req) AND ~proc2.req) AND ~proc3.req)) OR (((~proc0.req AND ~proc1.req) AND ~proc2.req) AND ~proc3.req))
+ * [red -> T]: { } ~((((((((true OR proc0.leave) OR proc1.leave) OR proc2.leave) OR proc3.leave) OR (((~proc0.leave AND ~proc1.leave) AND ~proc2.leave) AND ~proc3.leave)) OR (((~proc0.leave AND ~proc1.leave) AND ~proc2.leave) AND ~proc3.leave)) OR (((~proc0.leave AND ~proc1.leave) AND ~proc2.leave) AND ~proc3.leave)) OR (((~proc0.leave AND ~proc1.leave) AND ~proc2.leave) AND ~proc3.leave))
+ * [T -> T]: { }

@@ -517,9 +517,9 @@ BDD ModelChecker::getIthOnly(Process proc_id)
   /* nothing has been found in the cache */
   BDD bdd = BDD_TRUE;
 
-  for (auto i = 0; i < pv_drs_E->size(); ++i) {
+  for (size_t i = 0; i < pv_drs_E->size(); ++i) {
 
-    if (i == proc_id) {
+    if (i == static_cast<size_t>(proc_id)) {
       continue;
     }
 
@@ -591,13 +591,7 @@ bool ModelChecker::checkRSCTLKfull(FormRSCTLK *form)
 
   VERB("Checking the formula");
 
-  //if (*initStates * getStatesRSCTLK(form) != cuddMgr->bddZero())
-  if (*initStates * getStatesRSCTLK(form) == *initStates) {
-    result = true;
-  }
-  else {
-    result = false;
-  }
+  result = (*initStates * getStatesRSCTLK(form) == *initStates);
 
   cleanup();
 

@@ -17,9 +17,6 @@ SymRS::SymRS(RctSys *rs, Options *opts)
 
   totalEntities = rs->getEntitiesSize();
 
-  // TODO: remove
-  totalActions = 0;
-
   totalRctSysStateVars = getTotalProductVariables();
   totalCtxEntities = getTotalCtxEntitiesVariables();
 
@@ -404,39 +401,19 @@ BDD SymRS::encCtxEntity(Process proc_id, Entity entity) const
 
 bool SymRS::productEntityExists(Process proc_id, Entity entity) const
 {
-  if (prod_ent_local_idx.count(proc_id) == 0) {
-    return false;
-  }
-  else {
-    if (prod_ent_local_idx.at(proc_id).count(entity) == 1) {
-      return true;
-    }
-  }
-
-  return false;
+  return prod_ent_local_idx.count(proc_id) != 0 &&
+         prod_ent_local_idx.at(proc_id).count(entity) == 1;
 }
 
 bool SymRS::ctxEntityExists(Process proc_id, Entity entity) const
 {
-  if (ctx_ent_local_idx.count(proc_id) == 0) {
-    return false;
-  }
-  else {
-    if (ctx_ent_local_idx.at(proc_id).count(entity) == 1) {
-      return true;
-    }
-  }
-
-  return false;
+  return ctx_ent_local_idx.count(proc_id) != 0 &&
+         ctx_ent_local_idx.at(proc_id).count(entity) == 1;
 }
 
 bool SymRS::processUsesEntity(Process proc_id, Entity entity_id) const
 {
-  if (productEntityExists(proc_id, entity_id) || ctxEntityExists(proc_id, entity_id)) {
-    return true;
-  }
-
-  return false;
+  return productEntityExists(proc_id, entity_id) || ctxEntityExists(proc_id, entity_id);
 }
 
 BDD SymRS::encEntitiesConj_raw(Process proc_id, const Entities &entities, bool succ)
@@ -509,20 +486,6 @@ BDD SymRS::encContext(const EntitiesForProc &proc_entities)
   }
 
   return r;
-}
-
-BDD SymRS::compState(const BDD &state) const
-{
-  assert(0);
-  BDD s = state;
-
-  for (unsigned int i = 0; i < totalRctSysStateVars; ++i) {
-    if (!(*pv)[i] * state != cuddMgr->bddZero()) {
-      s *= !(*pv)[i];
-    }
-  }
-
-  return s;
 }
 
 BDD SymRS::compContext(const BDD &context) const
@@ -725,65 +688,6 @@ BDD SymRS::encEnabledness(Process prod_proc_id, Entity entity_id)
   return enab;
 }
 
-// BDD SymRS::encEnabledness(Process prod_proc_id, Entity entity_id)
-// {
-//   assert(prod_conds.size() > prod_proc_id);
-
-//   BDD enab = BDD_FALSE;
-
-//   auto production_conditions = prod_conds[prod_proc_id][entity_id];
-
-//   VERB_LN(5, "| Produce " << rs->getEntityName(entity_id) << " in " << rs->getProcessName(prod_proc_id) << ":");
-
-//   for (const auto &cond : production_conditions) {
-
-//     BDD reactants = BDD_TRUE;
-//     BDD inhibitors = BDD_TRUE;
-
-//     for (const auto &reactant : cond.rctt) {
-//       BDD proc_reactants = BDD_FALSE;
-
-//       for (unsigned int proc_id = 0; proc_id < numberOfProc; ++proc_id) {
-//         if (processUsesEntity(proc_id, reactant)) {
-//           proc_reactants += encProcEnabled(proc_id) * encEntityCondition(proc_id, reactant);
-
-//           VERB_LN(5, "| - if process " << rs->getProcessName(proc_id) << " is enabled and has " << rs->getEntityName(reactant));
-
-//         }
-//       } // END FOR: prod_id
-
-//       reactants *= proc_reactants;
-//     } // END FOR: reactant
-
-//     // For inhibitors, we take all the processes first and then we iterate over the inhibitors
-//     for (unsigned int proc_id = 0; proc_id < numberOfProc; ++proc_id) {
-//       BDD proc_inhibitors = BDD_TRUE;
-
-//       for (const auto &inhibitor : cond.inhib) {
-//         if (processUsesEntity(proc_id, inhibitor)) {
-//           proc_inhibitors *= !encEntityCondition(proc_id, inhibitor);
-//         }
-//       }
-
-//       if (proc_inhibitors != BDD_TRUE) { // just an optimisation
-//         proc_inhibitors += !encProcEnabled(proc_id);
-//         inhibitors *= proc_inhibitors;
-//       }
-//     }
-
-//     enab += reactants * inhibitors;
-
-//   } // END FOR: cond
-
-//   if (opts->reorder_trans) {
-//     VERB_L2("Reordering");
-//     Cudd_ReduceHeap(cuddMgr->getManager(), CUDD_REORDER_SIFT, 10000);
-//   }
-
-//   return enab;
-// }
-
-
 BDD SymRS::encEntitySameSuccessor(Process proc_id, Entity entity_id)
 {
   return BDD_IFF(encEntity(proc_id, entity_id), encEntitySucc(proc_id, entity_id));
@@ -810,7 +714,7 @@ void SymRS::encodeTransitions(void)
 
   prod_conds.resize(numberOfProc);
 
-  for (auto proc_id = 0; proc_id < numberOfProc; ++proc_id) {
+  for (unsigned int proc_id = 0; proc_id < numberOfProc; ++proc_id) {
     prod_conds[proc_id] = getProductionConditions(proc_id);
   }
 

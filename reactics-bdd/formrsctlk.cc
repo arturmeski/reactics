@@ -172,39 +172,6 @@ bool FormRSCTLK::isERSCTLK(void) const
 
 std::string FormRSCTLK::getActionsStr(void) const
 {
-  // if (actions != nullptr) {
-  //   std::string r = "[ ";
-  //   bool firstact = true;
-  //
-  //   for (ActionsVec_f::iterator act = actions->begin(); act != actions->end();
-  //        ++act) {
-  //     if (!firstact) {
-  //       r += ",";
-  //     }
-  //     else {
-  //       firstact = false;
-  //     }
-  //
-  //     r += "{";
-  //     bool firstent = true;
-  //
-  //     for (Action_f::iterator ent = act->begin(); ent != act->end(); ++ent) {
-  //       if (!firstent) {
-  //         r += ",";
-  //       }
-  //       else {
-  //         firstent = false;
-  //       }
-  //
-  //       r += *ent;
-  //     }
-  //
-  //     r += "}";
-  //   }
-  //
-  //   r += " ]";
-  //   return r;
-  // }
   if (boolCtx != nullptr) {
     return "< " + boolCtx->toStr() + " >";
   }
@@ -222,22 +189,6 @@ void FormRSCTLK::encodeActions(const SymRS *srs)
 
     actions_bdd = new BDD(srs->getBDDfalse());
     assert(boolCtx != nullptr);
-    // assert(actions != nullptr || boolCtx != nullptr);
-    // assert(!(actions != nullptr && boolCtx != nullptr));
-
-    // if (actions != nullptr) {
-    //   for (ActionsVec_f::iterator act = actions->begin(); act != actions->end();
-    //        ++act) {
-    //     BDD single_action = srs->getBDDtrue();
-    //
-    //     for (Action_f::iterator ent = act->begin(); ent != act->end(); ++ent) {
-    //       single_action *= srs->encActStrEntity(*ent);
-    //     }
-    //
-    //     single_action = srs->compContext(single_action);
-    //     *actions_bdd += single_action;
-    //   }
-    // }
     if (boolCtx != nullptr) {
       *actions_bdd = boolCtx->getBDDforContext(srs);
     }

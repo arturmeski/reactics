@@ -13,12 +13,7 @@ CtxAut::CtxAut(Options *opts, RctSys *parent_rctsys)
 
 bool CtxAut::hasState(std::string name)
 {
-  if (states_names.find(name) == states_names.end()) {
-    return false;
-  }
-  else {
-    return true;
-  }
+  return states_names.find(name) != states_names.end();
 }
 
 State CtxAut::getStateID(std::string name)

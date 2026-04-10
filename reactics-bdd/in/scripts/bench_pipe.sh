@@ -43,11 +43,11 @@ for form in $forms; do
 
         echo "$x" > $filename
 
-        ./gen_abstract1.py $n $form > tmp.rs
+        ./gen_abstract1.py $n $form > tmp.drs
 
-        echo "EXEC: $tool $options $popt tmp.rs"
+        echo "EXEC: $tool $options $popt tmp.drs"
 
-        $tool $options $popt tmp.rs >&1  >> $filename 
+        $tool $options $popt tmp.drs >&1  >> $filename 
 
         result="$(tail -1 $filename | grep -E '.*;.*;.*;.*'| sed "s/STAT/$n /")" 
         if [ "$result" = "" ];then

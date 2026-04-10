@@ -37,13 +37,13 @@ int main(int argc, char **argv)
                           &option_index)) != -1) {
     switch (c) {
       case 0:
-        printf("option %s", long_options[option_index].name);
+        cout << "option " << long_options[option_index].name;
 
         if (optarg) {
-          printf(" with arg %s", optarg);
+          cout << " with arg " << optarg;
         }
 
-        printf("\n");
+        cout << endl;
 
         if (strcmp(long_options[option_index].name, "trace-parsing")) {
           driver.trace_parsing = true;
@@ -236,16 +236,7 @@ int main(int argc, char **argv)
 
   delete opts;
 
-  int ret_val;
-
-  if (result) {
-    ret_val = 0;
-  }
-  else {
-    ret_val = 1;
-  }
-
-  return ret_val;
+  return result ? 0 : 1;
 }
 
 void print_help(std::string path_str)

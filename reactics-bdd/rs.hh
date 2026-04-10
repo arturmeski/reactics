@@ -50,6 +50,7 @@ class RctSys
 
     void addReactionForCurrentProcess(Reaction reaction);
 
+    void ensureEntity(std::string entityName);
     void pushReactant(std::string entityName);
     void pushInhibitor(std::string entityName);
     void pushProduct(std::string entityName);
