@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
+"""
+Generator for the DRS (Distributed Reaction Systems) epistemic benchmark.
+
+Produces a distributed reaction system with epistemic properties
+(knowledge operators). The system models signal transduction cascades
+with configurable depth (x), number of components (y), threshold (z),
+and context automaton variant (a or b).
+"""
 
 import sys
+import argparse
 import itertools
 
 
@@ -272,18 +281,20 @@ class DRSGenerator:
 
 
 def main():
-    if len(sys.argv) < 1 + 4:
-        print(f"Usage: {sys.argv[0]} <x> <y> <z> <Aut>")
-        print("\twhere x,y,z >= 2 and y >= z")
-        print("\tAut: a, b")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("x", type=int, help="cascade depth (>= 2)")
+    parser.add_argument("y", type=int, help="number of components (>= 2, >= z)")
+    parser.add_argument("z", type=int, help="threshold (>= 2, <= y)")
+    parser.add_argument("aut", choices=["a", "b"], help="automaton variant")
+    args = parser.parse_args()
 
-    g = DRSGenerator(
-        x=int(sys.argv[1]),
-        y=int(sys.argv[2]),
-        z=int(sys.argv[3]),
-        aut=sys.argv[4],
-    )
+    if args.x < 2 or args.y < 2 or args.z < 2:
+        parser.error("x, y, z must all be >= 2")
+    if args.y < args.z:
+        parser.error("y must be >= z")
+
+    DRSGenerator(x=args.x, y=args.y, z=args.z, aut=args.aut)
 
 
 if __name__ == "__main__":

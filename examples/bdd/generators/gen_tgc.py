@@ -1,13 +1,20 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+"""
+Generator for the Traffic Guard Controller (TGC) benchmark.
 
-from sys import argv,exit
-
-OPTIONS_STR = """
-options { use-context-automaton; make-progressive; };
+Produces a distributed reaction system where N processes compete
+for access to a shared resource, governed by a context automaton
+with green/red states. Generates RSCTLK properties for liveness,
+reachability, and mutual exclusion (epistemic).
 """
 
-PROC_STR = """
-    proc{:d} {{
+import argparse
+
+
+OPTIONS = "options { use-context-automaton; make-progressive; };\n"
+
+PROC_TEMPLATE = """
+    proc{i} {{
         {{{{out}}, {{}} -> {{approach}}}};
         {{{{approach}}, {{req}} -> {{req}}}};
         {{{{allowed}}, {{}} -> {{in}}}};
@@ -16,102 +23,94 @@ PROC_STR = """
     }};
 """
 
-CA_STR = """
+CA_TEMPLATE = """
 context-automaton {{
     states {{ init, green, red }};
     init-state {{ init }};
     transitions {{
-{:s}
+{transitions}
     }};
 }};
 """
 
-PROPERTY_STR = """
-rsctlk-property {{ {:s} : {:s} }};
-"""
+PROPERTY_TEMPLATE = '\nrsctlk-property {{ {name} : {formula} }};\n'
 
 
-#################################################################
+def conj(fmt, indices, sep=" AND "):
+    return sep.join(fmt.format(i=i) for i in indices)
 
-if len(argv) < 1:
-    print("Usage: {:s} <number of processes>".format(argv[0]))
-    exit(100)
 
-n = int(argv[1])
+def generate(n):
+    out = OPTIONS
+    out += "\nreactions {\n"
+    for i in range(n):
+        out += PROC_TEMPLATE.format(i=i)
+    out += "};\n"
 
-assert n > 1, "number of proc must be > 1"
+    indent = 8 * " "
+    transitions = ""
 
-out = ""
+    # init -> green: all processes start with 'out'
+    transitions += indent + "{ "
+    transitions += " ".join("proc{:d}={{out}}".format(i) for i in range(n))
+    transitions += " }: init -> green;\n"
 
-out += OPTIONS_STR
-out += "reactions {\n"
-for i in range(n):
-    out += PROC_STR.format(i)
-out += "};\n"
+    # green -> red: a process requests
+    for i in range(n):
+        transitions += "{indent}{{ proc{i}={{allowed}} }}: green -> red : proc{i}.req;\n".format(
+            indent=indent, i=i)
 
-transitions = ""
+    # green -> green: no requests pending
+    no_req = conj("~proc{i}.req", range(n))
+    for i in range(n):
+        transitions += "{indent}{{ proc{i}={{}} }}: green -> green : {guard};\n".format(
+            indent=indent, i=i, guard=no_req)
 
-init_trans = 8*" " + "{ "
-for i in range(n):
-    init_trans += "proc{:d}={{out}} ".format(i)
-init_trans += "}: init -> green;\n"
-transitions += init_trans
+    # red -> green: a process leaves
+    for i in range(n):
+        transitions += "{indent}{{ proc{i}={{}} }}: red -> green : proc{i}.leave;\n".format(
+            indent=indent, i=i)
 
-for i in range(n):
-    transitions += "{:s}{{ proc{:d}={{allowed}} }}: green -> red : proc{:d}.req;\n".format(8*" ", i, i)
+    # red -> red: no process leaves
+    no_leave = conj("~proc{i}.leave", range(n))
+    for i in range(n):
+        transitions += "{indent}{{ proc{i}={{}} }}: red -> red : {guard};\n".format(
+            indent=indent, i=i, guard=no_leave)
 
-no_req_cond = "~proc0.req"
-for i in range(1, n):
-     no_req_cond += " AND ~proc{:d}.req".format(i)
+    out += CA_TEMPLATE.format(transitions=transitions)
 
-for i in range(n):
-    transitions += "{:s}{{ proc{:d}={{}} }}: green -> green : {:s};\n".format(8*" ", i, no_req_cond)
+    # f1: each process can eventually enter
+    f1 = conj("EF( E<proc{i}.allowed>X( proc{i}.in ) )", range(n))
+    out += PROPERTY_TEMPLATE.format(name="f1", formula=f1)
 
-for i in range(n):
-    transitions += "{:s}{{ proc{:d}={{}} }}: red -> green : proc{:d}.leave;\n".format(8*" ", i, i)
+    # f2: all processes can simultaneously approach
+    f2 = "EF( " + conj("proc{i}.approach", range(n)) + " )"
+    out += PROPERTY_TEMPLATE.format(name="f2", formula=f2)
 
-no_leave_cond = "~proc0.leave"
-for i in range(1, n):
-     no_leave_cond += " AND ~proc{:d}.leave".format(i)
+    # f3: mutual exclusion (knowledge)
+    others_not_in = conj("~proc{i}.in", range(1, n))
+    f3 = "AG( proc0.in IMPLIES K[proc0]({}) )".format(others_not_in)
+    out += PROPERTY_TEMPLATE.format(name="f3", formula=f3)
 
-for i in range(n):
-    transitions += "{:s}{{ proc{:d}={{}} }}: red -> red : {:s};\n".format(8*" ", i, no_leave_cond)
+    # f4: mutual exclusion (common knowledge)
+    all_agents = conj("proc{i}", range(n), sep=",")
+    f4 = "AG( proc0.in IMPLIES C[{}]({}) )".format(all_agents, others_not_in)
+    out += PROPERTY_TEMPLATE.format(name="f4", formula=f4)
 
-out += CA_STR.format(transitions)
+    return out
 
-## f1
-#formula = "EF( proc0.in )"
-#out += PROPERTY_STR.format("f1",formula)
 
-# f1
-formula = "EF( E<proc0.allowed>X( proc0.in ) )"
-for i in range(1, n):
-    formula += " AND EF( E<proc{:d}.allowed>X( proc{:d}.in ) )".format(i, i)
-out += PROPERTY_STR.format("f1",formula)
+def main():
+    parser = argparse.ArgumentParser(description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("n", type=int, help="number of processes (must be > 1)")
+    args = parser.parse_args()
 
-# f2
-formula = "EF( proc0.approach"
-for i in range(1, n):
-    formula += " AND proc{:d}.approach".format(i)
-formula += " )"
-out += PROPERTY_STR.format("f2",formula)
+    if args.n < 2:
+        parser.error("number of processes must be > 1")
 
-# f3
-subf = "~proc1.in"
-for i in range(2, n):
-    subf += " AND ~proc{:d}.in".format(i)
-formula = "AG( proc0.in IMPLIES K[proc0]({:s}) )".format(subf)
-out += PROPERTY_STR.format("f3",formula)
+    print(generate(args.n))
 
-# f4
-subf = "~proc1.in"
-for i in range(2, n):
-    subf += " AND ~proc{:d}.in".format(i)
-all_agents = "proc0"
-for i in range(1, n):
-    all_agents += ",proc{:d}".format(i)
-formula = "AG( proc0.in IMPLIES C[{:s}]({:s}) )".format(all_agents,subf)
-out += PROPERTY_STR.format("f4",formula)
 
-print(out)
-
+if __name__ == "__main__":
+    main()
