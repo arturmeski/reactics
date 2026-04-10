@@ -43,11 +43,8 @@ class ReactionSystem(object):
             self.add_bg_set_entity(e)
 
     def is_in_background_set(self, entity):
-        """Checks if the given name is valid wrt the background set="""
-        if entity in self.background_set:
-            return True
-        else:
-            return False
+        """Checks if the given name is valid wrt the background set"""
+        return entity in self.background_set
 
     def get_entity_id(self, name):
         try:

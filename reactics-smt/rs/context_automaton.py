@@ -55,10 +55,7 @@ class ContextAutomaton(object):
         return self._states[self._init_state]
 
     def is_state(self, name):
-        if name in self._states:
-            return True
-        else:
-            return False
+        return name in self._states
 
     def get_state_id(self, name):
         try:
@@ -78,10 +75,7 @@ class ContextAutomaton(object):
             print(state)
 
     def is_valid_rs_set(self, elements):
-        if set(elements).issubset(self._reaction_system.background_set):
-            return True
-        else:
-            return False
+        return set(elements).issubset(self._reaction_system.background_set)
 
     def is_valid_context(self, context):
         return self.is_valid_rs_set(context)
@@ -95,7 +89,7 @@ class ContextAutomaton(object):
         return new_set
 
     def add_transition(self, src, context_set, dst):
-        if not type(context_set) is set and not type(context_set) is list:
+        if not isinstance(context_set, (set, list)):
             print("Contexts set must be of type set or list")
 
         if not self.is_valid_context(context_set):

@@ -1,0 +1,23 @@
+# Reactions:
+
+  . proc = "proc0":
+     * (R={ out },I={ },P={ approach })
+     * (R={ approach },I={ req },P={ req })
+     * (R={ allowed },I={ },P={ in })
+     * (R={ in },I={ },P={ out leave })
+     * (R={ req },I={ in },P={ req })
+
+  . proc = "proc1":
+     * (R={ out },I={ },P={ approach })
+     * (R={ approach },I={ req },P={ req })
+     * (R={ allowed },I={ },P={ in })
+     * (R={ in },I={ },P={ out leave })
+     * (R={ req },I={ in },P={ req })
+
+  . proc = "proc2":
+     * (R={ out },I={ },P={ approach })
+     * (R={ approach },I={ req },P={ req })
+     * (R={ allowed },I={ },P={ in })
+     * (R={ in },I={ },P={ out leave })
+     * (R={ req },I={ in },P={ req })
+

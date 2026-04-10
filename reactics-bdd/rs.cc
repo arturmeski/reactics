@@ -14,12 +14,7 @@ RctSys::RctSys(void)
 
 bool RctSys::hasEntity(std::string name)
 {
-  if (entities_names.find(name) == entities_names.end()) {
-    return false;
-  }
-  else {
-    return true;
-  }
+  return entities_names.find(name) != entities_names.end();
 }
 
 void RctSys::addEntity(std::string name)
@@ -84,21 +79,12 @@ void RctSys::addProcess(std::string processName)
 
 bool RctSys::hasProcess(std::string processName)
 {
-  if (processes_names.find(processName) == processes_names.end()) {
-    return false;
-  }
-  else {
-    return true;
-  }
+  return processes_names.find(processName) != processes_names.end();
 }
 
 bool RctSys::hasProcess(Process processID)
 {
-  if (processID >= processes_ids.size()) {
-    return false;
-  }
-
-  return true;
+  return processID < processes_ids.size();
 }
 
 Process RctSys::getProcessID(std::string processName)
@@ -120,28 +106,26 @@ std::string RctSys::getProcessName(Process processID)
   }
 }
 
-void RctSys::pushReactant(std::string entityName)
+void RctSys::ensureEntity(std::string entityName)
 {
   if (!hasEntity(entityName)) {
     addEntity(entityName);
   }
+}
 
+void RctSys::pushReactant(std::string entityName)
+{
+  ensureEntity(entityName);
   tmpReactants.insert(getEntityID(entityName));
 }
 void RctSys::pushInhibitor(std::string entityName)
 {
-  if (!hasEntity(entityName)) {
-    addEntity(entityName);
-  }
-
+  ensureEntity(entityName);
   tmpInhibitors.insert(getEntityID(entityName));
 }
 void RctSys::pushProduct(std::string entityName)
 {
-  if (!hasEntity(entityName)) {
-    addEntity(entityName);
-  }
-
+  ensureEntity(entityName);
   tmpProducts.insert(getEntityID(entityName));
 }
 
@@ -232,10 +216,7 @@ void RctSys::commitInitState(void)
 
 void RctSys::addActionEntity(std::string entityName)
 {
-  if (!hasEntity(entityName)) {
-    addEntity(entityName);
-  }
-
+  ensureEntity(entityName);
   actionEntities.insert(getEntityID(entityName));
 }
 
@@ -248,12 +229,7 @@ void RctSys::addActionEntity(Entity entity)
 
 bool RctSys::isActionEntity(Entity entity)
 {
-  if (actionEntities.count(entity) > 0) {
-    return true;
-  }
-  else {
-    return false;
-  }
+  return actionEntities.count(entity) > 0;
 }
 
 void RctSys::showActionEntities(void)

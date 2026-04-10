@@ -1,0 +1,8 @@
+Using BDD-based Bounded Model Checking
+Formula (((EF(E< proc0.allowed >X(proc0.in)) AND EF(E< proc1.allowed >X(proc1.in))) AND EF(E< proc2.allowed >X(proc2.in))) AND EF(E< proc3.allowed >X(proc3.in))) holds
+Using BDD-based Bounded Model Checking
+Formula EF((((proc0.approach AND proc1.approach) AND proc2.approach) AND proc3.approach)) holds
+Using BDD-based Bounded Model Checking
+Formula AG((proc0.in IMPLIES K[proc0](((~proc1.in AND ~proc2.in) AND ~proc3.in)))) holds
+Using BDD-based Bounded Model Checking
+Formula AG((proc0.in IMPLIES C[proc0 proc1 proc2 proc3](((~proc1.in AND ~proc2.in) AND ~proc3.in)))) holds

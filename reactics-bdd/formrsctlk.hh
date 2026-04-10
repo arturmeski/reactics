@@ -9,7 +9,6 @@
 #include <iostream>
 #include <string>
 #include <cassert>
-// #include "rs.hh"
 #include "symrs.hh"
 #include "cudd.hh"
 #include "types.hh"
@@ -56,9 +55,6 @@
 using std::cout;
 using std::endl;
 
-// typedef std::string Entity_f;
-// typedef std::set<Entity_f> Action_f;
-// typedef vector<Action_f> ActionsVec_f;
 typedef std::set<std::string> Agents_f;
 
 class StateConstr;
@@ -74,7 +70,6 @@ class FormRSCTLK
     std::string proc_name;
     bool tf;
     BDD *bdd;
-    // ActionsVec_f *actions;
     BDD *actions_bdd;
     StateConstr *boolCtx;
     Agents_f agents;
@@ -93,7 +88,6 @@ class FormRSCTLK
       arg[0] = nullptr;
       arg[1] = nullptr;
       bdd = nullptr;
-      // actions = nullptr;
       actions_bdd = nullptr;
       boolCtx = nullptr;
     }
@@ -110,7 +104,6 @@ class FormRSCTLK
       arg[0] = nullptr;
       arg[1] = nullptr;
       bdd = nullptr;
-      // actions = nullptr;
       actions_bdd = nullptr;
       boolCtx = nullptr;
     }
@@ -126,27 +119,9 @@ class FormRSCTLK
       arg[0] = form1;
       arg[1] = form2;
       bdd = nullptr;
-      // actions = nullptr;
       actions_bdd = nullptr;
       boolCtx = nullptr;
     }
-
-    /**
-     * @brief Constructor for two-argument formula with action restrictions.
-     */
-    // FormRSCTLK(Oper op, ActionsVec_f *acts, FormRSCTLK *form1, FormRSCTLK *form2)
-    // {
-    //   assert(acts != nullptr);
-    //   assert(RSCTLK_COND_2ARG(op));
-    //   assert(RSCTLK_COND_ACT(op));
-    //   oper = op;
-    //   arg[0] = form1;
-    //   arg[1] = form2;
-    //   bdd = nullptr;
-    //   actions = acts;
-    //   actions_bdd = nullptr;
-    //   boolCtx = nullptr;
-    // }
 
     /**
      * @brief Constructor for two-argument formula with Boolean context restrictions.
@@ -160,7 +135,6 @@ class FormRSCTLK
       arg[0] = form1;
       arg[1] = form2;
       bdd = nullptr;
-      // actions = nullptr;
       actions_bdd = nullptr;
       boolCtx = bctx;
     }
@@ -176,27 +150,9 @@ class FormRSCTLK
       arg[0] = form1;
       arg[1] = nullptr;
       bdd = nullptr;
-      // actions = nullptr;
       actions_bdd = nullptr;
       boolCtx = nullptr;
     }
-
-    /**
-     * @brief Constructor for one-argument formula with action restrictions.
-     */
-    // FormRSCTLK(Oper op, ActionsVec_f *acts, FormRSCTLK *form1)
-    // {
-    //   assert(acts != nullptr);
-    //   assert(RSCTLK_COND_1ARG(op));
-    //   assert(RSCTLK_COND_ACT(op));
-    //   oper = op;
-    //   arg[0] = form1;
-    //   arg[1] = nullptr;
-    //   bdd = nullptr;
-    //   // actions = acts;
-    //   actions_bdd = nullptr;
-    //   boolCtx = nullptr;
-    // }
 
     /**
      * @brief Constructor for one-argument formula with Boolean context restrictions.
@@ -210,7 +166,6 @@ class FormRSCTLK
       arg[0] = form1;
       arg[1] = nullptr;
       bdd = nullptr;
-      // actions = nullptr;
       actions_bdd = nullptr;
       boolCtx = bctx;
     }
@@ -234,7 +189,6 @@ class FormRSCTLK
       delete arg[0];
       delete arg[1];
       delete bdd;
-      // delete actions;
       delete actions_bdd;
       delete boolCtx;
     }

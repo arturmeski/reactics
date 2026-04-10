@@ -12,10 +12,7 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
-// #include "rs.hh"
 #include "types.hh"
-// #include "options.hh"
-// #include "stateconstr.hh"
 
 using std::cout;
 using std::endl;

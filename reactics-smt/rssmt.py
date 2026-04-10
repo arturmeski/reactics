@@ -11,7 +11,6 @@ import argparse
 from rs import *
 from smt import *
 import sys
-import rs_examples
 import rs_testing
 
 from colour import *
